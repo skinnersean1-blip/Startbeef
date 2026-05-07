@@ -9,36 +9,30 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        jakarta: ["var(--font-jakarta)", "system-ui", "sans-serif"],
-        manrope: ["var(--font-manrope)", "system-ui", "sans-serif"],
+        sans: ["Inter", "system-ui", "sans-serif"],
       },
       colors: {
-        primary: "var(--primary)",
-        "primary-container": "var(--primary-container)",
-        "on-primary": "var(--on-primary)",
-        "primary-fixed": "var(--primary-fixed)",
-        secondary: "var(--secondary)",
-        "secondary-container": "var(--secondary-container)",
-        tertiary: "var(--tertiary)",
-        "tertiary-container": "var(--tertiary-container)",
-        surface: "var(--surface)",
-        "surface-lowest": "var(--surface-container-lowest)",
-        "surface-low": "var(--surface-container-low)",
-        "surface-mid": "var(--surface-container)",
-        "surface-high": "var(--surface-container-high)",
-        "surface-highest": "var(--surface-container-highest)",
-        "on-surface": "var(--on-surface)",
-        "on-surface-variant": "var(--on-surface-variant)",
-        "outline-variant": "var(--outline-variant)",
+        // Beef color palette - dark brown/gold aesthetic
+        beef: {
+          bg: "#0A0806",           // Very dark brown, almost black
+          "bg-light": "#1A1410",   // Slightly lighter brown
+          "bg-card": "#2A1F18",    // Card background
+          gold: "#D4A574",         // Muted gold
+          "gold-light": "#E8C9A1", // Light gold
+          orange: "#FF6B47",       // Bright orange (CTA)
+          "orange-dark": "#E55A3C",// Darker orange
+          text: "#F5F1ED",         // Off-white text
+          "text-muted": "#A89885", // Muted text
+          border: "#3A2F28",       // Border color
+        },
       },
       borderRadius: {
         "4xl": "2rem",
         "5xl": "3rem",
       },
       boxShadow: {
-        ambient: "0 20px 40px rgba(45, 47, 49, 0.06)",
-        float: "0 8px 32px rgba(45, 47, 49, 0.08)",
-        "pink-glow": "0 8px 24px rgba(183, 0, 77, 0.25)",
+        glow: "0 0 20px rgba(212, 165, 116, 0.15)",
+        "orange-glow": "0 0 30px rgba(255, 107, 71, 0.3)",
       },
     },
   },

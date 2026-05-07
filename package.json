@@ -1,7 +1,8 @@
 {
-  "name": "shoe-shoe",
+  "name": "beef",
   "version": "0.1.0",
   "private": true,
+  "description": "Paid dissent platform - Put money where your mouth is",
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",

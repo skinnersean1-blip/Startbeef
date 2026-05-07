@@ -1,23 +1,15 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Manrope } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { Providers } from "@/components/Providers";
 
-const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-});
-
-const manrope = Manrope({
-  variable: "--font-manrope",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
-  title: "Shoe Shoe | Kids' Shoe Marketplace",
-  description: "The 100% kids-only marketplace. Toddlers to Teens, curated for the next generation of sneakerheads.",
+  title: "Beef - Paid Dissent Platform",
+  description: "Put money where your mouth is. No endless reply chains. Post a claim, price the conviction, and let the internet watch it burn in a controlled arena.",
 };
 
 export default function RootLayout({
@@ -27,11 +19,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-      </head>
-      <body className={`${plusJakartaSans.variable} ${manrope.variable} antialiased font-manrope`}>
-        <Providers>{children}</Providers>
+      <body className={`${inter.variable} font-sans`}>
+        {children}
       </body>
     </html>
   );
