@@ -6,30 +6,20 @@ import Link from "next/link";
 export function HeroCTA() {
   const { data: session, status } = useSession();
 
-  if (status === "loading") return null;
+  if (status === "loading") return <div className="h-14" />;
 
-  if (session?.user) {
-    return (
-      <Link href="/beef/new">
-        <button className="btn-primary text-lg px-10 py-5">
+  return (
+    <div className="flex gap-3 flex-wrap">
+      <Link href={session?.user ? "/beef/new" : "/auth/signup"}>
+        <button className="btn-primary text-sm px-8 py-4">
           START A BEEF
         </button>
       </Link>
-    );
-  }
-
-  return (
-    <div className="flex gap-4">
-      <Link href="/auth/signup">
-        <button className="btn-primary text-lg px-10 py-5">
-          JOIN THE ARENA
+      <a href="#feed">
+        <button className="btn-secondary text-sm px-8 py-4">
+          WATCH THE ARENA
         </button>
-      </Link>
-      <Link href="/auth/signin">
-        <button className="btn-secondary text-lg px-10 py-5">
-          SIGN IN
-        </button>
-      </Link>
+      </a>
     </div>
   );
 }
