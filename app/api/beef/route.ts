@@ -2,17 +2,41 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { categorizeClaim } from "@/lib/categorize";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
 const createBeefSchema = z.object({
   claim: z.string().min(10, "Claim must be at least 10 characters").max(500, "Claim must be under 500 characters"),
-  category: z.enum(["POLITICS", "CULTURE", "SPORTS", "TECH", "CALLOUTS"]),
-  debateType: z.enum(["PERSUASION", "OBJECTIVE_CLAIM", "TASTE_BATTLE"]),
   ante: z.number().refine((v) => [10, 25, 50, 100].includes(v), "Invalid ante amount"),
-  judgeType: z.enum(["PANEL_OF_3_MODELS", "COMMUNITY", "EXPERT"]),
 });
+
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const category = searchParams.get("category");
+  const sort = searchParams.get("sort") || "new";
+
+  const where = category && category !== "ALL"
+    ? { categories: { contains: category }, status: "OPEN" }
+    : { status: "OPEN" };
+
+  const orderBy =
+    sort === "hot" ? { sideVolume: "desc" as const } :
+    sort === "pot" ? { totalPot: "desc" as const } :
+    { createdAt: "desc" as const };
+
+  const beefs = await prisma.beef.findMany({
+    where,
+    orderBy,
+    take: 20,
+    include: {
+      challenger: { select: { handle: true, username: true, wins: true, losses: true } },
+    },
+  });
+
+  return NextResponse.json({ beefs });
+}
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -23,26 +47,24 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { claim, category, debateType, ante, judgeType } = createBeefSchema.parse(body);
+    const { claim, ante } = createBeefSchema.parse(body);
+
+    const categories = await categorizeClaim(claim);
 
     const beef = await prisma.beef.create({
       data: {
         claim,
-        category,
-        debateType,
+        categories: JSON.stringify(categories),
         ante,
         totalPot: ante,
-        judgeType,
         status: "OPEN",
         challengerId: session.user.id,
       },
       select: {
         id: true,
         claim: true,
-        category: true,
-        debateType: true,
+        categories: true,
         ante: true,
-        judgeType: true,
         status: true,
         createdAt: true,
       },
