@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AuthHeader } from "@/components/AuthHeader";
 
 export default function Home() {
   return (
@@ -6,14 +7,13 @@ export default function Home() {
       {/* Header */}
       <header className="container-beef py-6">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="section-label mb-2">PAID DISSENT PLATFORM</p>
-            <h1 className="text-6xl font-bold tracking-tighter">BEEF</h1>
-          </div>
-          <div className="flex gap-4">
-            <button className="btn-primary">START A BEEF</button>
-            <button className="btn-secondary">WATCH THE ARENA</button>
-          </div>
+          <Link href="/">
+            <div className="cursor-pointer">
+              <p className="section-label mb-2">PAID DISSENT PLATFORM</p>
+              <h1 className="text-6xl font-bold tracking-tighter">BEEF</h1>
+            </div>
+          </Link>
+          <AuthHeader />
         </div>
       </header>
 
