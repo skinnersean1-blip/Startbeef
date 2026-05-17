@@ -88,22 +88,14 @@ export default async function Home({
   ]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" style={{ background: "radial-gradient(ellipse 80% 50% at 0% 0%, rgba(196,140,60,0.18) 0%, transparent 60%)" }}>
       {/* Header */}
-      <header className="container-beef py-8" style={{ background: "radial-gradient(ellipse 60% 80% at 0% 50%, rgba(255,107,71,0.07) 0%, transparent 70%)" }}>
+      <header className="container-beef py-8">
         <div className="flex items-center justify-between gap-8">
           {/* Logo */}
           <div className="flex-shrink-0">
             <p className="section-label mb-1">PAID DISSENT PLATFORM</p>
-            <h1
-              className="text-8xl font-bold tracking-tighter leading-none"
-              style={{
-                background: "linear-gradient(160deg, #E8C9A1 0%, #D4A574 40%, #FF6B47 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
+            <h1 className="text-8xl font-bold tracking-tighter leading-none text-beef-text">
               BEEF
             </h1>
           </div>
