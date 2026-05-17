@@ -27,8 +27,6 @@ model User {
   challengesCreated  Beef[]    @relation("Challenger")
   challengesAccepted Beef[]    @relation("Responder")
   messages           Message[]
-  sidecards          Sidecard[]
-  ratings            Rating[]
   following          Follow[]  @relation("Follower")
   followers          Follow[]  @relation("Following")
   threadImports      ThreadImport[]
@@ -41,7 +39,7 @@ model Beef {
   id            String    @id @default(cuid())
 
   claim         String
-  categories    String    @default("[]") // JSON array: ["POLITICS","TECH"]
+  categories    String    @default("[]")
 
   challengerId  String
   challenger    User      @relation("Challenger", fields: [challengerId], references: [id])
@@ -52,22 +50,18 @@ model Beef {
   totalPot      Float
 
   startedAt     DateTime?
-  endsAt        DateTime? // 24 hours from when match is accepted
+  endsAt        DateTime?
 
   status        String    @default("OPEN") // OPEN, LIVE, JUDGING, COMPLETED
 
   winnerId      String?
-  judgeId       String?   // e.g. "claude", "grok", "chatgpt"
-  judgeName     String?   // e.g. "Claude", "Grok 3", "GPT-4o"
-  judgeDecision String?   // LLM verdict text
-  appealStatus  String?
+  judgeId       String?
+  judgeName     String?
+  judgeDecision String?
 
   viewCount     Int       @default(0)
-  sideVolume    Float     @default(0)
 
   messages      Message[]
-  sidecards     Sidecard[]
-  ratings       Rating[]
   threadImport  ThreadImport?
 
   createdAt     DateTime  @default(now())
@@ -86,44 +80,6 @@ model Message {
   content   String
 
   createdAt DateTime @default(now())
-}
-
-model Sidecard {
-  id            String    @id @default(cuid())
-
-  userId        String
-  user          User      @relation(fields: [userId], references: [id])
-
-  beefId        String
-  beef          Beef      @relation(fields: [beefId], references: [id], onDelete: Cascade)
-
-  predictedWinnerId String
-  stake         Float
-
-  payout        Float?
-  isPaid        Boolean   @default(false)
-
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-}
-
-model Rating {
-  id            String    @id @default(cuid())
-
-  beefId        String
-  beef          Beef      @relation(fields: [beefId], references: [id], onDelete: Cascade)
-
-  raterId       String
-  rater         User      @relation(fields: [raterId], references: [id])
-
-  ratedUserId   String
-
-  score         Int
-  comment       String?
-
-  createdAt     DateTime  @default(now())
-
-  @@unique([beefId, raterId])
 }
 
 model Follow {
@@ -161,12 +117,11 @@ model Transaction {
   id            String    @id @default(cuid())
 
   userId        String
-  type          String    // ANTE, SIDECARD, PAYOUT, REFUND
+  type          String    // ANTE, PAYOUT, REFUND
   amount        Float
   status        String    // PENDING, COMPLETED, FAILED
 
-  relatedBeefId     String?
-  relatedSidecardId String?
+  relatedBeefId String?
 
   paymentProvider String?
   paymentId       String?

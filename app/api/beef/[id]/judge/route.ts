@@ -72,17 +72,23 @@ export async function POST(
 
   const winnerId =
     result.winner === "CHALLENGER" ? beef.challengerId : beef.responderId;
+  const loserId =
+    result.winner === "CHALLENGER" ? beef.responderId : beef.challengerId;
 
-  await prisma.beef.update({
-    where: { id },
-    data: {
-      status: "COMPLETED",
-      winnerId: winnerId ?? null,
-      judgeId: result.judgeId,
-      judgeName: result.judgeName,
-      judgeDecision: result.decision,
-    },
-  });
+  await Promise.all([
+    prisma.beef.update({
+      where: { id },
+      data: {
+        status: "COMPLETED",
+        winnerId: winnerId ?? null,
+        judgeId: result.judgeId,
+        judgeName: result.judgeName,
+        judgeDecision: result.decision,
+      },
+    }),
+    winnerId && prisma.user.update({ where: { id: winnerId }, data: { wins: { increment: 1 } } }),
+    loserId  && prisma.user.update({ where: { id: loserId  }, data: { losses: { increment: 1 } } }),
+  ]);
 
   return NextResponse.json({
     winner: result.winner,
