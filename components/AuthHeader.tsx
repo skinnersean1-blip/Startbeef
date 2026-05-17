@@ -23,6 +23,11 @@ export function AuthHeader() {
         >
           <span className="text-sm text-muted">@{session.user.handle || session.user.username}</span>
         </Link>
+        <Link href="/beef/new">
+          <button className="btn-primary text-sm px-6 py-3">
+            START A BEEF
+          </button>
+        </Link>
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
           className="px-6 py-2 border border-beef-border rounded-full hover:border-beef-gold hover:text-beef-gold transition-colors text-sm"

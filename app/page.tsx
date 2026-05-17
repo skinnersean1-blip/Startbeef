@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AuthHeader } from "@/components/AuthHeader";
+import { HeroCTA } from "@/components/HeroCTA";
 
 export default function Home() {
   return (
@@ -23,10 +24,11 @@ export default function Home() {
           <h2 className="text-5xl font-bold mb-6 leading-tight">
             PUT MONEY WHERE YOUR MOUTH IS.
           </h2>
-          <p className="text-xl text-muted max-w-2xl">
+          <p className="text-xl text-muted max-w-2xl mb-10">
             No endless reply chains. Post a claim, price the conviction, and let the
             internet watch it burn in a controlled arena.
           </p>
+          <HeroCTA />
         </div>
       </section>
 
