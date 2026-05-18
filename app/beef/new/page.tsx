@@ -1,19 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 
 type Step = 1 | 2 | 3;
 
-const ANTE_OPTIONS = [
-  { amount: 10, label: "$10", desc: "Entry level" },
-  { amount: 25, label: "$25", desc: "Serious" },
-  { amount: 50, label: "$50", desc: "High stakes" },
-  { amount: 100, label: "$100", desc: "Put up or shut up" },
-] as const;
-
+const ANTE_MIN = 5;
+const ANTE_MAX = 500;
 const CLAIM_MAX = 500;
 
 export default function StartBeefPage() {
@@ -22,9 +17,19 @@ export default function StartBeefPage() {
 
   const [step, setStep] = useState<Step>(1);
   const [claim, setClaim] = useState("");
-  const [ante, setAnte] = useState<number>(0);
+  const [ante, setAnte] = useState<number>(ANTE_MIN);
+  const [bankBalance, setBankBalance] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (session?.user) {
+      fetch("/api/bank/balance")
+        .then((r) => r.ok ? r.json() : null)
+        .then((d) => d && setBankBalance(d.balance))
+        .catch(() => {});
+    }
+  }, [session]);
 
   if (status === "loading") {
     return (
@@ -52,7 +57,7 @@ export default function StartBeefPage() {
 
   const canAdvance = () => {
     if (step === 1) return claim.trim().length >= 10;
-    if (step === 2) return ante > 0;
+    if (step === 2) return ante >= ANTE_MIN && (bankBalance === null || bankBalance >= ante);
     return true;
   };
 
@@ -159,31 +164,74 @@ export default function StartBeefPage() {
               <p className="section-label mb-4">STEP 02 — SET YOUR ANTE</p>
               <h2 className="text-4xl font-bold mb-4">HOW MUCH IS YOUR CONVICTION WORTH?</h2>
               <p className="text-muted mb-8">
-                Your opponent must match this to accept. Winner takes the full pot.
+                Your opponent must match this to accept. Winner takes the full pot minus a 1.5% platform fee.
               </p>
-              <div className="grid grid-cols-2 gap-4">
-                {ANTE_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.amount}
-                    onClick={() => setAnte(opt.amount)}
-                    className={`card-beef border-2 text-center transition-all duration-200 py-8 ${
-                      ante === opt.amount
-                        ? "border-beef-gold bg-beef-bg-light"
-                        : "border-beef-border hover:border-beef-gold/50"
-                    }`}
-                  >
-                    <p className="text-5xl font-bold mb-2">{opt.label}</p>
-                    <p className={`text-sm font-bold tracking-widest ${ante === opt.amount ? "text-beef-gold" : "text-muted"}`}>
-                      {opt.desc.toUpperCase()}
-                    </p>
-                  </button>
-                ))}
-              </div>
-              {ante > 0 && (
-                <div className="card-beef mt-6 text-center">
-                  <p className="section-label mb-1">TOTAL POT IF MATCHED</p>
-                  <p className="text-4xl font-bold text-beef-gold">${ante * 2}</p>
+
+              <div className="card-beef mb-6">
+                {/* Big dollar display */}
+                <div className="text-center mb-8">
+                  <p className="text-7xl font-bold text-beef-gold">${ante}</p>
+                  <p className="text-beef-text-muted text-sm mt-2 tracking-widest">YOUR ANTE</p>
                 </div>
+
+                {/* Slider */}
+                <div className="px-2">
+                  <input
+                    type="range"
+                    min={ANTE_MIN}
+                    max={ANTE_MAX}
+                    step={5}
+                    value={ante}
+                    onChange={(e) => setAnte(Number(e.target.value))}
+                    className="w-full accent-beef-gold cursor-pointer"
+                  />
+                  <div className="flex justify-between text-xs text-beef-text-muted mt-1">
+                    <span>${ANTE_MIN}</span>
+                    <span>${ANTE_MAX}</span>
+                  </div>
+                </div>
+
+                {/* Quick-pick chips */}
+                <div className="flex gap-2 justify-center mt-6 flex-wrap">
+                  {[10, 25, 50, 100, 250, 500].map((v) => (
+                    <button
+                      key={v}
+                      onClick={() => setAnte(v)}
+                      className={`px-4 py-1.5 rounded-full text-sm font-bold border transition-all duration-150 ${
+                        ante === v
+                          ? "border-beef-gold text-beef-gold bg-beef-gold/10"
+                          : "border-beef-border text-beef-text-muted hover:border-beef-gold/50"
+                      }`}
+                    >
+                      ${v}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Pot preview */}
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="card-beef text-center">
+                  <p className="section-label mb-1">TOTAL POT</p>
+                  <p className="text-3xl font-bold text-beef-gold">${ante * 2}</p>
+                </div>
+                <div className="card-beef text-center">
+                  <p className="section-label mb-1">WINNER TAKES</p>
+                  <p className="text-3xl font-bold">${(ante * 2 * 0.985).toFixed(2)}</p>
+                </div>
+              </div>
+
+              {/* Balance warning */}
+              {bankBalance !== null && bankBalance < ante && (
+                <div className="bg-red-900/20 border border-red-500 text-red-400 px-4 py-3 rounded-lg text-sm">
+                  Insufficient balance. You have ${bankBalance.toFixed(2)} in your Bank.{" "}
+                  <Link href="/bank" className="underline hover:text-red-300">Deposit funds →</Link>
+                </div>
+              )}
+              {bankBalance !== null && bankBalance >= ante && (
+                <p className="text-xs text-beef-text-muted text-center">
+                  Bank balance: ${bankBalance.toFixed(2)} · ${ante} will be locked when posted
+                </p>
               )}
             </div>
           )}
@@ -214,8 +262,9 @@ export default function StartBeefPage() {
                 <p className="section-label mb-2">WHAT HAPPENS NEXT</p>
                 <p className="text-muted text-sm">
                   Your beef goes live as an open challenge. When someone matches your ${ante},
-                  the 24-hour clock starts and it&apos;s on — free-flowing thread, no rounds,
+                  the 24-hour clock starts — free-flowing thread, no rounds,
                   last convincing word wins. AI judges the full thread when time expires.
+                  Winner takes <strong className="text-beef-gold">${(ante * 2 * 0.985).toFixed(2)}</strong> after the 1.5% platform fee.
                 </p>
               </div>
 
