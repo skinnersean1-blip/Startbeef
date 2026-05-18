@@ -157,102 +157,117 @@ export default async function Home({
               <button className="btn-primary">START A BEEF</button>
             </Link>
           </div>
-        ) : (
-          <div className="space-y-3">
-            {feed.map((beef) => {
-              const categories: string[] = JSON.parse(beef.categories || "[]");
-              const isLive = beef.status === "LIVE";
+        ) : (() => {
+          const live = feed.filter((b) => b.status === "LIVE");
+          const open = feed.filter((b) => b.status !== "LIVE");
 
-              return (
-                <Link key={beef.id} href={`/beef/${beef.id}`}>
-                  <div
-                    className={`card-beef hover:border-beef-gold/60 transition-all duration-150 cursor-pointer ${
-                      isLive ? "border-beef-orange/40 hover:border-beef-orange" : ""
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-6">
-                      <div className="flex-1 min-w-0">
-                        {/* Status + categories */}
-                        <div className="flex items-center gap-2 mb-3 flex-wrap">
-                          {isLive && (
-                            <span className="text-xs font-bold text-beef-orange tracking-widest">
-                              ● LIVE
-                            </span>
-                          )}
-                          {categories.map((cat) => (
-                            <span
-                              key={cat}
-                              className="text-xs text-beef-gold bg-beef-gold/10 px-2 py-0.5 rounded-full font-bold tracking-widest"
-                            >
-                              {cat}
-                            </span>
-                          ))}
-                        </div>
+          const BeefCard = ({ beef }: { beef: typeof feed[0] }) => {
+            const categories: string[] = JSON.parse(beef.categories || "[]");
+            const isLive = beef.status === "LIVE";
+            const challengerName = (beef as any).challengerIsAnon || beef.challenger.isAnonymous
+              ? (beef.challenger.anonHandle ?? "GHOST")
+              : `@${beef.challenger.handle || beef.challenger.username}`;
+            const responderName = beef.responder
+              ? ((beef as any).responderIsAnon || beef.responder.isAnonymous
+                  ? (beef.responder.anonHandle ?? "GHOST")
+                  : `@${beef.responder.handle || beef.responder.username}`)
+              : null;
 
-                        {/* Claim */}
-                        <p className="text-lg font-bold leading-snug mb-3">
-                          &ldquo;
-                          {beef.claim.length > 140
-                            ? beef.claim.slice(0, 140) + "…"
-                            : beef.claim}
-                          &rdquo;
-                        </p>
-
-                        {/* Participants */}
-                        <div className="flex items-center gap-2 text-sm text-beef-text-muted">
-                          <span className="text-beef-gold font-bold">
-                            {(beef as any).challengerIsAnon || beef.challenger.isAnonymous
-                              ? (beef.challenger.anonHandle ?? "GHOST")
-                              : `@${beef.challenger.handle || beef.challenger.username}`}
+            return (
+              <Link key={beef.id} href={`/beef/${beef.id}`}>
+                <div className={`${isLive ? "card-beef-record-live" : "card-beef-record"} hover:border-beef-gold/60 transition-all duration-150 cursor-pointer group`}>
+                  <div className="flex items-start justify-between gap-6">
+                    <div className="flex-1 min-w-0">
+                      {/* Status + categories */}
+                      <div className="flex items-center gap-2 mb-3 flex-wrap">
+                        {isLive && (
+                          <span className="text-xs font-bold text-beef-orange tracking-widest font-sans">
+                            ● LIVE
                           </span>
-                          {beef.responder && (
-                            <>
-                              <span className="text-beef-border font-bold">vs</span>
-                              <span>
-                                {(beef as any).responderIsAnon || beef.responder.isAnonymous
-                                  ? (beef.responder.anonHandle ?? "GHOST")
-                                  : `@${beef.responder.handle || beef.responder.username}`}
-                              </span>
-                            </>
-                          )}
-                          {!beef.responder && (
-                            <span className="text-xs px-2 py-0.5 rounded-full border border-dashed border-beef-border ml-1">
-                              OPEN SEAT
-                            </span>
-                          )}
-                        </div>
+                        )}
+                        {categories.map((cat) => (
+                          <span
+                            key={cat}
+                            className="text-xs text-beef-gold bg-beef-gold/10 px-2 py-0.5 font-bold tracking-widest font-sans"
+                          >
+                            [{cat}]
+                          </span>
+                        ))}
                       </div>
 
-                      {/* Right meta */}
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-2xl font-bold text-beef-gold">
-                          ${beef.totalPot}
-                        </p>
-                        <p className="text-xs text-beef-text-muted mt-0.5">pot</p>
-                        {isLive && beef.endsAt && (
-                          <p className="text-xs text-beef-orange font-bold mt-2">
-                            {timeLeft(beef.endsAt)}
-                          </p>
+                      {/* Claim */}
+                      <p className="text-lg font-bold leading-snug mb-3">
+                        &ldquo;
+                        {beef.claim.length > 140 ? beef.claim.slice(0, 140) + "…" : beef.claim}
+                        &rdquo;
+                      </p>
+
+                      {/* Participants */}
+                      <div className="flex items-center gap-2 text-sm text-beef-text-muted">
+                        <span className="text-beef-gold font-bold">{challengerName}</span>
+                        {responderName && (
+                          <>
+                            <span className="font-bold">vs</span>
+                            <span>{responderName}</span>
+                          </>
                         )}
-                        {!isLive && (
-                          <p className="text-xs text-beef-text-muted mt-2">
-                            {timeAgo(beef.createdAt)}
-                          </p>
-                        )}
-                        {beef._count.messages > 0 && (
-                          <p className="text-xs text-beef-text-muted mt-1">
-                            {beef._count.messages} msg
-                            {beef._count.messages !== 1 ? "s" : ""}
-                          </p>
+                        {!beef.responder && (
+                          <span className="text-xs px-2 py-0.5 border border-dashed border-beef-border ml-1 font-sans">
+                            OPEN SEAT
+                          </span>
                         )}
                       </div>
                     </div>
+
+                    {/* Right meta */}
+                    <div className="text-right flex-shrink-0 font-sans">
+                      <p className="text-2xl font-bold text-beef-gold">${beef.totalPot}</p>
+                      <p className="text-xs text-beef-text-muted mt-0.5">pot</p>
+                      {isLive && beef.endsAt && (
+                        <p className="text-xs text-beef-orange font-bold mt-2">{timeLeft(beef.endsAt)}</p>
+                      )}
+                      {!isLive && (
+                        <p className="text-xs text-beef-text-muted mt-2">{timeAgo(beef.createdAt)}</p>
+                      )}
+                      {beef._count.messages > 0 && (
+                        <p className="text-xs text-beef-text-muted mt-1">
+                          {beef._count.messages} msg{beef._count.messages !== 1 ? "s" : ""}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
+                </div>
+              </Link>
+            );
+          };
+
+          return (
+            <div className="space-y-8">
+              {live.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-4 mb-3">
+                    <p className="section-label text-beef-orange">● LIVE BEEFS</p>
+                    <div className="flex-1 border-t border-beef-orange/20" />
+                  </div>
+                  <div className="space-y-px">
+                    {live.map((beef) => <BeefCard key={beef.id} beef={beef} />)}
+                  </div>
+                </div>
+              )}
+              {open.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-4 mb-3">
+                    <p className="section-label">OPEN CHALLENGES</p>
+                    <div className="flex-1 border-t border-beef-border/40" />
+                  </div>
+                  <div className="space-y-px">
+                    {open.map((beef) => <BeefCard key={beef.id} beef={beef} />)}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </section>
 
       <footer className="container-beef py-10 border-t border-beef-border">
