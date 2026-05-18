@@ -88,7 +88,7 @@ export default async function Home({
   ]);
 
   return (
-    <div className="min-h-screen" style={{ background: "radial-gradient(ellipse 100% 80% at 80% 100%, rgba(196,140,60,0.22) 0%, rgba(196,140,60,0.08) 40%, transparent 70%)" }}>
+    <div className="min-h-screen" style={{ background: "radial-gradient(ellipse 160% 120% at 85% 95%, rgba(212,165,116,0.38) 0%, rgba(196,140,60,0.18) 35%, rgba(196,140,60,0.06) 65%, transparent 100%)" }}>
       {/* Header */}
       <header className="container-beef py-8">
         <div className="flex items-center justify-between gap-8">
