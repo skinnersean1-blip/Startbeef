@@ -254,7 +254,7 @@ export default async function Home({
       <footer className="container-beef py-10 border-t border-beef-border">
         <div className="flex justify-between items-center">
           <p className="text-beef-text-muted text-xs tracking-widest">
-            © 2026 BEEF. PUT MONEY WHERE YOUR MOUTH IS.
+            © 2026 BEEF. TALK SHIT, MAKE MONEY.
           </p>
           <div className="flex gap-6 text-xs">
             <Link
