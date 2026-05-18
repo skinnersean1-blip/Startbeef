@@ -90,22 +90,30 @@ function BankContent() {
     setMessage(null);
     setDepositLoading(true);
 
-    const res = await fetch("/api/bank/deposit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: parseFloat(depositAmount) }),
-    });
+    try {
+      const res = await fetch("/api/bank/deposit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: parseFloat(depositAmount) }),
+      });
 
-    const data = await res.json();
-    setDepositLoading(false);
+      const data = await res.json();
+      setDepositLoading(false);
 
-    if (!res.ok) {
-      setMessage({ type: "error", text: data.error });
-      return;
-    }
+      if (!res.ok) {
+        setMessage({ type: "error", text: data.error || "Something went wrong" });
+        return;
+      }
 
-    if (data.url) {
+      if (!data.url) {
+        setMessage({ type: "error", text: "No checkout URL returned — check Stripe config" });
+        return;
+      }
+
       window.location.href = data.url;
+    } catch {
+      setDepositLoading(false);
+      setMessage({ type: "error", text: "Could not reach the server. Try again." });
     }
   };
 
