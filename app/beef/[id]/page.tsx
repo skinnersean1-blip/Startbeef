@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { AuthHeader } from "@/components/AuthHeader";
 import { AcceptBeefButton } from "@/components/AcceptBeefButton";
 import { BeefThread } from "@/components/BeefThread";
+import { BackButton } from "@/components/BackButton";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -68,6 +69,10 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
 
       <div className="container-beef pb-20">
         <div className="max-w-3xl mx-auto">
+
+          <div className="mb-6">
+            <BackButton />
+          </div>
 
           {/* Status + Date */}
           <div className="flex items-center justify-between mb-6">

@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { BackButton } from "@/components/BackButton";
 
 function SignInForm() {
   const router = useRouter();
@@ -125,6 +126,7 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
+        <div className="mb-6"><BackButton /></div>
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold mb-2">BEEF</h1>
           <p className="section-label">WELCOME BACK</p>

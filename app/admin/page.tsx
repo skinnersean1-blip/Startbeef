@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { BackButton } from "@/components/BackButton";
 
 type Withdrawal = {
   id: string;
@@ -83,6 +84,8 @@ export default function AdminPage() {
 
       <div className="container-beef pb-20">
         <div className="max-w-3xl mx-auto">
+
+          <div className="mb-6"><BackButton /></div>
 
           {message && (
             <div className={`mb-6 px-4 py-3 rounded-lg border text-sm ${

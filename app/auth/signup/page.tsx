@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { BackButton } from "@/components/BackButton";
 
 type Path = "FIGHTER" | "GHOST" | null;
 
@@ -80,6 +81,7 @@ export default function SignUpPage() {
     return (
       <div className="min-h-screen flex items-center justify-center py-12 px-4">
         <div className="max-w-2xl w-full">
+          <div className="mb-6"><BackButton /></div>
           <div className="text-center mb-10">
             <h1 className="text-5xl font-bold mb-2">BEEF</h1>
             <p className="section-label">CHOOSE YOUR IDENTITY</p>

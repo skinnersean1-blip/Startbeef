@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { BackButton } from "@/components/BackButton";
 
 type Step = 1 | 2 | 3;
 
@@ -104,8 +105,11 @@ export default function StartBeefPage() {
         </div>
       </header>
 
-      {/* Progress */}
+      {/* Back + Progress */}
       <div className="container-beef pb-8">
+        <div className="mb-4">
+          <BackButton />
+        </div>
         <div className="flex items-center gap-2 mb-2">
           {stepLabels.map((label, i) => (
             <div key={label} className="flex flex-col items-center gap-1 flex-1">

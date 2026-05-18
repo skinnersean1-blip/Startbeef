@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { BackButton } from "@/components/BackButton";
 
 type Transaction = {
   id: string;
@@ -169,6 +170,7 @@ function BankContent() {
       </header>
 
       <div className="container-beef pb-20">
+        <div className="mb-6"><BackButton /></div>
         <div className="max-w-2xl mx-auto">
 
           <div className="mb-8">

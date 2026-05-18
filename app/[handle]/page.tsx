@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { AuthHeader } from "@/components/AuthHeader";
+import { BackButton } from "@/components/BackButton";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -74,6 +75,8 @@ export default async function ProfilePage({
 
       <div className="container-beef pb-20">
         <div className="max-w-3xl mx-auto">
+
+          <div className="mb-6"><BackButton /></div>
 
           {/* Profile header */}
           <div className="card-beef mb-6">
