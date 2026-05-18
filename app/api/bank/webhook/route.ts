@@ -28,10 +28,19 @@ export async function POST(req: NextRequest) {
     if (session.metadata?.type === "DEPOSIT" && session.payment_status === "paid") {
       const userId = session.metadata.userId;
       const amount = parseFloat(session.metadata.amount);
+      const paymentId = session.payment_intent as string;
 
       if (!userId || isNaN(amount)) {
         console.error("Invalid deposit metadata:", session.metadata);
         return NextResponse.json({ error: "Invalid metadata" }, { status: 400 });
+      }
+
+      // Idempotency — ignore duplicate webhook deliveries for the same payment
+      const existing = await prisma.transaction.findFirst({
+        where: { paymentId, type: "DEPOSIT" },
+      });
+      if (existing) {
+        return NextResponse.json({ received: true, duplicate: true });
       }
 
       await prisma.$transaction([
@@ -46,7 +55,7 @@ export async function POST(req: NextRequest) {
             amount,
             status: "COMPLETED",
             paymentProvider: "stripe",
-            paymentId: session.payment_intent as string,
+            paymentId,
           },
         }),
       ]);

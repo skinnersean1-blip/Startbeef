@@ -48,5 +48,16 @@ export async function POST(req: NextRequest) {
     }),
   ]);
 
+  // Notify admin via webhook if configured
+  if (process.env.ADMIN_NOTIFY_URL) {
+    fetch(process.env.ADMIN_NOTIFY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: `💸 New withdrawal request: $${dollars} from user ${session.user.id}. Check /admin to process.`,
+      }),
+    }).catch(() => {});
+  }
+
   return NextResponse.json({ success: true, message: "Withdrawal requested. Funds will arrive within 2–3 business days." });
 }
