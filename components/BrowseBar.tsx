@@ -11,6 +11,18 @@ const CATEGORIES = [
   { key: "CALLOUTS", label: "CALLOUTS" },
 ];
 
+const HOT_TOPICS = [
+  "Mid Term Elections",
+  "Iran War",
+  "Donald Trump",
+  "Joe Biden",
+  "Ukraine War",
+  "Strait of Hormuz",
+  "Foreign Policy",
+  "Abortion",
+  "SCOTUS",
+];
+
 const SORTS = [
   { key: "hot", label: "HOT POT" },
   { key: "active", label: "MOST ACTIVE" },
@@ -32,7 +44,9 @@ export function BrowseBar() {
 
   return (
     <div className="border-y border-beef-border py-4">
-      <div className="container-beef">
+      <div className="container-beef space-y-3">
+
+        {/* Categories + Sort */}
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
           <div className="flex items-center gap-3 flex-wrap">
             <span className="section-label">BROWSE</span>
@@ -68,6 +82,25 @@ export function BrowseBar() {
             ))}
           </div>
         </div>
+
+        {/* Hot topics */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="section-label">🔥 HOT</span>
+          {HOT_TOPICS.map((topic) => (
+            <button
+              key={topic}
+              onClick={() => update("cat", topic)}
+              className={`text-xs font-bold px-3 py-1 rounded-full border transition-all duration-150 ${
+                category === topic
+                  ? "border-beef-orange bg-beef-orange/10 text-beef-orange"
+                  : "border-beef-border/60 text-beef-text-muted hover:border-beef-orange/50 hover:text-beef-text"
+              }`}
+            >
+              {topic}
+            </button>
+          ))}
+        </div>
+
       </div>
     </div>
   );

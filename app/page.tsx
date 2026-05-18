@@ -88,13 +88,13 @@ export default async function Home({
   ]);
 
   return (
-    <div className="min-h-screen" style={{ background: "radial-gradient(ellipse 80% 50% at 0% 0%, rgba(196,140,60,0.18) 0%, transparent 60%)" }}>
+    <div className="min-h-screen" style={{ background: "radial-gradient(ellipse 100% 80% at 80% 100%, rgba(196,140,60,0.22) 0%, rgba(196,140,60,0.08) 40%, transparent 70%)" }}>
       {/* Header */}
       <header className="container-beef py-8">
         <div className="flex items-center justify-between gap-8">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <p className="section-label mb-1">PAID DISSENT PLATFORM</p>
+            <p className="section-label mb-1">TALK SHIT, MAKE MONEY</p>
             <h1 className="text-8xl font-bold tracking-tighter leading-none text-beef-text">
               BEEF
             </h1>
@@ -103,11 +103,10 @@ export default async function Home({
           {/* Hero copy */}
           <div className="flex-1 max-w-xl">
             <h2 className="text-2xl font-bold leading-tight mb-2">
-              PUT MONEY WHERE YOUR MOUTH IS.
+              OPINION MARKET
             </h2>
             <p className="text-beef-text-muted text-sm leading-relaxed">
-              No endless reply chains. Post a claim, price the conviction, and let
-              the internet watch it burn in a controlled arena.
+              Speak your mind. Fight your corner. Get paid — or watch it all go down.
             </p>
           </div>
 
