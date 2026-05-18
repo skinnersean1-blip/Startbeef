@@ -21,6 +21,7 @@ model User {
   wins          Int       @default(0)
   losses        Int       @default(0)
   totalEarnings Float     @default(0)
+  bankBalance   Float     @default(0)
 
   isAnonymous   Boolean   @default(false)
 
@@ -117,7 +118,7 @@ model Transaction {
   id            String    @id @default(cuid())
 
   userId        String
-  type          String    // ANTE, PAYOUT, REFUND
+  type          String    // DEPOSIT, WITHDRAWAL, ANTE, PAYOUT, REFUND
   amount        Float
   status        String    // PENDING, COMPLETED, FAILED
 

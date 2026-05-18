@@ -3,13 +3,14 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { categorizeClaim } from "@/lib/categorize";
+import { ANTE_MIN, ANTE_MAX } from "@/lib/stripe";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
 const createBeefSchema = z.object({
   claim: z.string().min(10, "Claim must be at least 10 characters").max(500, "Claim must be under 500 characters"),
-  ante: z.number().refine((v) => [10, 25, 50, 100].includes(v), "Invalid ante amount"),
+  ante: z.number().min(ANTE_MIN, `Minimum ante is $${ANTE_MIN}`).max(ANTE_MAX, `Maximum ante is $${ANTE_MAX}`),
 });
 
 export async function GET(req: NextRequest) {
@@ -49,17 +50,50 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { claim, ante } = createBeefSchema.parse(body);
 
+    // Check challenger has enough in bank
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { bankBalance: true },
+    });
+    if (!user || user.bankBalance < ante) {
+      return NextResponse.json(
+        { error: `Insufficient bank balance. You need $${ante} to post this beef.` },
+        { status: 400 }
+      );
+    }
+
     const categories = await categorizeClaim(claim);
 
-    const beef = await prisma.beef.create({
+    const [beef] = await prisma.$transaction([
+      prisma.beef.create({
+        data: {
+          claim,
+          categories: JSON.stringify(categories),
+          ante,
+          totalPot: ante,
+          status: "OPEN",
+          challengerId: session.user.id,
+        },
+      }),
+      // Lock the ante from the challenger's balance
+      prisma.user.update({
+        where: { id: session.user.id },
+        data: { bankBalance: { decrement: ante } },
+      }),
+    ]);
+
+    await prisma.transaction.create({
       data: {
-        claim,
-        categories: JSON.stringify(categories),
-        ante,
-        totalPot: ante,
-        status: "OPEN",
-        challengerId: session.user.id,
+        userId: session.user.id,
+        type: "ANTE",
+        amount: ante,
+        status: "COMPLETED",
+        relatedBeefId: beef.id,
       },
+    });
+
+    const beefWithSelect = await prisma.beef.findUnique({
+      where: { id: beef.id },
       select: {
         id: true,
         claim: true,
@@ -70,7 +104,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ beef }, { status: 201 });
+    return NextResponse.json({ beef: beefWithSelect }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues[0].message }, { status: 400 });

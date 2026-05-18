@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { judgeBeef, type JudgeMessage } from "@/lib/judges";
+import { BEEF_FEE_RATE } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
 
@@ -75,8 +76,13 @@ export async function POST(
   const loserId =
     result.winner === "CHALLENGER" ? beef.responderId : beef.challengerId;
 
-  await Promise.all([
-    prisma.beef.update({
+  const pot = beef.totalPot;
+  const beefFee = parseFloat((pot * BEEF_FEE_RATE).toFixed(2));
+  const winnerPayout = parseFloat((pot - beefFee).toFixed(2));
+
+  // Run all DB writes in a single transaction via interactive client
+  await prisma.$transaction(async (tx) => {
+    await tx.beef.update({
       where: { id },
       data: {
         status: "COMPLETED",
@@ -85,15 +91,38 @@ export async function POST(
         judgeName: result.judgeName,
         judgeDecision: result.decision,
       },
-    }),
-    winnerId && prisma.user.update({ where: { id: winnerId }, data: { wins: { increment: 1 } } }),
-    loserId  && prisma.user.update({ where: { id: loserId  }, data: { losses: { increment: 1 } } }),
-  ]);
+    });
+
+    if (winnerId) {
+      await tx.user.update({
+        where: { id: winnerId },
+        data: {
+          wins: { increment: 1 },
+          bankBalance: { increment: winnerPayout },
+          totalEarnings: { increment: winnerPayout },
+        },
+      });
+      await tx.transaction.create({
+        data: {
+          userId: winnerId,
+          type: "PAYOUT",
+          amount: winnerPayout,
+          status: "COMPLETED",
+          relatedBeefId: id,
+        },
+      });
+    }
+
+    if (loserId) {
+      await tx.user.update({ where: { id: loserId }, data: { losses: { increment: 1 } } });
+    }
+  });
 
   return NextResponse.json({
     winner: result.winner,
     judgeId: result.judgeId,
     judgeName: result.judgeName,
     decision: result.decision,
+    payout: winnerPayout,
   });
 }

@@ -23,6 +23,12 @@ export function AuthHeader() {
         >
           <span className="text-sm text-muted">@{session.user.handle || session.user.username}</span>
         </Link>
+        <Link
+          href="/bank"
+          className="px-4 py-2 text-sm text-beef-gold hover:text-beef-gold-light transition-colors font-medium"
+        >
+          BANK
+        </Link>
         <Link href="/beef/new">
           <button className="btn-primary text-sm px-6 py-3">
             START A BEEF
