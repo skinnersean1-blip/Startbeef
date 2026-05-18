@@ -9,8 +9,9 @@ import { z } from "zod";
 export const dynamic = "force-dynamic";
 
 const createBeefSchema = z.object({
-  claim: z.string().min(10, "Claim must be at least 10 characters").max(500, "Claim must be under 500 characters"),
-  ante: z.number().min(ANTE_MIN, `Minimum ante is $${ANTE_MIN}`).max(ANTE_MAX, `Maximum ante is $${ANTE_MAX}`),
+  claim:            z.string().min(10, "Claim must be at least 10 characters").max(500, "Claim must be under 500 characters"),
+  ante:             z.number().min(ANTE_MIN, `Minimum ante is $${ANTE_MIN}`).max(ANTE_MAX, `Maximum ante is $${ANTE_MAX}`),
+  challengerIsAnon: z.boolean().default(false),
 });
 
 export async function GET(req: NextRequest) {
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { claim, ante } = createBeefSchema.parse(body);
+    const { claim, ante, challengerIsAnon } = createBeefSchema.parse(body);
 
     // Check challenger has enough in bank
     const user = await prisma.user.findUnique({
@@ -73,6 +74,7 @@ export async function POST(req: NextRequest) {
           totalPot: ante,
           status: "OPEN",
           challengerId: session.user.id,
+          challengerIsAnon,
         },
       }),
       // Lock the ante from the challenger's balance

@@ -24,6 +24,8 @@ model User {
   bankBalance   Float     @default(0)
 
   isAnonymous   Boolean   @default(false)
+  anonHandle    String?   @unique
+  dateOfBirth   DateTime?
 
   challengesCreated  Beef[]    @relation("Challenger")
   challengesAccepted Beef[]    @relation("Responder")
@@ -54,6 +56,9 @@ model Beef {
   endsAt        DateTime?
 
   status        String    @default("OPEN") // OPEN, LIVE, JUDGING, COMPLETED
+
+  challengerIsAnon Boolean @default(false)
+  responderIsAnon  Boolean @default(false)
 
   winnerId      String?
   judgeId       String?

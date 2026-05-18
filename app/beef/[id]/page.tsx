@@ -23,10 +23,10 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
   const beef = await prisma.beef.findUnique({
     where: { id },
     include: {
-      challenger: { select: { id: true, username: true, handle: true, wins: true, losses: true } },
-      responder:  { select: { id: true, username: true, handle: true, wins: true, losses: true } },
+      challenger: { select: { id: true, username: true, handle: true, anonHandle: true, isAnonymous: true, wins: true, losses: true } },
+      responder:  { select: { id: true, username: true, handle: true, anonHandle: true, isAnonymous: true, wins: true, losses: true } },
       messages: {
-        include: { user: { select: { id: true, handle: true, username: true } } },
+        include: { user: { select: { id: true, handle: true, username: true, anonHandle: true, isAnonymous: true } } },
         orderBy: { createdAt: "asc" },
       },
     },
@@ -36,6 +36,17 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
 
   const categories: string[] = JSON.parse(beef.categories || "[]");
   const status = STATUS_LABELS[beef.status] ?? { label: beef.status, color: "text-muted" };
+
+  const displayName = (
+    user: { handle: string | null; username: string; isAnonymous: boolean; anonHandle: string | null },
+    isAnonBeef: boolean
+  ) => (user.isAnonymous || isAnonBeef) ? (user.anonHandle ?? "GHOST") : (user.handle || user.username);
+
+  const challengerDisplay = displayName(beef.challenger, beef.challengerIsAnon);
+  const responderDisplay  = beef.responder ? displayName(beef.responder, beef.responderIsAnon) : null;
+  const challengerIsAnon  = beef.challenger.isAnonymous || beef.challengerIsAnon;
+  const responderIsAnon   = beef.responder ? (beef.responder.isAnonymous || beef.responderIsAnon) : false;
+
   const isChallenger = session?.user?.id === beef.challengerId;
   const isResponder  = session?.user?.id === beef.responderId;
   const isParticipant = isChallenger || isResponder;
@@ -89,11 +100,15 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="card-beef text-center">
               <p className="section-label mb-3">CHALLENGER</p>
-              <Link href={`/@${beef.challenger.handle || beef.challenger.username}`}>
-                <p className="text-xl font-bold hover:text-beef-gold transition-colors">
-                  @{beef.challenger.handle || beef.challenger.username}
-                </p>
-              </Link>
+              {challengerIsAnon ? (
+                <p className="text-xl font-bold text-beef-text-muted">{challengerDisplay}</p>
+              ) : (
+                <Link href={`/@${beef.challenger.handle || beef.challenger.username}`}>
+                  <p className="text-xl font-bold hover:text-beef-gold transition-colors">
+                    @{challengerDisplay}
+                  </p>
+                </Link>
+              )}
               <p className="text-muted text-sm mt-1">{beef.challenger.wins}W — {beef.challenger.losses}L</p>
             </div>
 
@@ -101,11 +116,15 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
               <p className="section-label mb-3">RESPONDER</p>
               {beef.responder ? (
                 <>
-                  <Link href={`/@${beef.responder.handle || beef.responder.username}`}>
-                    <p className="text-xl font-bold hover:text-beef-gold transition-colors">
-                      @{beef.responder.handle || beef.responder.username}
-                    </p>
-                  </Link>
+                  {responderIsAnon ? (
+                    <p className="text-xl font-bold text-beef-text-muted">{responderDisplay}</p>
+                  ) : (
+                    <Link href={`/@${beef.responder.handle || beef.responder.username}`}>
+                      <p className="text-xl font-bold hover:text-beef-gold transition-colors">
+                        @{responderDisplay}
+                      </p>
+                    </Link>
+                  )}
                   <p className="text-muted text-sm mt-1">{beef.responder.wins}W — {beef.responder.losses}L</p>
                 </>
               ) : (
@@ -166,16 +185,18 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
                 id: m.id,
                 content: m.content,
                 createdAt: m.createdAt.toISOString(),
-                user: { id: m.user.id, handle: m.user.handle, username: m.user.username },
+                user: { id: m.user.id, handle: m.user.handle, username: m.user.username, anonHandle: m.user.anonHandle, isAnonymous: m.user.isAnonymous },
               }))}
               endsAt={beef.endsAt?.toISOString() ?? null}
               status={beef.status}
               isParticipant={isParticipant}
               currentUserId={session?.user?.id ?? null}
               challengerId={beef.challengerId}
-              challengerHandle={beef.challenger.handle || beef.challenger.username}
+              challengerHandle={challengerDisplay}
+              challengerIsAnon={challengerIsAnon}
               responderId={beef.responderId ?? null}
-              responderHandle={beef.responder ? (beef.responder.handle || beef.responder.username) : null}
+              responderHandle={responderDisplay}
+              responderIsAnon={responderIsAnon}
               judgeId={beef.judgeId ?? null}
               judgeName={beef.judgeName ?? null}
               judgeDecision={beef.judgeDecision ?? null}

@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
@@ -15,6 +15,8 @@ export async function POST(
   }
 
   const { id } = await params;
+  const body = await req.json().catch(() => ({}));
+  const responderIsAnon = Boolean(body.responderIsAnon);
   const beef = await prisma.beef.findUnique({ where: { id } });
 
   if (!beef) return NextResponse.json({ error: "Beef not found" }, { status: 404 });
@@ -42,6 +44,7 @@ export async function POST(
       where: { id },
       data: {
         responderId: session.user.id,
+        responderIsAnon,
         status: "LIVE",
         totalPot: beef.ante * 2,
         startedAt: now,

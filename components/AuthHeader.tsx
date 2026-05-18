@@ -22,7 +22,11 @@ export function AuthHeader() {
           href={`/@${session.user.handle || session.user.username}`}
           className="flex items-center gap-2 px-4 py-2 hover:text-beef-gold transition-colors"
         >
-          <span className="text-sm text-muted">@{session.user.handle || session.user.username}</span>
+          <span className="text-sm text-muted">
+            {session.user.isAnonymous
+              ? (session.user.anonHandle ?? "GHOST")
+              : `@${session.user.handle || session.user.username}`}
+          </span>
         </Link>
         <BankBadge />
         <Link href="/beef/new">

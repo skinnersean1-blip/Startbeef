@@ -18,6 +18,7 @@ export default function StartBeefPage() {
   const [step, setStep] = useState<Step>(1);
   const [claim, setClaim] = useState("");
   const [ante, setAnte] = useState<number>(ANTE_MIN);
+  const [goAnon, setGoAnon] = useState(false);
   const [bankBalance, setBankBalance] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -69,7 +70,7 @@ export default function StartBeefPage() {
       const res = await fetch("/api/beef", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ claim, ante }),
+        body: JSON.stringify({ claim, ante, challengerIsAnon: goAnon }),
       });
 
       const data = await res.json();
@@ -267,6 +268,29 @@ export default function StartBeefPage() {
                   Winner takes <strong className="text-beef-gold">${(ante * 2 * 0.985).toFixed(2)}</strong> after the 1.5% platform fee.
                 </p>
               </div>
+
+              {/* Anon toggle — only for handled (non-ghost) users */}
+              {!session.user.isAnonymous && (
+                <button
+                  type="button"
+                  onClick={() => setGoAnon((v) => !v)}
+                  className={`w-full flex items-center justify-between px-5 py-4 rounded-lg border-2 transition-all duration-200 mb-6 ${
+                    goAnon
+                      ? "border-beef-orange bg-beef-orange/10"
+                      : "border-beef-border hover:border-beef-border/80"
+                  }`}
+                >
+                  <div className="text-left">
+                    <p className="font-bold text-sm">{goAnon ? "👻 POSTING AS GHOST" : "POST UNDER YOUR HANDLE"}</p>
+                    <p className="text-xs text-beef-text-muted mt-0.5">
+                      {goAnon
+                        ? "Your codename will be shown — your identity stays hidden"
+                        : "Tap to hide your identity for this beef"}
+                    </p>
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 ${goAnon ? "bg-beef-orange border-beef-orange" : "border-beef-border"}`} />
+                </button>
+              )}
 
               {error && (
                 <div className="bg-red-900/20 border border-red-500 text-red-500 px-4 py-3 rounded-lg mb-6">

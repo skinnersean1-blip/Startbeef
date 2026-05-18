@@ -7,7 +7,7 @@ interface Message {
   id: string;
   content: string;
   createdAt: string;
-  user: { id: string; handle: string | null; username: string };
+  user: { id: string; handle: string | null; username: string; anonHandle: string | null; isAnonymous: boolean };
 }
 
 interface Props {
@@ -19,8 +19,10 @@ interface Props {
   currentUserId: string | null;
   challengerId: string;
   challengerHandle: string;
+  challengerIsAnon: boolean;
   responderId: string | null;
   responderHandle: string | null;
+  responderIsAnon: boolean;
   judgeId: string | null;
   judgeName: string | null;
   judgeDecision: string | null;
@@ -67,8 +69,10 @@ export function BeefThread({
   currentUserId,
   challengerId,
   challengerHandle,
+  challengerIsAnon,
   responderId,
   responderHandle,
+  responderIsAnon,
   judgeId,
   judgeName,
   judgeDecision,
@@ -149,6 +153,14 @@ export function BeefThread({
 
   const getSide = (userId: string) =>
     userId === challengerId ? "CHALLENGER" : "RESPONDER";
+
+  const getMsgHandle = (msg: Message) => {
+    if (msg.user.id === challengerId && (challengerIsAnon || msg.user.isAnonymous))
+      return msg.user.anonHandle ?? "GHOST";
+    if (msg.user.id === responderId && (responderIsAnon || msg.user.isAnonymous))
+      return msg.user.anonHandle ?? "GHOST";
+    return msg.user.handle || msg.user.username;
+  };
 
   const winnerHandle =
     winnerId === challengerId ? challengerHandle :
@@ -250,7 +262,7 @@ export function BeefThread({
                     <span className={`text-xs font-bold tracking-widest ${isChallenge ? "text-beef-gold" : "text-beef-orange"}`}>
                       {getSide(msg.user.id)}
                     </span>
-                    <span className="text-muted text-sm">@{msg.user.handle || msg.user.username}</span>
+                    <span className="text-muted text-sm">{getMsgHandle(msg)}</span>
                     {isCurrentUser && (
                       <span className="text-xs text-muted bg-beef-bg-light px-2 py-0.5 rounded-full">YOU</span>
                     )}
