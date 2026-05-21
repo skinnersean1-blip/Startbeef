@@ -7,7 +7,7 @@ function getResend() {
   return _resend;
 }
 
-const FROM = "Beef <noreply@startbeef.com>";
+const FROM = process.env.EMAIL_FROM || "Beef <onboarding@resend.dev>";
 const BASE_URL = process.env.NEXTAUTH_URL || "https://startbeef.com";
 
 // ── Password Reset ────────────────────────────────────────────────────────────
