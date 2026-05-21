@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { categorizeClaim } from "@/lib/categorize";
 import { ANTE_MIN, ANTE_MAX } from "@/lib/stripe";
+import { sendAdminNewBeefEmail } from "@/lib/email";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
     // Check challenger has enough in bank
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { bankBalance: true },
+      select: { bankBalance: true, anonHandle: true },
     });
     if (!user || user.bankBalance < ante) {
       return NextResponse.json(
@@ -93,6 +94,12 @@ export async function POST(req: NextRequest) {
         relatedBeefId: beef.id,
       },
     });
+
+    // Admin alert — fire and forget
+    const challengerName = challengerIsAnon
+      ? (user as any).anonHandle ?? "GHOST"
+      : `@${session.user.handle || session.user.username}`;
+    sendAdminNewBeefEmail(beef.id, claim, challengerName).catch(() => {});
 
     const beefWithSelect = await prisma.beef.findUnique({
       where: { id: beef.id },

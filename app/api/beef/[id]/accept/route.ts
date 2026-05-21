@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sendBeefAcceptedEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,10 @@ export async function POST(
   const { id } = await params;
   const body = await req.json().catch(() => ({}));
   const responderIsAnon = Boolean(body.responderIsAnon);
-  const beef = await prisma.beef.findUnique({ where: { id } });
+  const beef = await prisma.beef.findUnique({
+    where: { id },
+    include: { challenger: { select: { email: true, handle: true, username: true, anonHandle: true } } },
+  });
 
   if (!beef) return NextResponse.json({ error: "Beef not found" }, { status: 404 });
   if (beef.status !== "OPEN") return NextResponse.json({ error: "This beef is no longer open" }, { status: 409 });
@@ -67,6 +71,18 @@ export async function POST(
       relatedBeefId: id,
     },
   });
+
+  // Notify challenger their beef was accepted — fire and forget
+  if (beef.challenger.email) {
+    const responder = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { handle: true, username: true, anonHandle: true, isAnonymous: true },
+    });
+    const responderName = (responderIsAnon || responder?.isAnonymous)
+      ? (responder?.anonHandle ?? "GHOST")
+      : `@${responder?.handle || responder?.username}`;
+    sendBeefAcceptedEmail(beef.challenger.email, id, beef.claim, responderName).catch(() => {});
+  }
 
   return NextResponse.json({ beef: updated });
 }

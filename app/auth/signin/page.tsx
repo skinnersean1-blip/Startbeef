@@ -10,6 +10,7 @@ function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const resetSuccess = searchParams.get("reset") === "1";
 
   const [formData, setFormData] = useState({
     identifier: "",
@@ -47,6 +48,12 @@ function SignInForm() {
   return (
     <div className="card-beef">
       <h2 className="text-2xl font-bold mb-6">Sign In</h2>
+
+      {resetSuccess && (
+        <div className="bg-green-900/20 border border-green-500 text-green-400 px-4 py-3 rounded-lg mb-6 text-sm">
+          Password updated — sign in with your new password.
+        </div>
+      )}
 
       {error && (
         <div className="bg-red-900/20 border border-red-500 text-red-500 px-4 py-3 rounded-lg mb-6">
@@ -96,6 +103,11 @@ function SignInForm() {
         >
           {loading ? "Signing in..." : "Sign In"}
         </button>
+        <div className="text-center">
+          <Link href="/auth/forgot-password" className="text-beef-text-muted hover:text-beef-gold text-xs transition-colors tracking-widest">
+            FORGOT PASSWORD?
+          </Link>
+        </div>
       </form>
 
       <div className="mt-6 text-center">

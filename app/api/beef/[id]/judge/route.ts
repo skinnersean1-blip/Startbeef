@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { judgeBeef, type JudgeMessage } from "@/lib/judges";
 import { BEEF_FEE_RATE } from "@/lib/stripe";
+import { sendBeefJudgedEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -21,8 +22,8 @@ export async function POST(
   const beef = await prisma.beef.findUnique({
     where: { id },
     include: {
-      challenger: { select: { handle: true, username: true } },
-      responder:  { select: { handle: true, username: true } },
+      challenger: { select: { handle: true, username: true, email: true } },
+      responder:  { select: { handle: true, username: true, email: true } },
       messages: {
         include: { user: { select: { handle: true, username: true } } },
         orderBy: { createdAt: "asc" },
@@ -117,6 +118,15 @@ export async function POST(
       await tx.user.update({ where: { id: loserId }, data: { losses: { increment: 1 } } });
     }
   });
+
+  // Email both participants — fire and forget
+  const challengerWon = result.winner === "CHALLENGER";
+  if (beef.challenger.email) {
+    sendBeefJudgedEmail(beef.challenger.email, id, beef.claim, challengerWon, challengerWon ? winnerPayout : 0).catch(() => {});
+  }
+  if (beef.responder?.email) {
+    sendBeefJudgedEmail(beef.responder.email, id, beef.claim, !challengerWon, !challengerWon ? winnerPayout : 0).catch(() => {});
+  }
 
   return NextResponse.json({
     winner: result.winner,
