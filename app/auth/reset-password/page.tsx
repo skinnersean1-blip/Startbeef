@@ -13,6 +13,22 @@ function ResetForm() {
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  function generatePassword() {
+    const chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%^&*";
+    const arr = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+      .map((b) => chars[b % chars.length])
+      .join("");
+    setPassword(arr);
+    setConfirm(arr);
+    setShowPassword(true);
+    navigator.clipboard.writeText(arr).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {});
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,7 +68,15 @@ function ResetForm() {
 
   return (
     <>
-      <h2 className="text-xl font-bold mb-6">Choose a new password</h2>
+      <h2 className="text-xl font-bold mb-2">Choose a new password</h2>
+
+      <button
+        type="button"
+        onClick={generatePassword}
+        className="text-xs text-beef-gold hover:text-beef-gold-light tracking-widest transition-colors mb-6"
+      >
+        {copied ? "✓ COPIED TO CLIPBOARD" : "⚡ GENERATE STRONG PASSWORD"}
+      </button>
 
       {error && (
         <div className="bg-red-900/20 border border-red-500 text-red-500 px-4 py-3 rounded-lg mb-4 text-sm">
@@ -61,16 +85,25 @@ function ResetForm() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-3 bg-beef-bg-light border border-beef-border rounded-lg focus:outline-none focus:border-beef-gold transition-colors pr-16"
+            placeholder="New password (8+ characters)"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-beef-text-muted hover:text-beef-gold transition-colors"
+          >
+            {showPassword ? "HIDE" : "SHOW"}
+          </button>
+        </div>
         <input
-          type="password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full px-4 py-3 bg-beef-bg-light border border-beef-border rounded-lg focus:outline-none focus:border-beef-gold transition-colors"
-          placeholder="New password (8+ characters)"
-        />
-        <input
-          type="password"
+          type={showPassword ? "text" : "password"}
           required
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}

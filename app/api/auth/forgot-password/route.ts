@@ -25,9 +25,15 @@ export async function POST(req: NextRequest) {
       data: { resetToken: token, resetTokenExpiry: expiry },
     });
 
-    sendPasswordResetEmail(email, token).catch((err) =>
-      console.error("Failed to send reset email:", err)
-    );
+    try {
+      await sendPasswordResetEmail(email, token);
+    } catch (err) {
+      console.error("Failed to send reset email:", err);
+      return NextResponse.json(
+        { error: "Could not send email. Check that RESEND_API_KEY is set and your domain is verified in Resend." },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err) {
