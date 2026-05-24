@@ -30,6 +30,10 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
         include: { user: { select: { id: true, handle: true, username: true, anonHandle: true, isAnonymous: true } } },
         orderBy: { createdAt: "asc" },
       },
+      offers: {
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      },
     },
   });
 
@@ -191,6 +195,14 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
                 content: m.content,
                 createdAt: m.createdAt.toISOString(),
                 user: { id: m.user.id, handle: m.user.handle, username: m.user.username, anonHandle: m.user.anonHandle, isAnonymous: m.user.isAnonymous },
+              }))}
+              initialOffers={beef.offers.map((o) => ({
+                id: o.id,
+                fromId: o.fromId,
+                type: o.type,
+                amount: o.amount,
+                status: o.status,
+                expiresAt: o.expiresAt.toISOString(),
               }))}
               endsAt={beef.endsAt?.toISOString() ?? null}
               status={beef.status}

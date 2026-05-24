@@ -33,11 +33,12 @@ model User {
   emailVerifyToken   String?
   emailVerifyExpiry  DateTime?
 
-  challengesCreated  Beef[]    @relation("Challenger")
-  challengesAccepted Beef[]    @relation("Responder")
+  challengesCreated  Beef[]      @relation("Challenger")
+  challengesAccepted Beef[]      @relation("Responder")
   messages           Message[]
-  following          Follow[]  @relation("Follower")
-  followers          Follow[]  @relation("Following")
+  offers             BeefOffer[]
+  following          Follow[]    @relation("Follower")
+  followers          Follow[]    @relation("Following")
   threadImports      ThreadImport[]
 
   createdAt     DateTime  @default(now())
@@ -74,10 +75,24 @@ model Beef {
   viewCount     Int       @default(0)
 
   messages      Message[]
+  offers        BeefOffer[]
   threadImport  ThreadImport?
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+model BeefOffer {
+  id        String   @id @default(cuid())
+  beefId    String
+  beef      Beef     @relation(fields: [beefId], references: [id], onDelete: Cascade)
+  fromId    String
+  from      User     @relation(fields: [fromId], references: [id])
+  type      String   // RAISE | CLOSE
+  amount    Float    @default(0)
+  status    String   @default("PENDING") // PENDING | ACCEPTED | REJECTED | EXPIRED
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model Message {
