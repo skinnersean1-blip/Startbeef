@@ -107,6 +107,37 @@ const JUDGES: JudgeDef[] = [
       return res.choices[0].message.content ?? "";
     },
   },
+  {
+    id: "gemini",
+    name: "Gemini",
+    envKey: "GEMINI_API_KEY",
+    call: async (apiKey, prompt) => {
+      const client = new OpenAI({
+        apiKey,
+        baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
+      });
+      const res = await client.chat.completions.create({
+        model: "gemini-1.5-flash",
+        max_tokens: 512,
+        messages: [{ role: "user", content: prompt }],
+      });
+      return res.choices[0].message.content ?? "";
+    },
+  },
+  {
+    id: "llama",
+    name: "Llama 3",
+    envKey: "GROQ_API_KEY",
+    call: async (apiKey, prompt) => {
+      const client = new OpenAI({ apiKey, baseURL: "https://api.groq.com/openai/v1" });
+      const res = await client.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        max_tokens: 512,
+        messages: [{ role: "user", content: prompt }],
+      });
+      return res.choices[0].message.content ?? "";
+    },
+  },
 ];
 
 function buildPrompt(claim: string, messages: JudgeMessage[]): string {
