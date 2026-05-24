@@ -19,7 +19,7 @@ export function HeroCTA() {
       )}
       <a href="#feed">
         <button className="btn-secondary text-sm px-8 py-4">
-          TAKE RINGSIDE
+          SIT RINGSIDE
         </button>
       </a>
     </div>

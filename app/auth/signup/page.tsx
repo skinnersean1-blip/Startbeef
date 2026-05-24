@@ -280,7 +280,7 @@ export default function SignUpPage() {
               {loading
                 ? "Creating Account..."
                 : path === "FIGHTER"
-                ? "Get Ringside"
+                ? "Sit Ringside"
                 : "Go Ghost"}
             </button>
           </form>
