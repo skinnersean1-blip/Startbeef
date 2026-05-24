@@ -310,7 +310,7 @@ export function BeefThread({
           <div className="flex items-start justify-between gap-4 mb-3">
             <div>
               <p className="section-label mb-1">
-                {pendingOffer.type === "RAISE" ? "⚡ RAISE ON THE TABLE" : "🕐 EARLY CLOSE PROPOSED"}
+                {pendingOffer.type === "RAISE" ? "⚡ RAISE ON THE TABLE" : "🏳️ TAP-OUT PROPOSED"}
               </p>
               {pendingOffer.type === "RAISE" && (
                 <p className="text-beef-text text-sm">
@@ -370,7 +370,7 @@ export function BeefThread({
             onClick={() => { setOfferMode("CLOSE"); setOfferAmount(""); setOfferError(""); }}
             className="flex-1 border border-beef-orange/40 hover:border-beef-orange text-beef-orange text-xs font-bold tracking-widest py-3 rounded-lg transition-colors"
           >
-            🕐 CALL IT EARLY
+            🏳️ TAP-OUT
           </button>
         </div>
       )}
@@ -379,7 +379,7 @@ export function BeefThread({
       {offerMode && (
         <div className={`card-beef mb-6 border ${offerMode === "RAISE" ? "border-beef-gold/50" : "border-beef-orange/50"}`}>
           <p className="section-label mb-3">
-            {offerMode === "RAISE" ? "⚡ RAISE THE STAKES" : "🕐 CALL IT EARLY"}
+            {offerMode === "RAISE" ? "⚡ RAISE THE STAKES" : "🏳️ TAP-OUT"}
           </p>
           {offerMode === "RAISE" && (
             <p className="text-beef-text-muted text-xs mb-4">
@@ -388,7 +388,7 @@ export function BeefThread({
           )}
           {offerMode === "CLOSE" && (
             <p className="text-beef-text-muted text-xs mb-4">
-              Propose ending the debate early. Add an optional sweetener paid directly to your opponent to sweeten the deal — or leave it at $0 for a straight call.
+              Propose a tap-out. Add an optional sweetener paid directly to your opponent to get them to agree — or leave it at $0 for a clean call.
             </p>
           )}
 
