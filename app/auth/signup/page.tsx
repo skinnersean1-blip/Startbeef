@@ -153,7 +153,7 @@ export default function SignUpPage() {
         <div className="card-beef">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold">
-              {path === "FIGHTER" ? "Create your public identity" : "Enter the arena anonymously"}
+              {path === "FIGHTER" ? "Create your public identity" : "Take a ringside seat anonymously"}
             </h2>
             <button
               onClick={() => setPath(null)}
@@ -280,7 +280,7 @@ export default function SignUpPage() {
               {loading
                 ? "Creating Account..."
                 : path === "FIGHTER"
-                ? "Enter the Arena"
+                ? "Get Ringside"
                 : "Go Ghost"}
             </button>
           </form>

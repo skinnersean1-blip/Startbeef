@@ -16,7 +16,7 @@ const courierPrime = Courier_Prime({
 
 export const metadata: Metadata = {
   title: "Beef - Paid Dissent Platform",
-  description: "Put money where your mouth is. No endless reply chains. Post a claim, price the conviction, and let the internet watch it burn in a controlled arena.",
+  description: "Put money where your mouth is. No endless reply chains. Post a claim, price the conviction, and let the internet watch it burn from ringside.",
 };
 
 export default function RootLayout({

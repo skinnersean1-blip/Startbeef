@@ -308,7 +308,7 @@ function BankContent() {
 
           <div className="text-center mt-10">
             <Link href="/" className="text-beef-text-muted text-sm hover:text-beef-gold transition-colors">
-              ← BACK TO ARENA
+              ← BACK TO RINGSIDE
             </Link>
           </div>
         </div>

@@ -153,7 +153,7 @@ export default async function Home({
       <section id="feed" className="container-beef py-6 pb-24">
         {feed.length === 0 ? (
           <div className="card-beef text-center py-20">
-            <p className="text-3xl font-bold mb-4">THE ARENA IS EMPTY.</p>
+            <p className="text-3xl font-bold mb-4">RINGSIDE IS EMPTY.</p>
             <p className="text-beef-text-muted mb-8">Someone has to go first.</p>
             <Link href="/beef/new">
               <button className="btn-primary">START A BEEF</button>
