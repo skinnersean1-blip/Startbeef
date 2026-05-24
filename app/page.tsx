@@ -90,29 +90,31 @@ export default async function Home({
   return (
     <div className="min-h-screen" style={{ background: "radial-gradient(ellipse 160% 120% at 85% 95%, rgba(212,165,116,0.38) 0%, rgba(196,140,60,0.18) 35%, rgba(196,140,60,0.06) 65%, transparent 100%)" }}>
       {/* Header */}
-      <header className="container-beef py-8">
-        <div className="flex items-center justify-between gap-8">
-          {/* Logo */}
+      <header className="container-beef py-6 sm:py-8">
+        {/* Mobile: stacked layout */}
+        <div className="flex items-center justify-between gap-4 mb-4 sm:mb-0">
           <div className="flex-shrink-0">
-            <p className="section-label mb-1">TALK SHIT, MAKE MONEY</p>
-            <h1 className="text-8xl font-bold tracking-tighter leading-none text-beef-text">
+            <p className="section-label mb-1 text-[10px] sm:text-xs">TALK SHIT, MAKE MONEY</p>
+            <h1 className="text-5xl sm:text-7xl lg:text-8xl font-bold tracking-tighter leading-none text-beef-text">
               BEEF
             </h1>
           </div>
+          <div className="flex-shrink-0">
+            <AuthHeader />
+          </div>
+        </div>
 
-          {/* Hero copy */}
-          <div className="flex-1 max-w-xl">
-            <h2 className="text-2xl font-bold leading-tight mb-2">
+        {/* Hero copy + CTA — hidden on smallest screens, shown below logo on sm+ */}
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mt-2 sm:mt-4">
+          <div className="max-w-xl">
+            <h2 className="text-lg sm:text-2xl font-bold leading-tight mb-1">
               OPINION MARKET
             </h2>
-            <p className="text-beef-text-muted text-sm leading-relaxed">
+            <p className="text-beef-text-muted text-xs sm:text-sm leading-relaxed">
               Speak your mind. Fight your corner. Get paid — or watch it all go down.
             </p>
           </div>
-
-          {/* CTAs + auth */}
-          <div className="flex-shrink-0 flex flex-col items-end gap-4">
-            <AuthHeader />
+          <div className="flex-shrink-0">
             <HeroCTA />
           </div>
         </div>
@@ -125,7 +127,7 @@ export default async function Home({
 
       {/* Stats strip */}
       <section className="container-beef py-6">
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div className="card-beef py-5">
             <p className="section-label mb-2">TONIGHT&apos;S LIVE POT</p>
             <p className="text-3xl font-bold text-beef-gold">

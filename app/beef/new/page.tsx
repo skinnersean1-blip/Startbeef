@@ -130,7 +130,7 @@ export default function StartBeefPage() {
           {step === 1 && (
             <div>
               <p className="section-label mb-4">STEP 01 — WRITE THE CLAIM</p>
-              <h2 className="text-4xl font-bold mb-8">WHAT&apos;S YOUR BEEF?</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-8">WHAT&apos;S YOUR BEEF?</h2>
               <div className="card-beef">
                 <p className="text-muted text-sm mb-4">
                   Make it specific. Make it debatable. Make it something you&apos;d put money on.
@@ -167,7 +167,7 @@ export default function StartBeefPage() {
           {step === 2 && (
             <div>
               <p className="section-label mb-4">STEP 02 — SET YOUR ANTE</p>
-              <h2 className="text-4xl font-bold mb-4">HOW MUCH IS YOUR CONVICTION WORTH?</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4">HOW MUCH IS YOUR CONVICTION WORTH?</h2>
               <p className="text-muted mb-8">
                 Your opponent must match this to accept. Winner takes the full pot minus a 1.5% platform fee.
               </p>
@@ -175,7 +175,7 @@ export default function StartBeefPage() {
               <div className="card-beef mb-6">
                 {/* Big dollar display */}
                 <div className="text-center mb-8">
-                  <p className="text-7xl font-bold text-beef-gold">${ante}</p>
+                  <p className="text-5xl sm:text-7xl font-bold text-beef-gold">${ante}</p>
                   <p className="text-beef-text-muted text-sm mt-2 tracking-widest">YOUR ANTE</p>
                 </div>
 
@@ -215,7 +215,7 @@ export default function StartBeefPage() {
               </div>
 
               {/* Pot preview */}
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4">
                 <div className="card-beef text-center">
                   <p className="section-label mb-1">TOTAL POT</p>
                   <p className="text-3xl font-bold text-beef-gold">${ante * 2}</p>
@@ -245,21 +245,21 @@ export default function StartBeefPage() {
           {step === 3 && (
             <div>
               <p className="section-label mb-4">STEP 03 — POST IT</p>
-              <h2 className="text-4xl font-bold mb-8">YOU SURE ABOUT THIS?</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-8">YOU SURE ABOUT THIS?</h2>
 
               <div className="card-beef border-beef-gold mb-6">
                 <p className="section-label mb-3">THE CLAIM</p>
                 <p className="text-xl font-bold leading-relaxed">&quot;{claim}&quot;</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
                 <div className="card-beef text-center">
                   <p className="section-label mb-2">YOUR ANTE</p>
-                  <p className="text-4xl font-bold text-beef-gold">${ante}</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-beef-gold">${ante}</p>
                 </div>
                 <div className="card-beef text-center">
                   <p className="section-label mb-2">POT IF MATCHED</p>
-                  <p className="text-4xl font-bold">${ante * 2}</p>
+                  <p className="text-3xl sm:text-4xl font-bold">${ante * 2}</p>
                 </div>
               </div>
 

@@ -98,11 +98,11 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
           {/* The Claim */}
           <div className="card-beef border-2 border-beef-gold mb-8">
             <p className="section-label mb-4">THE CLAIM</p>
-            <p className="text-3xl font-bold leading-snug">&ldquo;{beef.claim}&rdquo;</p>
+            <p className="text-xl sm:text-3xl font-bold leading-snug">&ldquo;{beef.claim}&rdquo;</p>
           </div>
 
           {/* Participants */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <div className="card-beef text-center">
               <p className="section-label mb-3">CHALLENGER</p>
               {challengerIsAnon ? (
@@ -139,7 +139,7 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
           </div>
 
           {/* Stakes */}
-          <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 mb-8">
             <div className="card-beef text-center">
               <p className="section-label mb-2">ANTE</p>
               <p className="text-3xl font-bold">${beef.ante}</p>

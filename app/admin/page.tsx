@@ -96,7 +96,7 @@ function OverviewTab({ stats }: { stats: Stats | null }) {
     { label: "PLATFORM REVENUE",  value: fmt(stats.platformRevenue),               sub: "1.5% fee on all pots" },
   ];
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {tiles.map((t) => (
         <div key={t.label} className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
           <p className="text-xs font-bold tracking-widest text-gray-400 mb-2">{t.label}</p>

@@ -43,54 +43,49 @@ export function BrowseBar() {
   };
 
   return (
-    <div className="border-y border-beef-border py-4">
+    <div className="border-y border-beef-border py-3">
       <div className="container-beef space-y-3">
 
-        {/* Categories + Sort */}
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="section-label">BROWSE</span>
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.key}
-                onClick={() => update("cat", cat.key)}
-                className={`text-xs font-bold tracking-widest px-4 py-1.5 rounded-full border transition-all duration-150 ${
-                  category === cat.key
-                    ? "border-beef-gold bg-beef-gold/10 text-beef-gold"
-                    : "border-beef-border text-beef-text-muted hover:border-beef-gold/50 hover:text-beef-text"
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-3 flex-wrap ml-auto">
-            <span className="section-label">SORT</span>
-            {SORTS.map((s) => (
-              <button
-                key={s.key}
-                onClick={() => update("sort", s.key)}
-                className={`text-xs font-bold tracking-widest px-4 py-1.5 rounded-full border transition-all duration-150 ${
-                  sort === s.key
-                    ? "border-beef-gold bg-beef-gold/10 text-beef-gold"
-                    : "border-beef-border text-beef-text-muted hover:border-beef-gold/50 hover:text-beef-text"
-                }`}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
+        {/* Categories — horizontally scrollable on mobile */}
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
+          <span className="section-label shrink-0">BROWSE</span>
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.key}
+              onClick={() => update("cat", cat.key)}
+              className={`text-xs font-bold tracking-widest px-3 py-1.5 rounded-full border transition-all duration-150 shrink-0 ${
+                category === cat.key
+                  ? "border-beef-gold bg-beef-gold/10 text-beef-gold"
+                  : "border-beef-border text-beef-text-muted hover:border-beef-gold/50 hover:text-beef-text"
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+          <span className="section-label shrink-0 ml-2">SORT</span>
+          {SORTS.map((s) => (
+            <button
+              key={s.key}
+              onClick={() => update("sort", s.key)}
+              className={`text-xs font-bold tracking-widest px-3 py-1.5 rounded-full border transition-all duration-150 shrink-0 ${
+                sort === s.key
+                  ? "border-beef-gold bg-beef-gold/10 text-beef-gold"
+                  : "border-beef-border text-beef-text-muted hover:border-beef-gold/50 hover:text-beef-text"
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
         </div>
 
-        {/* Hot topics */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <span className="section-label">🔥 HOT</span>
+        {/* Hot topics — horizontally scrollable on mobile */}
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
+          <span className="section-label shrink-0">🔥 HOT</span>
           {HOT_TOPICS.map((topic) => (
             <button
               key={topic}
               onClick={() => update("cat", topic)}
-              className={`text-xs font-bold px-3 py-1 rounded-full border transition-all duration-150 ${
+              className={`text-xs font-bold px-3 py-1 rounded-full border transition-all duration-150 shrink-0 ${
                 category === topic
                   ? "border-beef-orange bg-beef-orange/10 text-beef-orange"
                   : "border-beef-border/60 text-beef-text-muted hover:border-beef-orange/50 hover:text-beef-text"

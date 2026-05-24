@@ -175,7 +175,7 @@ function BankContent() {
 
           <div className="mb-8">
             <p className="section-label mb-2">BEEF BANK</p>
-            <h2 className="text-5xl font-bold tracking-tighter">
+            <h2 className="text-4xl sm:text-5xl font-bold tracking-tighter">
               {balance !== null ? (
                 <span className="text-beef-gold">${balance.toFixed(2)}</span>
               ) : "—"}
