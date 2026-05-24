@@ -156,7 +156,7 @@ function BankContent() {
         <div className="flex items-center justify-between">
           <Link href="/">
             <div className="cursor-pointer">
-              <p className="section-label mb-1">PAID DISSENT PLATFORM</p>
+              <p className="section-label mb-1">OPINION MARKET</p>
               <h1 className="text-4xl font-bold tracking-tighter">BEEF</h1>
             </div>
           </Link>
