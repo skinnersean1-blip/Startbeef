@@ -23,6 +23,7 @@ export default function SignUpPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const set = (k: keyof typeof formData, v: string) =>
     setFormData((prev) => ({ ...prev, [k]: v }));
@@ -272,9 +273,25 @@ export default function SignUpPage() {
               />
             )}
 
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                className="mt-0.5 w-4 h-4 accent-beef-gold flex-shrink-0 cursor-pointer"
+              />
+              <span className="text-xs text-beef-text-muted leading-relaxed">
+                I am at least 18 years old and I agree to the{" "}
+                <Link href="/terms" target="_blank" className="text-beef-gold underline hover:text-beef-gold/80">
+                  Terms of Service
+                </Link>
+                . I understand that staked debates are final and subject to AI judgment.
+              </span>
+            </label>
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !agreedToTerms}
               className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading

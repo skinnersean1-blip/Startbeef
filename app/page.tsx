@@ -290,6 +290,12 @@ export default async function Home({
             >
               RULES
             </Link>
+            <Link
+              href="/terms"
+              className="text-beef-text-muted hover:text-beef-gold transition-colors tracking-widest"
+            >
+              TERMS
+            </Link>
           </div>
         </div>
       </footer>
