@@ -5,17 +5,14 @@
   <circle cx="32" cy="32" r="28.5" fill="#B07C28"/>
   <!-- Dark brown centre -->
   <circle cx="32" cy="32" r="25.5" fill="#1C1108"/>
-  <!-- Orange inner accent arc (bottom glow) -->
-  <path d="M 10 42 Q 32 58 54 42" stroke="#C97A38" stroke-width="2" fill="none" opacity="0.5"/>
-  <!-- BEEF in cream -->
+  <!-- B in cream -->
   <text
-    x="32" y="34"
+    x="32" y="33"
     text-anchor="middle"
     dominant-baseline="middle"
     font-family="Georgia, 'Times New Roman', serif"
     font-weight="700"
-    font-size="16"
-    letter-spacing="1"
+    font-size="30"
     fill="#F2DFA8"
-  >BEEF</text>
+  >B</text>
 </svg>
