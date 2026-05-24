@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { generateCodename } from "@/lib/codename";
+import { sendVerificationEmail } from "@/lib/email";
 import { z } from "zod";
+import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
 
@@ -14,15 +16,29 @@ const baseSchema = z.object({
     const age = (Date.now() - dob.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
     return age >= 18;
   }, "You must be 18 or older to join"),
-  isAnonymous: z.boolean().default(false),
-  username:    z.string().optional(),
-  handle:      z.string().optional(),
+  isAnonymous:      z.boolean().default(false),
+  username:         z.string().optional(),
+  handle:           z.string().optional(),
+  turnstileToken:   z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const data = baseSchema.parse(body);
+
+    // Verify Turnstile token if secret is configured
+    if (process.env.TURNSTILE_SECRET_KEY) {
+      const token = data.turnstileToken;
+      if (!token) return NextResponse.json({ error: "Bot check failed. Please try again." }, { status: 400 });
+      const tsRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ secret: process.env.TURNSTILE_SECRET_KEY, response: token }),
+      });
+      const tsData = await tsRes.json();
+      if (!tsData.success) return NextResponse.json({ error: "Bot check failed. Please try again." }, { status: 400 });
+    }
 
     // Handled users require username + handle
     if (!data.isAnonymous) {
@@ -57,24 +73,33 @@ export async function POST(req: NextRequest) {
 
     const passwordHash = await hash(data.password, 12);
 
-    // Anon users get a system username since it's required in schema
     const username = data.isAnonymous
       ? `ghost_${Date.now()}_${Math.floor(Math.random() * 9999)}`
       : data.username!;
 
+    const emailVerifyToken = crypto.randomBytes(32).toString("hex");
+    const emailVerifyExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
     const user = await prisma.user.create({
       data: {
-        email:       data.email,
+        email:             data.email,
         username,
-        handle:      data.isAnonymous ? null : data.handle,
+        handle:            data.isAnonymous ? null : data.handle,
         passwordHash,
-        isAnonymous: data.isAnonymous,
+        isAnonymous:       data.isAnonymous,
         anonHandle,
-        dateOfBirth: new Date(data.dateOfBirth),
-        bankBalance: 0,
+        dateOfBirth:       new Date(data.dateOfBirth),
+        bankBalance:       0,
+        emailVerifyToken,
+        emailVerifyExpiry,
       },
       select: { id: true, email: true, username: true, handle: true, isAnonymous: true, anonHandle: true },
     });
+
+    // Send verification email — fire and forget
+    if (data.email) {
+      sendVerificationEmail(data.email, emailVerifyToken).catch(console.error);
+    }
 
     return NextResponse.json({ message: "User created successfully", user }, { status: 201 });
   } catch (error) {

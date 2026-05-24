@@ -55,8 +55,14 @@ export async function POST(req: NextRequest) {
     // Check challenger has enough in bank
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { bankBalance: true, anonHandle: true },
+      select: { bankBalance: true, anonHandle: true, isVerified: true },
     });
+    if (!user?.isVerified) {
+      return NextResponse.json(
+        { error: "Please verify your email before posting a beef. Check your inbox." },
+        { status: 403 }
+      );
+    }
     if (!user || user.bankBalance < ante) {
       return NextResponse.json(
         { error: `Insufficient bank balance. You need $${ante} to post this beef.` },

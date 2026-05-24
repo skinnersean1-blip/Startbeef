@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { BackButton } from "@/components/BackButton";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 type Path = "FIGHTER" | "GHOST" | null;
 
@@ -21,6 +22,7 @@ export default function SignUpPage() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const set = (k: keyof typeof formData, v: string) =>
     setFormData((prev) => ({ ...prev, [k]: v }));
@@ -37,10 +39,11 @@ export default function SignUpPage() {
     setLoading(true);
 
     const body: Record<string, unknown> = {
-      email:       formData.email,
-      password:    formData.password,
-      dateOfBirth: formData.dateOfBirth,
-      isAnonymous: path === "GHOST",
+      email:          formData.email,
+      password:       formData.password,
+      dateOfBirth:    formData.dateOfBirth,
+      isAnonymous:    path === "GHOST",
+      turnstileToken,
     };
     if (path === "FIGHTER") {
       body.username = formData.username;
@@ -260,6 +263,14 @@ export default function SignUpPage() {
                 placeholder="••••••••"
               />
             </div>
+
+            {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
+              <Turnstile
+                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                onSuccess={(token) => setTurnstileToken(token)}
+                options={{ theme: "dark" }}
+              />
+            )}
 
             <button
               type="submit"

@@ -10,6 +10,24 @@ function getResend() {
 const FROM = process.env.EMAIL_FROM || "Beef <onboarding@resend.dev>";
 const BASE_URL = process.env.NEXTAUTH_URL || "https://startbeef.com";
 
+// ── Email Verification ────────────────────────────────────────────────────────
+
+export async function sendVerificationEmail(to: string, token: string) {
+  const url = `${BASE_URL}/auth/verify-email?token=${token}`;
+  await getResend().emails.send({
+    from: FROM,
+    to,
+    subject: "Verify your Beef account",
+    html: emailShell(
+      "VERIFY YOUR ACCOUNT",
+      `<p>Welcome to Beef. Click below to verify your email and unlock posting.</p>
+       <p>This link expires in 24 hours.</p>
+       ${bigButton(url, "VERIFY MY ACCOUNT")}
+       <p style="color:#A89885;font-size:12px;">If you didn't sign up for Beef, ignore this email.</p>`
+    ),
+  });
+}
+
 // ── Password Reset ────────────────────────────────────────────────────────────
 
 export async function sendPasswordResetEmail(to: string, token: string) {

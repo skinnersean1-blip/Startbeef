@@ -12,6 +12,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.96.0",
     "@libsql/client": "^0.17.2",
+    "@marsidev/react-turnstile": "^1.5.2",
     "@next-auth/prisma-adapter": "^1.0.7",
     "@prisma/adapter-libsql": "^7.5.0",
     "@prisma/client": "^7.0.0",
