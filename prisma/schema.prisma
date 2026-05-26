@@ -21,6 +21,7 @@ model User {
   wins          Int       @default(0)
   losses        Int       @default(0)
   totalEarnings Float     @default(0)
+  credits       Int       @default(0)
 
   isAnonymous   Boolean   @default(false)
 
@@ -32,9 +33,55 @@ model User {
   following          Follow[]  @relation("Follower")
   followers          Follow[]  @relation("Following")
   threadImports      ThreadImport[]
+  shoePosts          ShoePost[]
+  shoeOffersMade     ShoeOffer[] @relation("ShoeOffersMade")
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+model ShoePost {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+
+  listingKind String   // "PAIR" or "SINGLE"
+  listingType String   // "SALE", "TRADE", "FREE"
+
+  title       String
+  brand       String?
+  size        String
+  condition   String   // "NEW", "LIKE_NEW", "LOVED", "WELL_LOVED"
+  description String?
+
+  askingPrice Float?   // Only for SALE listings
+
+  status      String   @default("ACTIVE") // ACTIVE, SOLD, TRADED, GIVEN
+
+  offers      ShoeOffer[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ShoeOffer {
+  id          String   @id @default(cuid())
+
+  postId      String
+  post        ShoePost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  offerUserId String
+  offerUser   User     @relation("ShoeOffersMade", fields: [offerUserId], references: [id])
+
+  type        String   // "BUY", "TRADE", "ACCEPT_FREE"
+  offerPostId String?  // ShoePost ID being offered in a TRADE
+  offerPrice  Float?   // Price offered for a BUY
+  message     String?
+
+  status      String   @default("PENDING") // PENDING, ACCEPTED, DECLINED
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Beef {

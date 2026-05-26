@@ -14,16 +14,31 @@ const config: Config = {
       colors: {
         // Beef color palette - dark brown/gold aesthetic
         beef: {
-          bg: "#0A0806",           // Very dark brown, almost black
-          "bg-light": "#1A1410",   // Slightly lighter brown
-          "bg-card": "#2A1F18",    // Card background
-          gold: "#D4A574",         // Muted gold
-          "gold-light": "#E8C9A1", // Light gold
-          orange: "#FF6B47",       // Bright orange (CTA)
-          "orange-dark": "#E55A3C",// Darker orange
-          text: "#F5F1ED",         // Off-white text
-          "text-muted": "#A89885", // Muted text
-          border: "#3A2F28",       // Border color
+          bg: "#0A0806",
+          "bg-light": "#1A1410",
+          "bg-card": "#2A1F18",
+          gold: "#D4A574",
+          "gold-light": "#E8C9A1",
+          orange: "#FF6B47",
+          "orange-dark": "#E55A3C",
+          text: "#F5F1ED",
+          "text-muted": "#A89885",
+          border: "#3A2F28",
+        },
+        // Shoe-Shoe palette - pale blue / cream
+        shoe: {
+          bg: "#BDD5E2",           // pale blue page background
+          "bg-deep": "#2C5E78",    // deep blue header/footer
+          panel: "#4A7B93",        // medium blue card panels
+          "panel-lite": "#5C8EA8", // lighter panel variant
+          cream: "#FFF8DC",        // pale cream/yellow — main text
+          "cream-dim": "#C0B070",  // muted cream for secondary text
+          border: "#7AAEC4",       // fine border lines
+          accent: "#FFD45C",       // warm yellow for highlights/credits
+          "tier-new": "#5DBF82",   // NEW — fresh green
+          "tier-likenew": "#F0C050", // LIKE NEW — warm amber
+          "tier-loved": "#E08858", // LOVED — warm orange
+          "tier-wellloved": "#A880C8", // WELL LOVED — soft purple
         },
       },
       borderRadius: {

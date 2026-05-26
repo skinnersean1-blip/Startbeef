@@ -44,6 +44,58 @@
   .section-label {
     @apply text-xs font-bold tracking-widest uppercase text-beef-gold;
   }
+
+  /* ── Shoe-Shoe design system ── */
+
+  .container-shoe {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Cards: square corners, fine border, medium-blue panel */
+  .card-shoe {
+    @apply bg-shoe-panel border border-shoe-border rounded-none p-5;
+  }
+
+  .card-shoe-lite {
+    @apply bg-shoe-panel-lite border border-shoe-border rounded-none p-5;
+  }
+
+  /* Primary button: deep blue, cream text, square */
+  .btn-shoe-primary {
+    @apply bg-shoe-bg-deep hover:bg-shoe-panel text-shoe-cream font-bold px-6 py-3
+           rounded-none border border-shoe-border tracking-widest text-sm
+           transition-colors duration-150;
+  }
+
+  /* Secondary button: transparent, cream border */
+  .btn-shoe-secondary {
+    @apply bg-transparent hover:bg-shoe-panel text-shoe-cream font-bold px-6 py-3
+           rounded-none border border-shoe-cream tracking-widest text-sm
+           transition-colors duration-150;
+  }
+
+  /* Ghost button: subtle */
+  .btn-shoe-ghost {
+    @apply bg-transparent hover:bg-shoe-bg-deep text-shoe-cream-dim font-semibold px-4 py-2
+           rounded-none border border-shoe-border text-xs tracking-widest
+           transition-colors duration-150;
+  }
+
+  .label-shoe {
+    @apply text-xs font-bold tracking-widest uppercase text-shoe-cream-dim;
+  }
+
+  .input-shoe {
+    @apply w-full bg-shoe-bg-deep border border-shoe-border rounded-none
+           text-shoe-cream placeholder-shoe-cream-dim px-4 py-3 text-sm
+           focus:outline-none focus:border-shoe-accent;
+  }
+
+  .select-shoe {
+    @apply w-full bg-shoe-bg-deep border border-shoe-border rounded-none
+           text-shoe-cream px-4 py-3 text-sm
+           focus:outline-none focus:border-shoe-accent;
+  }
 }
 
 @layer utilities {
