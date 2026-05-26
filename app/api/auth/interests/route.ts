@@ -6,10 +6,8 @@ import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
-const VALID = ["POLITICS", "CULTURE", "SPORTS", "TECH", "CALLOUTS"];
-
 const schema = z.object({
-  interests: z.array(z.string()).max(5),
+  interests: z.array(z.string().min(2).max(40)).max(20),
 });
 
 export async function POST(req: NextRequest) {
@@ -20,11 +18,11 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const { interests } = schema.parse(body);
-  const filtered = interests.filter((i) => VALID.includes(i));
+  const deduped = [...new Set(interests.map((i) => i.trim().toUpperCase()))].filter(Boolean);
 
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { interests: JSON.stringify(filtered) },
+    data: { interests: JSON.stringify(deduped) },
   });
 
   return NextResponse.json({ ok: true });
