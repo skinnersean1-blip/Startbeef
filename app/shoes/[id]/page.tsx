@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { submitOffer, acceptOffer, declineOffer } from "../actions";
+import { shoePath } from "@/lib/shoepath";
 
 const CONDITION_LABEL: Record<string, string> = {
   NEW: "New",
@@ -88,7 +89,7 @@ export default async function ShoeDetailPage({
       {/* Header */}
       <header className="bg-shoe-bg-deep border-b border-shoe-border">
         <div className="container-shoe py-5 flex items-center justify-between">
-          <Link href="/shoes">
+          <Link href={shoePath()}>
             <button className="btn-shoe-ghost">← SHOE-SHOE</button>
           </Link>
           <p className="label-shoe">{post.listingKind} LISTING</p>
@@ -205,7 +206,7 @@ export default async function ShoeDetailPage({
                   {myListings.length === 0 ? (
                     <p className="text-shoe-cream-dim text-sm">
                       You have no active listings to trade.{" "}
-                      <Link href="/shoes/new" className="text-shoe-accent underline">
+                      <Link href={shoePath("/new")} className="text-shoe-accent underline">
                         Post a shoe first.
                       </Link>
                     </p>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createShoePost } from "../actions";
+import { shoePath } from "@/lib/shoepath";
 
 const CONDITIONS = [
   { key: "NEW",        label: "New",        credits: 4, desc: "Unworn, tags on or near-perfect" },
@@ -44,7 +45,7 @@ export default function NewShoePage() {
             <p className="label-shoe mb-1">NEW LISTING</p>
             <h1 className="text-4xl font-bold text-shoe-cream tracking-tight">POST A SHOE</h1>
           </div>
-          <Link href="/shoes">
+          <Link href={shoePath()}>
             <button className="btn-shoe-ghost">← BACK</button>
           </Link>
         </div>

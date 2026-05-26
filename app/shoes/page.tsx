@@ -4,6 +4,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { shoePath } from "@/lib/shoepath";
 
 type ShoePost = Awaited<ReturnType<typeof fetchSide>>[number];
 
@@ -54,7 +55,7 @@ function timeAgo(date: Date) {
 function ShoeCard({ post }: { post: ShoePost }) {
   const handle = post.user.handle || post.user.username;
   return (
-    <Link href={`/shoes/${post.id}`}>
+    <Link href={shoePath(`/${post.id}`)}>
       <div className="border border-shoe-border bg-shoe-panel hover:bg-shoe-panel-lite transition-colors duration-100 cursor-pointer p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
@@ -96,7 +97,7 @@ function EmptyHalf({ kind }: { kind: string }) {
   return (
     <div className="p-8 text-center">
       <p className="text-shoe-cream-dim text-sm tracking-widest">NO {kind.toUpperCase()} LISTED YET</p>
-      <Link href="/shoes/new">
+      <Link href={shoePath("/new")}>
         <button className="btn-shoe-ghost mt-4">BE THE FIRST</button>
       </Link>
     </div>
@@ -134,7 +135,7 @@ export default async function ShoesPage() {
                   <p className="text-xs text-shoe-cream-dim tracking-widest">YOUR CREDITS</p>
                   <p className="text-xl font-bold text-shoe-accent">{userRow?.credits ?? 0}</p>
                 </div>
-                <Link href="/shoes/new">
+                <Link href={shoePath("/new")}>
                   <button className="btn-shoe-primary">+ POST A SHOE</button>
                 </Link>
               </>

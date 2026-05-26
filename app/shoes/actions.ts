@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { shoePath } from "@/lib/shoepath";
 
 const TIER_CREDITS: Record<string, number> = {
   NEW: 4,
@@ -40,7 +41,7 @@ export async function createShoePost(formData: FormData) {
     },
   });
 
-  redirect("/shoes");
+  redirect(shoePath());
 }
 
 export async function submitOffer(formData: FormData) {
@@ -108,7 +109,7 @@ export async function acceptOffer(offerId: string) {
     }
   });
 
-  redirect(`/shoes/${offer.postId}`);
+  redirect(shoePath(`/${offer.postId}`));
 }
 
 export async function declineOffer(offerId: string) {
@@ -128,5 +129,5 @@ export async function declineOffer(offerId: string) {
     data: { status: "DECLINED" },
   });
 
-  redirect(`/shoes/${offer.post.id}`);
+  redirect(shoePath(`/${offer.post.id}`));
 }
