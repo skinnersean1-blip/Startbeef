@@ -1,15 +1,15 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { shoeDb } from "@/lib/shoe-prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { shoeAuthOptions } from "@/lib/shoe-auth";
 import { shoePath } from "@/lib/shoepath";
 
 type ShoePost = Awaited<ReturnType<typeof fetchSide>>[number];
 
 async function fetchSide(kind: "PAIR" | "SINGLE") {
-  return prisma.shoePost.findMany({
+  return shoeDb.shoePost.findMany({
     where: { listingKind: kind, status: "ACTIVE" },
     orderBy: { createdAt: "desc" },
     take: 20,
@@ -105,13 +105,13 @@ function EmptyHalf({ kind }: { kind: string }) {
 }
 
 export default async function ShoesPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(shoeAuthOptions);
 
   const [pairs, singles, userRow] = await Promise.all([
     fetchSide("PAIR"),
     fetchSide("SINGLE"),
     session?.user?.id
-      ? prisma.user.findUnique({ where: { id: session.user.id }, select: { credits: true } })
+      ? shoeDb.user.findUnique({ where: { id: session.user.id }, select: { credits: true } })
       : null,
   ]);
 

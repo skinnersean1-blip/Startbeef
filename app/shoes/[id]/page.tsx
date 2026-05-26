@@ -2,9 +2,9 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { shoeDb } from "@/lib/shoe-prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { shoeAuthOptions } from "@/lib/shoe-auth";
 import { submitOffer, acceptOffer, declineOffer } from "../actions";
 import { shoePath } from "@/lib/shoepath";
 
@@ -50,9 +50,9 @@ export default async function ShoeDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(shoeAuthOptions);
 
-  const post = await prisma.shoePost.findUnique({
+  const post = await shoeDb.shoePost.findUnique({
     where: { id },
     include: {
       user: { select: { handle: true, username: true } },
@@ -73,7 +73,7 @@ export default async function ShoeDetailPage({
   // For TRADE offers, show the buyer's own active listings in a dropdown
   let myListings: { id: string; title: string; condition: string }[] = [];
   if (session?.user?.id && post.listingType === "TRADE" && !isOwner && isActive) {
-    myListings = await prisma.shoePost.findMany({
+    myListings = await shoeDb.shoePost.findMany({
       where: { userId: session.user.id, status: "ACTIVE" },
       select: { id: true, title: true, condition: true },
     });

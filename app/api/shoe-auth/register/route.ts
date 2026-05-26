@@ -1,0 +1,54 @@
+import { NextRequest, NextResponse } from "next/server";
+import { hash } from "bcryptjs";
+import { shoeDb } from "@/lib/shoe-prisma";
+import { z } from "zod";
+
+export const dynamic = "force-dynamic";
+
+const registerSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  handle: z
+    .string()
+    .min(3, "Handle must be at least 3 characters")
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      "Handle can only contain letters, numbers, and underscores"
+    ),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { email, username, handle, password } = registerSchema.parse(body);
+
+    const existingUser = await shoeDb.user.findFirst({
+      where: { OR: [{ email }, { username }, { handle }] },
+    });
+
+    if (existingUser) {
+      if (existingUser.email === email)
+        return NextResponse.json({ error: "Email already registered" }, { status: 400 });
+      if (existingUser.username === username)
+        return NextResponse.json({ error: "Username already taken" }, { status: 400 });
+      if (existingUser.handle === handle)
+        return NextResponse.json({ error: "Handle already taken" }, { status: 400 });
+    }
+
+    const passwordHash = await hash(password, 12);
+
+    const user = await shoeDb.user.create({
+      data: { email, username, handle, passwordHash },
+      select: { id: true, email: true, username: true, handle: true },
+    });
+
+    return NextResponse.json({ message: "User created successfully", user }, { status: 201 });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+    }
+    console.error("Shoe registration error:", error);
+    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+  }
+}

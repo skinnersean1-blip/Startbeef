@@ -1,8 +1,8 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
+import { shoeDb } from "@/lib/shoe-prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { shoeAuthOptions } from "@/lib/shoe-auth";
 import { redirect } from "next/navigation";
 import { shoePath } from "@/lib/shoepath";
 
@@ -14,7 +14,7 @@ const TIER_CREDITS: Record<string, number> = {
 };
 
 export async function createShoePost(formData: FormData) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(shoeAuthOptions);
   if (!session?.user?.id) redirect("/auth/signin");
 
   const title = formData.get("title") as string;
@@ -27,7 +27,7 @@ export async function createShoePost(formData: FormData) {
   const priceRaw = formData.get("askingPrice") as string | null;
   const askingPrice = priceRaw && listingType === "SALE" ? parseFloat(priceRaw) : null;
 
-  await prisma.shoePost.create({
+  await shoeDb.shoePost.create({
     data: {
       userId: session.user.id,
       title,
@@ -45,7 +45,7 @@ export async function createShoePost(formData: FormData) {
 }
 
 export async function submitOffer(formData: FormData) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(shoeAuthOptions);
   if (!session?.user?.id) redirect("/auth/signin");
 
   const postId = formData.get("postId") as string;
@@ -55,7 +55,7 @@ export async function submitOffer(formData: FormData) {
   const priceRaw = formData.get("offerPrice") as string | null;
   const offerPrice = priceRaw ? parseFloat(priceRaw) : null;
 
-  await prisma.shoeOffer.create({
+  await shoeDb.shoeOffer.create({
     data: {
       postId,
       offerUserId: session.user.id,
@@ -68,10 +68,10 @@ export async function submitOffer(formData: FormData) {
 }
 
 export async function acceptOffer(offerId: string) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(shoeAuthOptions);
   if (!session?.user?.id) redirect("/auth/signin");
 
-  const offer = await prisma.shoeOffer.findUnique({
+  const offer = await shoeDb.shoeOffer.findUnique({
     where: { id: offerId },
     include: { post: true },
   });
@@ -79,7 +79,7 @@ export async function acceptOffer(offerId: string) {
   if (!offer) throw new Error("Offer not found");
   if (offer.post.userId !== session.user.id) throw new Error("Not authorized");
 
-  await prisma.$transaction(async (tx) => {
+  await shoeDb.$transaction(async (tx) => {
     await tx.shoeOffer.update({
       where: { id: offerId },
       data: { status: "ACCEPTED" },
@@ -113,10 +113,10 @@ export async function acceptOffer(offerId: string) {
 }
 
 export async function declineOffer(offerId: string) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(shoeAuthOptions);
   if (!session?.user?.id) redirect("/auth/signin");
 
-  const offer = await prisma.shoeOffer.findUnique({
+  const offer = await shoeDb.shoeOffer.findUnique({
     where: { id: offerId },
     include: { post: { select: { userId: true, id: true } } },
   });
@@ -124,7 +124,7 @@ export async function declineOffer(offerId: string) {
   if (!offer) throw new Error("Offer not found");
   if (offer.post.userId !== session.user.id) throw new Error("Not authorized");
 
-  await prisma.shoeOffer.update({
+  await shoeDb.shoeOffer.update({
     where: { id: offerId },
     data: { status: "DECLINED" },
   });

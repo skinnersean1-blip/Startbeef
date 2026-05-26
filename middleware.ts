@@ -8,12 +8,25 @@ export function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Pass through Next.js internals, auth, and api routes
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/api") ||
-    pathname.startsWith("/auth")
-  ) {
+  // Pass through Next.js internals
+  if (pathname.startsWith("/_next")) return NextResponse.next();
+
+  // Rewrite auth API calls to the shoe-specific NextAuth endpoint
+  if (pathname.startsWith("/api/auth")) {
+    const url = request.nextUrl.clone();
+    url.pathname = pathname.replace("/api/auth", "/api/shoe-auth");
+    return NextResponse.rewrite(url);
+  }
+
+  // Rewrite registration to shoe-specific endpoint
+  if (pathname === "/api/auth/register") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/api/shoe-auth/register";
+    return NextResponse.rewrite(url);
+  }
+
+  // Pass other API and auth page routes through unchanged
+  if (pathname.startsWith("/api") || pathname.startsWith("/auth")) {
     return NextResponse.next();
   }
 
