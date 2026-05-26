@@ -32,6 +32,7 @@ model User {
 
   emailVerifyToken   String?
   emailVerifyExpiry  DateTime?
+  interests          String    @default("[]")
 
   challengesCreated  Beef[]      @relation("Challenger")
   challengesAccepted Beef[]      @relation("Responder")
