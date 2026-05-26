@@ -61,7 +61,7 @@ export default function InterestsPage() {
             <h1 className="text-5xl font-bold mb-3 cursor-pointer">BEEF</h1>
           </Link>
           <p className="section-label mb-3">ONE LAST THING</p>
-          <h2 className="text-3xl font-bold mb-2">PICK YOUR ARENAS</h2>
+          <h2 className="text-3xl font-bold mb-2">PICK YOUR TOPICS</h2>
           <p className="text-beef-text-muted text-sm">
             What do you actually want to fight about? Select all that apply.
           </p>
