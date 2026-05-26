@@ -7,7 +7,7 @@ import Link from "next/link";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Tab = "overview" | "users" | "beefs" | "withdrawals" | "topics";
+type Tab = "overview" | "users" | "beefs" | "withdrawals" | "topics" | "interests";
 
 type Stats = {
   totalUsers: number;
@@ -470,6 +470,103 @@ function TopicsTab() {
   );
 }
 
+function InterestsTab() {
+  const [data, setData] = useState<{ interests: { name: string; count: number }[]; totalWithInterests: number; totalUsers: number } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/interests")
+      .then((r) => r.json())
+      .then((d) => setData(d));
+  }, []);
+
+  if (!data) return <Spinner />;
+
+  const { interests, totalWithInterests, totalUsers } = data;
+  const max = interests[0]?.count || 1;
+  const pct = totalUsers > 0 ? Math.round((totalWithInterests / totalUsers) * 100) : 0;
+
+  const PRESET = new Set(["POLITICS", "CULTURE", "SPORTS", "TECH", "CALLOUTS"]);
+
+  const preset = interests.filter((i) => PRESET.has(i.name));
+  const custom = interests.filter((i) => !PRESET.has(i.name));
+
+  return (
+    <div className="space-y-8">
+      {/* Summary */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+          <p className="text-xs font-bold tracking-widest text-gray-400 mb-1">USERS WITH INTERESTS</p>
+          <p className="text-3xl font-bold text-orange-500">{totalWithInterests}</p>
+          <p className="text-xs text-gray-400 mt-1">{pct}% of all users</p>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+          <p className="text-xs font-bold tracking-widest text-gray-400 mb-1">UNIQUE INTERESTS</p>
+          <p className="text-3xl font-bold text-orange-500">{interests.length}</p>
+          <p className="text-xs text-gray-400 mt-1">{custom.length} custom topics</p>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+          <p className="text-xs font-bold tracking-widest text-gray-400 mb-1">MOST POPULAR</p>
+          <p className="text-3xl font-bold text-orange-500">{interests[0]?.name ?? "—"}</p>
+          <p className="text-xs text-gray-400 mt-1">{interests[0]?.count ?? 0} users</p>
+        </div>
+      </div>
+
+      {/* Preset categories */}
+      {preset.length > 0 && (
+        <div>
+          <p className="text-xs font-bold tracking-widest text-gray-400 mb-3">PLATFORM CATEGORIES</p>
+          <div className="space-y-2">
+            {preset.map((t, i) => (
+              <div key={t.name} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-gray-300 w-5 text-right font-bold">{i + 1}</span>
+                    <span className="font-bold text-sm text-gray-900">{t.name}</span>
+                  </div>
+                  <span className="text-sm font-bold text-orange-500">{t.count} user{t.count !== 1 ? "s" : ""}</span>
+                </div>
+                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-orange-400 rounded-full" style={{ width: `${(t.count / max) * 100}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Custom topics */}
+      {custom.length > 0 && (
+        <div>
+          <p className="text-xs font-bold tracking-widest text-gray-400 mb-3">USER-DEFINED TOPICS</p>
+          <div className="space-y-2">
+            {custom.map((t, i) => (
+              <div key={t.name} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-gray-300 w-5 text-right font-bold">{i + 1}</span>
+                    <span className="font-bold text-sm text-gray-900">{t.name}</span>
+                    <span className="text-xs text-gray-400 border border-gray-200 px-2 py-0.5 rounded-full">custom</span>
+                  </div>
+                  <span className="text-sm font-bold text-orange-500">{t.count} user{t.count !== 1 ? "s" : ""}</span>
+                </div>
+                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-300 rounded-full" style={{ width: `${(t.count / max) * 100}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {interests.length === 0 && (
+        <div className="bg-white border border-gray-200 rounded-xl text-center py-12 shadow-sm">
+          <p className="text-gray-400 text-sm">No interest data yet. It will populate as users sign up.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Spinner() {
   return <div className="py-12 text-center text-gray-400 text-sm animate-pulse">Loading...</div>;
 }
@@ -482,6 +579,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "beefs",        label: "Beefs"        },
   { id: "withdrawals",  label: "Withdrawals"  },
   { id: "topics",       label: "Topics"       },
+  { id: "interests",    label: "Interests"    },
 ];
 
 export default function AdminPage() {
@@ -544,6 +642,7 @@ export default function AdminPage() {
         {tab === "beefs"       && <BeefsTab />}
         {tab === "withdrawals" && <WithdrawalsTab />}
         {tab === "topics"      && <TopicsTab />}
+        {tab === "interests"   && <InterestsTab />}
       </div>
     </div>
   );
