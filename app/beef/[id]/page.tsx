@@ -182,7 +182,10 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
           {isChallenger && beef.status === "OPEN" && (
             <div className="card-beef bg-beef-bg-light border-beef-gold/30 mb-8 text-center">
               <p className="section-label mb-2">YOUR BEEF IS LIVE</p>
-              <p className="text-muted text-sm">Waiting for someone to match your ${beef.ante}. Share the link to speed it up.</p>
+              <p className="text-muted text-sm mb-4">Waiting for someone to match your ${beef.ante}. Share the link to speed it up.</p>
+              <Link href={`/beef/${beef.id}/edit`} className="btn-secondary text-xs px-5 py-2">
+                EDIT CLAIM
+              </Link>
             </div>
           )}
 
