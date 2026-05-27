@@ -8,9 +8,13 @@ import { shoePath } from "@/lib/shoepath";
 
 type ShoePost = Awaited<ReturnType<typeof fetchSide>>[number];
 
-async function fetchSide(kind: "PAIR" | "SINGLE") {
+async function fetchSide(kind: "PAIR" | "SINGLE", condition?: string) {
   return shoeDb.shoePost.findMany({
-    where: { listingKind: kind, status: "ACTIVE" },
+    where: {
+      listingKind: kind,
+      status: "ACTIVE",
+      ...(condition ? { condition } : {}),
+    },
     orderBy: { createdAt: "desc" },
     take: 20,
     include: { user: { select: { handle: true, username: true } } },
@@ -104,12 +108,17 @@ function EmptyHalf({ kind }: { kind: string }) {
   );
 }
 
-export default async function ShoesPage() {
+export default async function ShoesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ condition?: string }>;
+}) {
+  const { condition } = await searchParams;
   const session = await getServerSession(shoeAuthOptions);
 
   const [pairs, singles, userRow] = await Promise.all([
-    fetchSide("PAIR"),
-    fetchSide("SINGLE"),
+    fetchSide("PAIR", condition),
+    fetchSide("SINGLE", condition),
     session?.user?.id
       ? shoeDb.user.findUnique({ where: { id: session.user.id }, select: { credits: true } })
       : null,
@@ -158,12 +167,26 @@ export default async function ShoesPage() {
               { key: "LIKE_NEW",   label: "Like New",   credits: 3, cls: "text-shoe-tier-likenew" },
               { key: "LOVED",      label: "Loved",      credits: 2, cls: "text-shoe-tier-loved" },
               { key: "WELL_LOVED", label: "Well Loved", credits: 1, cls: "text-shoe-tier-wellloved" },
-            ].map((t) => (
-              <div key={t.key} className="flex items-center gap-1.5">
-                <span className={`font-bold text-sm ${t.cls}`}>{t.label}</span>
-                <span className="text-xs text-shoe-cream-dim">({t.credits}cr)</span>
-              </div>
-            ))}
+            ].map((t) => {
+              const isActive = condition === t.key;
+              return (
+                <Link
+                  key={t.key}
+                  href={isActive ? shoePath() : `${shoePath()}?condition=${t.key}`}
+                  className="flex items-center gap-1.5 group"
+                >
+                  <span className={`font-bold text-sm ${t.cls} ${isActive ? "underline underline-offset-2" : "group-hover:underline group-hover:underline-offset-2"}`}>
+                    {t.label}
+                  </span>
+                  <span className="text-xs text-shoe-cream-dim">({t.credits}cr)</span>
+                </Link>
+              );
+            })}
+            {condition && (
+              <Link href={shoePath()} className="text-xs text-shoe-cream-dim hover:text-shoe-cream transition-colors ml-1">
+                ✕ clear
+              </Link>
+            )}
             <p className="text-xs text-shoe-cream-dim ml-auto">
               Free listings earn credits · Any tier trades evenly
             </p>
@@ -173,10 +196,10 @@ export default async function ShoesPage() {
 
       {/* Two-column marketplace */}
       <main className="container-shoe py-8">
-        <div className="grid grid-cols-2 gap-0 border border-shoe-border">
+        <div className="grid grid-cols-2 gap-8">
 
           {/* PAIRS */}
-          <div className="border-r border-shoe-border">
+          <div className="border border-shoe-border">
             <div className="bg-shoe-bg-deep border-b border-shoe-border px-6 py-4 flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-shoe-cream tracking-tight">PAIRS</h2>
@@ -193,7 +216,7 @@ export default async function ShoesPage() {
           </div>
 
           {/* SINGLES */}
-          <div>
+          <div className="border border-shoe-border">
             <div className="bg-shoe-bg-deep border-b border-shoe-border px-6 py-4 flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-shoe-cream tracking-tight">SINGLES</h2>
