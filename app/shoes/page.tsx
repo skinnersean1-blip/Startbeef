@@ -132,9 +132,11 @@ export default async function ShoesPage({
         <div className="container-shoe py-6 flex items-center justify-between gap-6">
           <div>
             <p className="label-shoe mb-1">CHILDREN&apos;S SHOE EXCHANGE</p>
-            <h1 className="text-5xl font-bold text-shoe-cream tracking-tight leading-none">
-              SHOE-SHOE
-            </h1>
+            <Link href={shoePath()}>
+              <h1 className="text-5xl font-bold text-shoe-cream tracking-tight leading-none hover:text-shoe-accent transition-colors">
+                SHOE-SHOE
+              </h1>
+            </Link>
           </div>
 
           <div className="flex items-center gap-4">

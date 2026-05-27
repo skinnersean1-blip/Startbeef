@@ -87,6 +87,9 @@ function SignInForm() {
             Create one
           </Link>
         </p>
+        <Link href="/auth/forgot-password" className="block text-shoe-cream-dim text-sm hover:text-shoe-cream transition-colors">
+          Forgot password?
+        </Link>
         <Link href={shoePath()} className="block text-shoe-cream-dim text-xs tracking-widest hover:text-shoe-cream transition-colors">
           BROWSE WITHOUT SIGNING IN →
         </Link>
@@ -101,7 +104,9 @@ export default function ShoeSignInPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <p className="label-shoe mb-1">CHILDREN&apos;S SHOE EXCHANGE</p>
-          <h1 className="text-5xl font-bold text-shoe-cream tracking-tight">SHOE-SHOE</h1>
+          <Link href={shoePath()}>
+            <h1 className="text-5xl font-bold text-shoe-cream tracking-tight hover:text-shoe-accent transition-colors">SHOE-SHOE</h1>
+          </Link>
           <p className="label-shoe mt-2">WELCOME BACK</p>
         </div>
         <Suspense fallback={<div className="border border-shoe-border bg-shoe-panel h-64 animate-pulse" />}>

@@ -69,7 +69,9 @@ export default function ShoeSignUpPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <p className="label-shoe mb-1">CHILDREN&apos;S SHOE EXCHANGE</p>
-          <h1 className="text-5xl font-bold text-shoe-cream tracking-tight">SHOE-SHOE</h1>
+          <Link href={shoePath()}>
+            <h1 className="text-5xl font-bold text-shoe-cream tracking-tight hover:text-shoe-accent transition-colors">SHOE-SHOE</h1>
+          </Link>
           <p className="label-shoe mt-2">CREATE AN ACCOUNT</p>
         </div>
 
