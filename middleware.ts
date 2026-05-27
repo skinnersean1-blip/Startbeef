@@ -25,9 +25,14 @@ export function middleware(request: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
-  // Pass other API and auth page routes through unchanged
-  if (pathname.startsWith("/api") || pathname.startsWith("/auth")) {
-    return NextResponse.next();
+  // Pass other API routes through unchanged
+  if (pathname.startsWith("/api")) return NextResponse.next();
+
+  // Rewrite /auth/* to shoe-branded auth pages
+  if (pathname.startsWith("/auth")) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/shoes${pathname}`;
+    return NextResponse.rewrite(url);
   }
 
   // Already rooted under /shoes — serve directly (handles post-redirect navigations)
