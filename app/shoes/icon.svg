@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <circle cx="16" cy="16" r="16" fill="#2C5E78"/>
+  <circle cx="16" cy="16" r="14.5" fill="none" stroke="#7AAEC4" stroke-width="1"/>
+  <text
+    x="16"
+    y="22"
+    text-anchor="middle"
+    font-family="system-ui, -apple-system, sans-serif"
+    font-weight="900"
+    font-size="16"
+    fill="#FFF8DC"
+    letter-spacing="-1"
+  >SS</text>
+</svg>
