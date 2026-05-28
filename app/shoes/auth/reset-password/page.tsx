@@ -114,7 +114,7 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen bg-shoe-bg flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <p className="label-shoe mb-1">CHILDREN&apos;S SHOE EXCHANGE</p>
+          <p className="label-shoe mb-1">Buy, Swap, Sell</p>
           <Link href={shoePath()}>
             <h1 className="text-5xl font-bold text-shoe-cream tracking-tight hover:text-shoe-accent transition-colors">
               SHOE-SHOE

@@ -130,7 +130,7 @@ export default async function ShoesPage({
       {/* Header */}
       <header className="bg-shoe-bg-deep border-b border-shoe-border overflow-hidden">
         <div className="container-shoe pt-5 pb-1 flex items-center justify-between gap-6">
-          <p className="label-shoe">CHILDREN&apos;S SHOE EXCHANGE</p>
+          <p className="label-shoe">Buy, Swap, Sell</p>
           <div className="flex items-center gap-4">
             {session ? (
               <>
