@@ -151,8 +151,8 @@ export default async function ShoesPage({
         </div>
         <Link href={shoePath()} className="block">
           <h1
-            className="font-black text-shoe-cream leading-none whitespace-nowrap pl-3 pb-1 hover:text-shoe-accent transition-colors select-none"
-            style={{ fontSize: "17vw", letterSpacing: "-0.02em" }}
+            className="font-black text-shoe-cream leading-none whitespace-nowrap pb-1 hover:text-shoe-accent transition-colors select-none relative left-1/2 -translate-x-1/2 w-max"
+            style={{ fontSize: "20vw", letterSpacing: "-0.02em" }}
           >
             SHOE SHOE
           </h1>
