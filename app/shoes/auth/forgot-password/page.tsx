@@ -33,66 +33,76 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-shoe-bg flex items-center justify-center py-12 px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <p className="label-shoe mb-1">Buy, Swap, Sell</p>
-          <Link href={shoePath()}>
-            <h1 className="text-5xl font-bold text-shoe-cream tracking-tight hover:text-shoe-accent transition-colors">
-              SHOE-SHOE
-            </h1>
+    <div className="min-h-screen bg-shoe-bg">
+
+      <header className="bg-shoe-bg-deep border-b border-shoe-border overflow-hidden">
+        <div className="container-shoe pt-5 pb-1 flex items-center justify-between gap-6">
+          <p className="label-shoe">Buy, Swap, Sell</p>
+          <Link href="/auth/signin" className="text-shoe-cream-dim text-xs tracking-widest hover:text-shoe-accent transition-colors">
+            ← SIGN IN
           </Link>
-          <p className="label-shoe mt-2">RESET YOUR PASSWORD</p>
         </div>
+        <Link href={shoePath()} className="block">
+          <h1
+            className="font-black text-shoe-cream leading-none whitespace-nowrap pb-1 hover:text-shoe-accent transition-colors select-none relative left-1/2 -translate-x-1/2 w-max"
+            style={{ fontSize: "20vw", letterSpacing: "-0.02em" }}
+          >
+            SHOE SHOE
+          </h1>
+        </Link>
+      </header>
 
-        <div className="border border-shoe-border bg-shoe-panel p-8">
-          {submitted ? (
-            <div className="text-center space-y-4">
-              <p className="text-shoe-cream text-sm leading-relaxed">
-                If that email is registered, a reset link is on its way. Check your inbox — it expires in 1 hour.
-              </p>
-              <Link href="/auth/signin" className="btn-shoe-ghost w-full block mt-6">
-                ← BACK TO SIGN IN
-              </Link>
-            </div>
-          ) : (
-            <>
-              <h2 className="text-xl font-bold text-shoe-cream tracking-tight mb-6">FORGOT PASSWORD</h2>
+      <main className="flex justify-center py-12 px-4">
+        <div className="w-full max-w-md">
+          <p className="label-shoe text-center mb-8">RESET YOUR PASSWORD</p>
 
-              {error && (
-                <div className="border border-red-500 text-red-400 px-4 py-3 mb-6 text-sm">{error}</div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="label-shoe block mb-2">EMAIL ADDRESS</label>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="input-shoe w-full"
-                    placeholder="your@email.com"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn-shoe-primary w-full disabled:opacity-50"
-                >
-                  {loading ? "SENDING..." : "SEND RESET LINK"}
-                </button>
-              </form>
-
-              <div className="mt-6 text-center">
-                <Link href="/auth/signin" className="text-shoe-cream-dim text-sm hover:text-shoe-cream transition-colors">
-                  ← Back to sign in
+          <div className="border border-shoe-border bg-shoe-panel p-8">
+            {submitted ? (
+              <div className="text-center space-y-4">
+                <p className="text-shoe-cream text-sm leading-relaxed">
+                  If that email is registered, a reset link is on its way. Check your inbox — it expires in 1 hour.
+                </p>
+                <Link href="/auth/signin" className="btn-shoe-ghost w-full block mt-6">
+                  ← BACK TO SIGN IN
                 </Link>
               </div>
-            </>
-          )}
+            ) : (
+              <>
+                {error && (
+                  <div className="border border-red-500 text-red-400 px-4 py-3 mb-6 text-sm">{error}</div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="label-shoe block mb-2">EMAIL ADDRESS</label>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="input-shoe w-full"
+                      placeholder="your@email.com"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="btn-shoe-primary w-full disabled:opacity-50"
+                  >
+                    {loading ? "SENDING..." : "SEND RESET LINK"}
+                  </button>
+                </form>
+
+                <div className="mt-6 text-center">
+                  <Link href="/auth/signin" className="text-shoe-cream-dim text-sm hover:text-shoe-accent transition-colors">
+                    ← Back to sign in
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
