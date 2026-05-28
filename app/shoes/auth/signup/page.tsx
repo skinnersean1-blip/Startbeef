@@ -67,15 +67,28 @@ export default function ShoeSignUpPage() {
   };
 
   return (
-    <div className="min-h-screen bg-shoe-bg flex items-center justify-center py-12 px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <p className="label-shoe mb-1">Buy, Swap, Sell</p>
-          <Link href={shoePath()}>
-            <h1 className="text-5xl font-bold text-shoe-cream tracking-tight hover:text-shoe-accent transition-colors">SHOE-SHOE</h1>
+    <div className="min-h-screen bg-shoe-bg">
+
+      <header className="bg-shoe-bg-deep border-b border-shoe-border overflow-hidden">
+        <div className="container-shoe pt-5 pb-1 flex items-center justify-between gap-6">
+          <p className="label-shoe">Buy, Swap, Sell</p>
+          <Link href="/auth/signin" className="text-shoe-cream-dim text-xs tracking-widest hover:text-shoe-accent transition-colors">
+            ← SIGN IN
           </Link>
-          <p className="label-shoe mt-2">CREATE AN ACCOUNT</p>
         </div>
+        <Link href={shoePath()} className="block">
+          <h1
+            className="font-black text-shoe-cream leading-none whitespace-nowrap pb-1 hover:text-shoe-accent transition-colors select-none relative left-1/2 -translate-x-1/2 w-max"
+            style={{ fontSize: "20vw", letterSpacing: "-0.02em" }}
+          >
+            SHOE SHOE
+          </h1>
+        </Link>
+      </header>
+
+      <main className="flex justify-center py-12 px-4">
+        <div className="w-full max-w-md">
+          <p className="label-shoe text-center mb-8">CREATE AN ACCOUNT</p>
 
         <div className="border border-shoe-border bg-shoe-panel p-8">
           <h2 className="text-xl font-bold text-shoe-cream tracking-tight mb-6">JOIN SHOE-SHOE</h2>
@@ -186,7 +199,8 @@ export default function ShoeSignUpPage() {
             </p>
           </div>
         </div>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }
