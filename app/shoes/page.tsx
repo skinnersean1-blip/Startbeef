@@ -59,11 +59,11 @@ function timeAgo(date: Date) {
 function ShoeCard({ post }: { post: ShoePost }) {
   const handle = post.user.handle || post.user.username;
   return (
-    <Link href={shoePath(`/${post.id}`)}>
-      <div className="border border-shoe-border bg-shoe-panel hover:bg-shoe-panel-lite transition-colors duration-100 cursor-pointer p-4">
+    <Link href={shoePath(`/${post.id}`)} className="group">
+      <div className="border border-shoe-border bg-shoe-panel group-hover:bg-shoe-panel-lite transition-colors duration-100 cursor-pointer p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-shoe-cream leading-snug truncate">{post.title}</p>
+            <p className="font-bold text-shoe-cream group-hover:text-shoe-accent transition-colors leading-snug truncate">{post.title}</p>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               {post.brand && (
                 <span className="text-xs text-shoe-cream-dim">{post.brand}</span>
@@ -177,7 +177,7 @@ export default async function ShoesPage({
                   href={isActive ? shoePath() : `${shoePath()}?condition=${t.key}`}
                   className="flex items-center gap-1.5 group"
                 >
-                  <span className={`font-bold text-sm ${t.cls} ${isActive ? "underline underline-offset-2" : "group-hover:underline group-hover:underline-offset-2"}`}>
+                  <span className={`font-bold text-sm ${t.cls} ${isActive ? "underline underline-offset-2" : "group-hover:underline group-hover:underline-offset-2 group-hover:text-shoe-accent"} transition-colors`}>
                     {t.label}
                   </span>
                   <span className="text-xs text-shoe-cream-dim">({t.credits}cr)</span>
@@ -185,7 +185,7 @@ export default async function ShoesPage({
               );
             })}
             {condition && (
-              <Link href={shoePath()} className="text-xs text-shoe-cream-dim hover:text-shoe-cream transition-colors ml-1">
+              <Link href={shoePath()} className="text-xs text-shoe-cream-dim hover:text-shoe-accent transition-colors ml-1">
                 ✕ clear
               </Link>
             )}
@@ -242,7 +242,7 @@ export default async function ShoesPage({
           <p className="text-shoe-cream-dim text-xs tracking-widest">
             © 2026 SHOE-SHOE. WHERE TINY FEET FIND THEIR MATCH.
           </p>
-          <Link href="/" className="text-shoe-cream-dim text-xs tracking-widest hover:text-shoe-cream transition-colors">
+          <Link href="/" className="text-shoe-cream-dim text-xs tracking-widest hover:text-shoe-accent transition-colors">
             ← BACK TO BEEF
           </Link>
         </div>
