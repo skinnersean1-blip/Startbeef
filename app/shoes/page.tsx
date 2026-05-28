@@ -128,17 +128,9 @@ export default async function ShoesPage({
     <div className="min-h-screen bg-shoe-bg">
 
       {/* Header */}
-      <header className="bg-shoe-bg-deep border-b border-shoe-border">
-        <div className="container-shoe py-6 flex items-center justify-between gap-6">
-          <div>
-            <p className="label-shoe mb-1">CHILDREN&apos;S SHOE EXCHANGE</p>
-            <Link href={shoePath()}>
-              <h1 className="text-5xl font-bold text-shoe-cream tracking-tight leading-none hover:text-shoe-accent transition-colors">
-                SHOE-SHOE
-              </h1>
-            </Link>
-          </div>
-
+      <header className="bg-shoe-bg-deep border-b border-shoe-border overflow-hidden">
+        <div className="container-shoe pt-5 pb-1 flex items-center justify-between gap-6">
+          <p className="label-shoe">CHILDREN&apos;S SHOE EXCHANGE</p>
           <div className="flex items-center gap-4">
             {session ? (
               <>
@@ -157,6 +149,14 @@ export default async function ShoesPage({
             )}
           </div>
         </div>
+        <Link href={shoePath()} className="block">
+          <h1
+            className="font-black text-shoe-cream leading-none whitespace-nowrap pl-3 pb-1 hover:text-shoe-accent transition-colors select-none"
+            style={{ fontSize: "17vw", letterSpacing: "-0.02em" }}
+          >
+            SHOE SHOE
+          </h1>
+        </Link>
       </header>
 
       {/* Tier guide */}
