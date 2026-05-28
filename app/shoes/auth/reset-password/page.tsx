@@ -12,6 +12,8 @@ function ResetForm() {
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
@@ -74,26 +76,44 @@ function ResetForm() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="label-shoe block mb-2">NEW PASSWORD</label>
-              <input
-                type="password"
-                required
-                minLength={8}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input-shoe w-full"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  minLength={8}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input-shoe w-full pr-16"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-shoe-cream-dim hover:text-shoe-accent transition-colors tracking-widest"
+                >
+                  {showPassword ? "HIDE" : "SHOW"}
+                </button>
+              </div>
             </div>
             <div>
               <label className="label-shoe block mb-2">CONFIRM PASSWORD</label>
-              <input
-                type="password"
-                required
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                className="input-shoe w-full"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input
+                  type={showConfirm ? "text" : "password"}
+                  required
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  className="input-shoe w-full pr-16"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-shoe-cream-dim hover:text-shoe-accent transition-colors tracking-widest"
+                >
+                  {showConfirm ? "HIDE" : "SHOW"}
+                </button>
+              </div>
             </div>
             <button
               type="submit"

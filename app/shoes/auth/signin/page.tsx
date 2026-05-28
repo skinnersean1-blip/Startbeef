@@ -12,6 +12,7 @@ function SignInForm() {
   const callbackUrl = searchParams.get("callbackUrl") || shoePath();
 
   const [formData, setFormData] = useState({ identifier: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -61,14 +62,23 @@ function SignInForm() {
 
         <div>
           <label className="label-shoe block mb-2">PASSWORD</label>
-          <input
-            type="password"
-            required
-            value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            className="input-shoe w-full"
-            placeholder="••••••••"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              required
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              className="input-shoe w-full pr-16"
+              placeholder="••••••••"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-shoe-cream-dim hover:text-shoe-accent transition-colors tracking-widest"
+            >
+              {showPassword ? "HIDE" : "SHOW"}
+            </button>
+          </div>
         </div>
 
         <button
