@@ -51,8 +51,8 @@ export default function ForgotPasswordPage() {
               <p className="text-shoe-cream text-sm leading-relaxed">
                 If that email is registered, a reset link is on its way. Check your inbox — it expires in 1 hour.
               </p>
-              <Link href="/auth/signin" className="block mt-6">
-                <button className="btn-shoe-ghost w-full">← BACK TO SIGN IN</button>
+              <Link href="/auth/signin" className="btn-shoe-ghost w-full block mt-6">
+                ← BACK TO SIGN IN
               </Link>
             </div>
           ) : (

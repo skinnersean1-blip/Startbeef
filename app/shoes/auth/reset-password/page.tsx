@@ -49,8 +49,8 @@ function ResetForm() {
     return (
       <div className="border border-shoe-border bg-shoe-panel p-8 text-center">
         <p className="text-red-400 text-sm">Invalid reset link.</p>
-        <Link href="/auth/forgot-password" className="block mt-4">
-          <button className="btn-shoe-ghost w-full">REQUEST A NEW LINK</button>
+        <Link href="/auth/forgot-password" className="btn-shoe-ghost w-full block mt-4">
+          REQUEST A NEW LINK
         </Link>
       </div>
     );

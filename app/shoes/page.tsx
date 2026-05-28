@@ -101,8 +101,8 @@ function EmptyHalf({ kind }: { kind: string }) {
   return (
     <div className="p-8 text-center">
       <p className="text-shoe-cream-dim text-sm tracking-widest">NO {kind.toUpperCase()} LISTED YET</p>
-      <Link href={shoePath("/new")}>
-        <button className="btn-shoe-ghost mt-4">BE THE FIRST</button>
+      <Link href={shoePath("/new")} className="btn-shoe-ghost mt-4 inline-block">
+        BE THE FIRST
       </Link>
     </div>
   );
@@ -138,13 +138,13 @@ export default async function ShoesPage({
                   <p className="text-xs text-shoe-cream-dim tracking-widest">YOUR CREDITS</p>
                   <p className="text-xl font-bold text-shoe-accent">{userRow?.credits ?? 0}</p>
                 </div>
-                <Link href={shoePath("/new")}>
-                  <button className="btn-shoe-primary">+ POST A SHOE</button>
+                <Link href={shoePath("/new")} className="btn-shoe-primary">
+                  + POST A SHOE
                 </Link>
               </>
             ) : (
-              <Link href="/auth/signin">
-                <button className="btn-shoe-secondary">SIGN IN TO POST</button>
+              <Link href="/auth/signin" className="btn-shoe-secondary">
+                SIGN IN TO POST
               </Link>
             )}
           </div>
