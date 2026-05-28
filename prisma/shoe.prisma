@@ -47,6 +47,7 @@ model ShoePost {
   condition   String
   description String?
   askingPrice Float?
+  images      String?
 
   status String @default("ACTIVE")
 

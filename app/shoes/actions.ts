@@ -26,6 +26,7 @@ export async function createShoePost(formData: FormData) {
   const description = (formData.get("description") as string) || null;
   const priceRaw = formData.get("askingPrice") as string | null;
   const askingPrice = priceRaw && listingType === "SALE" ? parseFloat(priceRaw) : null;
+  const images = (formData.get("images") as string) || null;
 
   await shoeDb.shoePost.create({
     data: {
@@ -38,6 +39,7 @@ export async function createShoePost(formData: FormData) {
       condition,
       description,
       askingPrice,
+      images,
     },
   });
 

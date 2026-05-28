@@ -110,6 +110,29 @@ export default async function ShoeDetailPage({
             </div>
           )}
 
+          {/* Image gallery */}
+          {post.images && (() => {
+            try {
+              const urls: string[] = JSON.parse(post.images);
+              if (urls.length === 0) return null;
+              return (
+                <div className={`grid gap-1 mb-6 ${urls.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
+                  {urls.map((url, i) => (
+                    <div
+                      key={i}
+                      className={`border border-shoe-border overflow-hidden ${
+                        i === 0 && urls.length >= 3 ? "col-span-2" : ""
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt="" className="w-full object-cover aspect-square" />
+                    </div>
+                  ))}
+                </div>
+              );
+            } catch { return null; }
+          })()}
+
           {/* Title + meta */}
           <h2 className="text-2xl font-bold text-shoe-cream leading-snug mb-2">
             {post.title}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { createShoePost } from "../actions";
 import { shoePath } from "@/lib/shoepath";
@@ -27,32 +27,74 @@ const SIZES = [
 ];
 
 export default function NewShoePage() {
-  const [kind, setKind]         = useState<"PAIR" | "SINGLE" | "">("");
-  const [listType, setListType] = useState<"SALE" | "TRADE" | "FREE" | "">("");
+  const [kind, setKind]           = useState<"PAIR" | "SINGLE" | "">("");
+  const [listType, setListType]   = useState<"SALE" | "TRADE" | "FREE" | "">("");
   const [condition, setCondition] = useState("");
+  const [images, setImages]       = useState<File[]>([]);
+  const [previews, setPreviews]   = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
 
   const creditsEarned = condition && listType === "FREE"
     ? CONDITIONS.find((c) => c.key === condition)?.credits ?? 0
     : null;
 
+  const handleImageAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const toAdd = files.slice(0, 5 - images.length);
+    setImages((prev) => [...prev, ...toAdd]);
+    setPreviews((prev) => [...prev, ...toAdd.map((f) => URL.createObjectURL(f))]);
+    e.target.value = "";
+  };
+
+  const removeImage = (i: number) => {
+    URL.revokeObjectURL(previews[i]);
+    setImages((prev) => prev.filter((_, idx) => idx !== i));
+    setPreviews((prev) => prev.filter((_, idx) => idx !== i));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setUploadError("");
+
+    try {
+      const imageUrls: string[] = [];
+      for (const file of images) {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/auth/upload", { method: "POST", body: fd });
+        if (!res.ok) throw new Error("Upload failed");
+        const { url } = await res.json();
+        imageUrls.push(url);
+      }
+
+      const formData = new FormData(e.currentTarget);
+      if (imageUrls.length > 0) formData.set("images", JSON.stringify(imageUrls));
+
+      await createShoePost(formData);
+    } catch {
+      setUploadError("Photo upload failed. Please try again.");
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-shoe-bg">
 
-      {/* Header */}
       <header className="bg-shoe-bg-deep border-b border-shoe-border">
         <div className="container-shoe py-6 flex items-center justify-between">
           <div>
             <p className="label-shoe mb-1">NEW LISTING</p>
             <h1 className="text-4xl font-bold text-shoe-cream tracking-tight">POST A SHOE</h1>
           </div>
-          <Link href={shoePath()}>
-            <button className="btn-shoe-ghost">← BACK</button>
-          </Link>
+          <Link href={shoePath()} className="btn-shoe-ghost">← BACK</Link>
         </div>
       </header>
 
       <main className="container-shoe py-8 max-w-2xl">
-        <form action={createShoePost} className="space-y-8">
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
 
           {/* Step 1: Pair or Single */}
           <div className="card-shoe">
@@ -213,8 +255,60 @@ export default function NewShoePage() {
             </div>
           </div>
 
-          <button type="submit" className="btn-shoe-primary w-full py-4 text-base">
-            POST LISTING
+          {/* Step 5: Photos */}
+          <div className="card-shoe space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="label-shoe">PHOTOS</p>
+              <p className="text-xs text-shoe-cream-dim">{images.length} / 5</p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              {previews.map((src, i) => (
+                <div key={i} className="relative aspect-square">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={src}
+                    alt=""
+                    className="w-full h-full object-cover border border-shoe-border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(i)}
+                    className="absolute top-1 right-1 bg-shoe-bg-deep border border-shoe-border text-shoe-cream-dim hover:text-shoe-accent text-xs px-1.5 py-0.5 transition-colors leading-none"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+
+              {images.length < 5 && (
+                <label className="aspect-square border-2 border-dashed border-shoe-border hover:border-shoe-cream flex flex-col items-center justify-center cursor-pointer transition-colors">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="sr-only"
+                    onChange={handleImageAdd}
+                  />
+                  <span className="text-shoe-cream-dim text-3xl leading-none">+</span>
+                  <span className="text-shoe-cream-dim text-xs mt-1 tracking-widest">ADD PHOTO</span>
+                </label>
+              )}
+            </div>
+
+            <p className="text-xs text-shoe-cream-dim">Up to 5 photos · JPG, PNG · Max 5MB each</p>
+          </div>
+
+          {uploadError && (
+            <div className="border border-red-500 text-red-400 px-4 py-3 text-sm">{uploadError}</div>
+          )}
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="btn-shoe-primary w-full py-4 text-base disabled:opacity-50"
+          >
+            {submitting ? "POSTING..." : "POST LISTING"}
           </button>
         </form>
       </main>
