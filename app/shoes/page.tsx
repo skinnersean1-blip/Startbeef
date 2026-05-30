@@ -120,7 +120,7 @@ export default async function ShoesPage({
     fetchSide("PAIR", condition),
     fetchSide("SINGLE", condition),
     session?.user?.id
-      ? shoeDb.user.findUnique({ where: { id: session.user.id }, select: { credits: true } })
+      ? shoeDb.user.findUnique({ where: { id: session.user.id }, select: { credits: true, handle: true, username: true } })
       : null,
   ]);
 
@@ -135,8 +135,12 @@ export default async function ShoesPage({
             {session ? (
               <>
                 <div className="text-right">
-                  <p className="text-xs text-shoe-cream-dim tracking-widest">YOUR CREDITS</p>
-                  <p className="text-xl font-bold text-shoe-accent">{userRow?.credits ?? 0}</p>
+                  <p className="text-xs text-shoe-cream-dim tracking-widest">
+                    @{userRow?.handle ?? userRow?.username ?? "you"}
+                  </p>
+                  <p className="text-xs text-shoe-cream-dim tracking-widest">
+                    {userRow?.credits ?? 0} credits
+                  </p>
                 </div>
                 <Link href={shoePath("/new")} className="btn-shoe-primary">
                   + POST A SHOE
