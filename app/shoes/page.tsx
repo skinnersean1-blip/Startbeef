@@ -58,40 +58,64 @@ function timeAgo(date: Date) {
 
 function ShoeCard({ post }: { post: ShoePost }) {
   const handle = post.user.handle || post.user.username;
+
+  let thumbUrl: string | null = null;
+  if (post.images) {
+    try {
+      const urls: string[] = JSON.parse(post.images);
+      if (urls.length > 0) thumbUrl = urls[0];
+    } catch {}
+  }
+
   return (
     <Link href={shoePath(`/${post.id}`)} className="group">
       <div className="border border-shoe-border bg-shoe-panel group-hover:bg-shoe-panel-lite transition-colors duration-100 cursor-pointer p-4">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          {thumbUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={thumbUrl}
+              alt=""
+              className="flex-shrink-0 w-16 h-16 object-cover border border-shoe-border"
+            />
+          )}
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-shoe-cream group-hover:text-shoe-accent transition-colors leading-snug truncate">{post.title}</p>
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              {post.brand && (
-                <span className="text-xs text-shoe-cream-dim">{post.brand}</span>
-              )}
-              <span className="text-xs text-shoe-cream-dim">·</span>
-              <span className="text-xs text-shoe-cream-dim">Sz {post.size}</span>
-              <span className="text-xs text-shoe-cream-dim">·</span>
-              <span className={`text-xs font-bold ${CONDITION_COLOR[post.condition]}`}>
-                {CONDITION_LABEL[post.condition]}
-              </span>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-shoe-cream group-hover:text-shoe-accent transition-colors leading-snug truncate">{post.title}</p>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                  {post.brand && (
+                    <span className="text-xs text-shoe-cream-dim">{post.brand}</span>
+                  )}
+                  <span className="text-xs text-shoe-cream-dim">·</span>
+                  <span className="text-xs text-shoe-cream-dim">Sz {post.size}</span>
+                  <span className="text-xs text-shoe-cream-dim">·</span>
+                  <span className={`text-xs font-bold ${CONDITION_COLOR[post.condition]}`}>
+                    {CONDITION_LABEL[post.condition]}
+                  </span>
+                </div>
+              </div>
+              <div className="text-right flex-shrink-0">
+                {post.listingType === "SALE" && post.askingPrice != null && (
+                  <p className="font-bold text-shoe-accent text-sm">${post.askingPrice.toFixed(2)}</p>
+                )}
+                {post.listingType === "TRADE" && (
+                  <p className="font-bold text-shoe-cream text-xs tracking-widest">TRADE</p>
+                )}
+                {post.listingType === "FREE" && (
+                  <p className="font-bold text-shoe-tier-new text-xs tracking-widest">
+                    FREE +{TIER_CREDITS[post.condition]}cr
+                  </p>
+                )}
+                <p className="text-xs text-shoe-cream-dim mt-1">{timeAgo(post.createdAt)}</p>
+              </div>
             </div>
-          </div>
-          <div className="text-right flex-shrink-0">
-            {post.listingType === "SALE" && post.askingPrice != null && (
-              <p className="font-bold text-shoe-accent text-sm">${post.askingPrice.toFixed(2)}</p>
+            {post.description && (
+              <p className="text-xs text-shoe-cream-dim mt-2 line-clamp-2">{post.description}</p>
             )}
-            {post.listingType === "TRADE" && (
-              <p className="font-bold text-shoe-cream text-xs tracking-widest">TRADE</p>
-            )}
-            {post.listingType === "FREE" && (
-              <p className="font-bold text-shoe-tier-new text-xs tracking-widest">
-                FREE +{TIER_CREDITS[post.condition]}cr
-              </p>
-            )}
-            <p className="text-xs text-shoe-cream-dim mt-1">{timeAgo(post.createdAt)}</p>
+            <p className="text-xs text-shoe-cream-dim mt-2">@{handle}</p>
           </div>
         </div>
-        <p className="text-xs text-shoe-cream-dim mt-2">@{handle}</p>
       </div>
     </Link>
   );
