@@ -228,23 +228,6 @@ export default async function ShoesPage({
       <main className="container-shoe py-8">
         <div className="grid grid-cols-2 gap-8">
 
-          {/* PAIRS */}
-          <div className="border border-shoe-border">
-            <div className="bg-shoe-bg-deep border-b border-shoe-border px-6 py-4 flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-shoe-cream tracking-tight">PAIRS</h2>
-                <p className="label-shoe mt-0.5">COMPLETE SETS</p>
-              </div>
-              <span className="text-shoe-cream-dim text-sm">{pairs.length} listed</span>
-            </div>
-            <div className="divide-y divide-shoe-border">
-              {pairs.length === 0
-                ? <EmptyHalf kind="pairs" />
-                : pairs.map((p) => <ShoeCard key={p.id} post={p} />)
-              }
-            </div>
-          </div>
-
           {/* SINGLES */}
           <div className="border border-shoe-border">
             <div className="bg-shoe-bg-deep border-b border-shoe-border px-6 py-4 flex items-center justify-between">
@@ -258,6 +241,23 @@ export default async function ShoesPage({
               {singles.length === 0
                 ? <EmptyHalf kind="singles" />
                 : singles.map((p) => <ShoeCard key={p.id} post={p} />)
+              }
+            </div>
+          </div>
+
+          {/* PAIRS */}
+          <div className="border border-shoe-border">
+            <div className="bg-shoe-bg-deep border-b border-shoe-border px-6 py-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-shoe-cream tracking-tight">PAIRS</h2>
+                <p className="label-shoe mt-0.5">COMPLETE SETS</p>
+              </div>
+              <span className="text-shoe-cream-dim text-sm">{pairs.length} listed</span>
+            </div>
+            <div className="divide-y divide-shoe-border">
+              {pairs.length === 0
+                ? <EmptyHalf kind="pairs" />
+                : pairs.map((p) => <ShoeCard key={p.id} post={p} />)
               }
             </div>
           </div>
