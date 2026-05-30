@@ -271,7 +271,7 @@ export default async function ShoesPage({
             © 2026 SHOE-SHOE. WHERE TINY FEET FIND THEIR MATCH.
           </p>
           <Link href="/" className="text-shoe-cream-dim text-xs tracking-widest hover:text-shoe-accent transition-colors">
-            ← BACK TO BEEF
+            ← BACK TO HOME
           </Link>
         </div>
       </footer>
