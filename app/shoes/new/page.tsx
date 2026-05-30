@@ -56,7 +56,6 @@ export default function NewShoePage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget; // capture before any await — React clears currentTarget after async yield
     setSubmitting(true);
     setUploadError("");
 
@@ -74,7 +73,8 @@ export default function NewShoePage() {
         imageUrls.push(url);
       }
 
-      const formData = new FormData(form);
+      if (!formRef.current) throw new Error("Form not found");
+      const formData = new FormData(formRef.current);
       if (imageUrls.length > 0) formData.set("images", JSON.stringify(imageUrls));
 
       await createShoePost(formData);
