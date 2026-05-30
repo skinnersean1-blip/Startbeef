@@ -23,7 +23,13 @@ export async function POST(req: NextRequest) {
   }
 
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-  const blob = await put(`shoes/${Date.now()}-${safeName}`, file, { access: "public" });
 
-  return NextResponse.json({ url: blob.url });
+  try {
+    const blob = await put(`shoes/${Date.now()}-${safeName}`, file, { access: "public" });
+    return NextResponse.json({ url: blob.url });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Storage error";
+    console.error("[upload] blob put failed:", message);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

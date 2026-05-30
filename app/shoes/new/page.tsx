@@ -65,7 +65,10 @@ export default function NewShoePage() {
         const fd = new FormData();
         fd.append("file", file);
         const res = await fetch("/api/auth/upload", { method: "POST", body: fd });
-        if (!res.ok) throw new Error("Upload failed");
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.error || `Upload failed (${res.status})`);
+        }
         const { url } = await res.json();
         imageUrls.push(url);
       }
@@ -74,8 +77,8 @@ export default function NewShoePage() {
       if (imageUrls.length > 0) formData.set("images", JSON.stringify(imageUrls));
 
       await createShoePost(formData);
-    } catch {
-      setUploadError("Photo upload failed. Please try again.");
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Photo upload failed. Please try again.");
       setSubmitting(false);
     }
   };
