@@ -234,10 +234,12 @@ export default async function ShoesPage({
           <div className="border border-shoe-border">
             <div className="bg-shoe-bg-deep border-b border-shoe-border px-6 py-4 flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-shoe-cream tracking-tight">SINGLES</h2>
+                <Link href={shoePath("/singles")}>
+                  <h2 className="text-2xl font-bold text-shoe-cream hover:text-shoe-accent transition-colors tracking-tight">SINGLES</h2>
+                </Link>
                 <p className="label-shoe mt-0.5">INDIVIDUAL SHOES</p>
               </div>
-              <span className="text-shoe-cream-dim text-sm">{singles.length} listed</span>
+              <Link href={shoePath("/singles")} className="text-shoe-cream-dim text-sm hover:text-shoe-accent transition-colors">{singles.length} listed →</Link>
             </div>
             <div className="divide-y divide-shoe-border">
               {singles.length === 0
@@ -251,10 +253,12 @@ export default async function ShoesPage({
           <div className="border border-shoe-border">
             <div className="bg-shoe-bg-deep border-b border-shoe-border px-6 py-4 flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-shoe-cream tracking-tight">PAIRS</h2>
+                <Link href={shoePath("/pairs")}>
+                  <h2 className="text-2xl font-bold text-shoe-cream hover:text-shoe-accent transition-colors tracking-tight">PAIRS</h2>
+                </Link>
                 <p className="label-shoe mt-0.5">COMPLETE SETS</p>
               </div>
-              <span className="text-shoe-cream-dim text-sm">{pairs.length} listed</span>
+              <Link href={shoePath("/pairs")} className="text-shoe-cream-dim text-sm hover:text-shoe-accent transition-colors">{pairs.length} listed →</Link>
             </div>
             <div className="divide-y divide-shoe-border">
               {pairs.length === 0
