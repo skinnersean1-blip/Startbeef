@@ -56,6 +56,20 @@ export default function NewShoePage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!kind) {
+      setUploadError("Please select whether you're listing a pair or a single.");
+      return;
+    }
+    if (!listType) {
+      setUploadError("Please select how you're listing it — Sale, Trade, or Free.");
+      return;
+    }
+    if (!condition) {
+      setUploadError("Please select a condition for your shoe.");
+      return;
+    }
+
     setSubmitting(true);
     setUploadError("");
 
@@ -110,7 +124,6 @@ export default function NewShoePage() {
                     type="radio"
                     name="listingKind"
                     value={k}
-                    required
                     className="sr-only"
                     onChange={() => setKind(k)}
                   />
@@ -139,7 +152,6 @@ export default function NewShoePage() {
                     type="radio"
                     name="listingType"
                     value={t}
-                    required
                     className="sr-only"
                     onChange={() => setListType(t)}
                   />
@@ -170,7 +182,6 @@ export default function NewShoePage() {
                     type="radio"
                     name="condition"
                     value={c.key}
-                    required
                     className="sr-only"
                     onChange={() => setCondition(c.key)}
                   />

@@ -5,6 +5,7 @@ import { shoeDb } from "@/lib/shoe-prisma";
 import { getServerSession } from "next-auth";
 import { shoeAuthOptions } from "@/lib/shoe-auth";
 import { shoePath } from "@/lib/shoepath";
+import { SignOutButton } from "./components/sign-out-button";
 
 type ShoePost = Awaited<ReturnType<typeof fetchSide>>[number];
 
@@ -166,6 +167,7 @@ export default async function ShoesPage({
                     {userRow?.credits ?? 0} credits
                   </p>
                 </div>
+                <SignOutButton />
                 <Link href={shoePath("/new")} className="btn-shoe-primary">
                   + POST A SHOE
                 </Link>
