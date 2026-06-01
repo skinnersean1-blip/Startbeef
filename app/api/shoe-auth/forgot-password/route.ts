@@ -6,8 +6,6 @@ import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
@@ -34,6 +32,7 @@ export async function POST(req: NextRequest) {
     const baseUrl = process.env.NEXTAUTH_URL ?? "https://www.shoe-shoe.com";
     const resetUrl = `${baseUrl}/auth/reset-password?token=${token}`;
 
+    const resend = new Resend(process.env.RESEND_API_KEY);
     await resend.emails.send({
       from: "Shoe-Shoe <noreply@shoe-shoe.com>",
       to: email,
