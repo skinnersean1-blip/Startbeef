@@ -154,19 +154,19 @@ export default async function ShoesPage({
 
       {/* Header */}
       <header className="bg-shoe-bg-deep border-b border-shoe-border overflow-hidden">
-        <div className="container-shoe pt-5 pb-1 flex items-center justify-between gap-6">
+        <div className="container-shoe pt-5 pb-1 flex items-center justify-between gap-6 flex-wrap">
           <p className="label-shoe">Buy, Swap, Sell</p>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap justify-end">
             {session ? (
               <>
-                <div className="text-right">
-                  <p className="text-xs text-shoe-cream-dim tracking-widest">
+                <Link href={shoePath("/profile")} className="text-right hover:opacity-80 transition-opacity">
+                  <p className="text-xs text-shoe-cream-dim tracking-widest hover:text-shoe-accent transition-colors">
                     @{userRow?.handle ?? userRow?.username ?? "you"}
                   </p>
                   <p className="text-xs text-shoe-cream-dim tracking-widest">
                     {userRow?.credits ?? 0} credits
                   </p>
-                </div>
+                </Link>
                 <SignOutButton />
                 <Link href={shoePath("/new")} className="btn-shoe-primary">
                   + POST A SHOE
@@ -228,7 +228,7 @@ export default async function ShoesPage({
 
       {/* Two-column marketplace */}
       <main className="container-shoe py-8">
-        <div className="grid grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
           {/* SINGLES */}
           <div className="border border-shoe-border">

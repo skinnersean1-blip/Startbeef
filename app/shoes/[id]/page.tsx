@@ -7,6 +7,7 @@ import { getServerSession } from "next-auth";
 import { shoeAuthOptions } from "@/lib/shoe-auth";
 import { submitOffer, acceptOffer, declineOffer } from "../actions";
 import { shoePath } from "@/lib/shoepath";
+import { DeleteButton } from "../components/delete-button";
 
 const CONDITION_LABEL: Record<string, string> = {
   NEW: "New",
@@ -272,6 +273,18 @@ export default async function ShoeDetailPage({
             <Link href="/auth/signin">
               <button className="btn-shoe-secondary">SIGN IN</button>
             </Link>
+          </div>
+        )}
+
+        {/* Owner: edit / delete */}
+        {isOwner && (
+          <div className="flex gap-3 mb-6">
+            {isActive && (
+              <Link href={shoePath(`/${post.id}/edit`)} className="btn-shoe-ghost text-xs px-4 py-2">
+                EDIT LISTING
+              </Link>
+            )}
+            <DeleteButton postId={post.id} />
           </div>
         )}
 
