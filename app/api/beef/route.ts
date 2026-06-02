@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     : { status: "OPEN" };
 
   const orderBy =
-    sort === "hot" ? { sideVolume: "desc" as const } :
+    sort === "hot" ? { totalPot: "desc" as const } :
     sort === "pot" ? { totalPot: "desc" as const } :
     { createdAt: "desc" as const };
 
