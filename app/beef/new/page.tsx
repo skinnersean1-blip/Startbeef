@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { BackButton } from "@/components/BackButton";
@@ -12,12 +12,17 @@ const ANTE_MIN = 5;
 const ANTE_MAX = 500;
 const CLAIM_MAX = 500;
 
-export default function StartBeefPage() {
+function StartBeefForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, status } = useSession();
 
+  const targetId = searchParams.get("targetId");
+  const commentId = searchParams.get("commentId");
+  const targetHandle = searchParams.get("targetHandle");
+
   const [step, setStep] = useState<Step>(1);
-  const [claim, setClaim] = useState("");
+  const [claim, setClaim] = useState(targetHandle ? `@${targetHandle} ` : "");
   const [ante, setAnte] = useState<number>(ANTE_MIN);
   const [goAnon, setGoAnon] = useState(false);
   const [bankBalance, setBankBalance] = useState<number | null>(null);
@@ -71,7 +76,13 @@ export default function StartBeefPage() {
       const res = await fetch("/api/beef", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ claim, ante, challengerIsAnon: goAnon }),
+        body: JSON.stringify({
+          claim,
+          ante,
+          challengerIsAnon: goAnon,
+          ...(targetId ? { targetResponderId: targetId } : {}),
+          ...(commentId ? { sourceCommentId: commentId } : {}),
+        }),
       });
 
       const data = await res.json();
@@ -97,7 +108,7 @@ export default function StartBeefPage() {
         <div className="flex items-center justify-between">
           <Link href="/">
             <div className="cursor-pointer">
-              <p className="section-label mb-2">OPINION MARKET</p>
+              <p className="section-label mb-2">PAID DISSENT PLATFORM</p>
               <h1 className="text-4xl font-bold tracking-tighter">BEEF</h1>
             </div>
           </Link>
@@ -110,6 +121,17 @@ export default function StartBeefPage() {
         <div className="mb-4">
           <BackButton />
         </div>
+
+        {/* Targeted challenge banner */}
+        {targetHandle && (
+          <div className="mb-4 px-4 py-3 rounded-lg border border-beef-gold/40 bg-beef-gold/10">
+            <p className="text-xs tracking-widest text-beef-gold font-bold mb-0.5">DIRECT CHALLENGE</p>
+            <p className="text-sm text-beef-text-muted">
+              You&apos;re calling out <span className="text-beef-gold font-bold">@{targetHandle}</span>. Only they can accept this beef.
+            </p>
+          </div>
+        )}
+
         <div className="flex items-center gap-2 mb-2">
           {stepLabels.map((label, i) => (
             <div key={label} className="flex flex-col items-center gap-1 flex-1">
@@ -130,7 +152,7 @@ export default function StartBeefPage() {
           {step === 1 && (
             <div>
               <p className="section-label mb-4">STEP 01 — WRITE THE CLAIM</p>
-              <h2 className="text-3xl sm:text-4xl font-bold mb-8">WHAT&apos;S YOUR BEEF?</h2>
+              <h2 className="text-4xl font-bold mb-8">WHAT&apos;S YOUR BEEF?</h2>
               <div className="card-beef">
                 <p className="text-muted text-sm mb-4">
                   Make it specific. Make it debatable. Make it something you&apos;d put money on.
@@ -167,19 +189,17 @@ export default function StartBeefPage() {
           {step === 2 && (
             <div>
               <p className="section-label mb-4">STEP 02 — SET YOUR ANTE</p>
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">HOW MUCH IS YOUR CONVICTION WORTH?</h2>
+              <h2 className="text-4xl font-bold mb-4">HOW MUCH IS YOUR CONVICTION WORTH?</h2>
               <p className="text-muted mb-8">
                 Your opponent must match this to accept. Winner takes the full pot minus a 1.5% platform fee.
               </p>
 
               <div className="card-beef mb-6">
-                {/* Big dollar display */}
                 <div className="text-center mb-8">
-                  <p className="text-5xl sm:text-7xl font-bold text-beef-gold">${ante}</p>
+                  <p className="text-7xl font-bold text-beef-gold">${ante}</p>
                   <p className="text-beef-text-muted text-sm mt-2 tracking-widest">YOUR ANTE</p>
                 </div>
 
-                {/* Slider */}
                 <div className="px-2">
                   <input
                     type="range"
@@ -196,7 +216,6 @@ export default function StartBeefPage() {
                   </div>
                 </div>
 
-                {/* Quick-pick chips */}
                 <div className="flex gap-2 justify-center mt-6 flex-wrap">
                   {[10, 25, 50, 100, 250, 500].map((v) => (
                     <button
@@ -214,7 +233,6 @@ export default function StartBeefPage() {
                 </div>
               </div>
 
-              {/* Pot preview */}
               <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4">
                 <div className="card-beef text-center">
                   <p className="section-label mb-1">TOTAL POT</p>
@@ -226,7 +244,6 @@ export default function StartBeefPage() {
                 </div>
               </div>
 
-              {/* Balance warning */}
               {bankBalance !== null && bankBalance < ante && (
                 <div className="bg-red-900/20 border border-red-500 text-red-400 px-4 py-3 rounded-lg text-sm">
                   Insufficient balance. You have ${bankBalance.toFixed(2)} in your Bank.{" "}
@@ -245,21 +262,31 @@ export default function StartBeefPage() {
           {step === 3 && (
             <div>
               <p className="section-label mb-4">STEP 03 — POST IT</p>
-              <h2 className="text-3xl sm:text-4xl font-bold mb-8">YOU SURE ABOUT THIS?</h2>
+              <h2 className="text-4xl font-bold mb-8">YOU SURE ABOUT THIS?</h2>
 
               <div className="card-beef border-beef-gold mb-6">
                 <p className="section-label mb-3">THE CLAIM</p>
                 <p className="text-xl font-bold leading-relaxed">&quot;{claim}&quot;</p>
               </div>
 
+              {targetHandle && (
+                <div className="card-beef border-beef-orange/40 bg-beef-orange/5 mb-6">
+                  <p className="section-label mb-2 text-beef-orange">DIRECT CALLOUT</p>
+                  <p className="text-sm text-beef-text-muted">
+                    Only <span className="text-beef-gold font-bold">@{targetHandle}</span> can accept this beef.
+                    If they don&apos;t accept, it stays open indefinitely.
+                  </p>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
                 <div className="card-beef text-center">
                   <p className="section-label mb-2">YOUR ANTE</p>
-                  <p className="text-3xl sm:text-4xl font-bold text-beef-gold">${ante}</p>
+                  <p className="text-4xl font-bold text-beef-gold">${ante}</p>
                 </div>
                 <div className="card-beef text-center">
                   <p className="section-label mb-2">POT IF MATCHED</p>
-                  <p className="text-3xl sm:text-4xl font-bold">${ante * 2}</p>
+                  <p className="text-4xl font-bold">${ante * 2}</p>
                 </div>
               </div>
 
@@ -273,7 +300,6 @@ export default function StartBeefPage() {
                 </p>
               </div>
 
-              {/* Anon toggle — only for handled (non-ghost) users */}
               {!session.user.isAnonymous && session.user.handle && (
                 <button
                   type="button"
@@ -335,5 +361,13 @@ export default function StartBeefPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function StartBeefPage() {
+  return (
+    <Suspense>
+      <StartBeefForm />
+    </Suspense>
   );
 }
