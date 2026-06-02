@@ -30,12 +30,20 @@ model User {
   resetToken         String?
   resetTokenExpiry   DateTime?
 
-  challengesCreated  Beef[]    @relation("Challenger")
-  challengesAccepted Beef[]    @relation("Responder")
+  emailVerifyToken   String?
+  emailVerifyExpiry  DateTime?
+  interests          String    @default("[]")
+
+  challengesCreated  Beef[]      @relation("Challenger")
+  challengesAccepted Beef[]      @relation("Responder")
+  targetedBeefs      Beef[]      @relation("TargetResponder")
   messages           Message[]
-  following          Follow[]  @relation("Follower")
-  followers          Follow[]  @relation("Following")
+  offers             BeefOffer[]
+  following          Follow[]    @relation("Follower")
+  followers          Follow[]    @relation("Following")
   threadImports      ThreadImport[]
+  forumThreads       ForumThread[]
+  forumComments      ForumComment[]
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -47,10 +55,13 @@ model Beef {
   claim         String
   categories    String    @default("[]")
 
-  challengerId  String
-  challenger    User      @relation("Challenger", fields: [challengerId], references: [id])
-  responderId   String?
-  responder     User?     @relation("Responder", fields: [responderId], references: [id])
+  challengerId       String
+  challenger         User      @relation("Challenger", fields: [challengerId], references: [id])
+  responderId        String?
+  responder          User?     @relation("Responder", fields: [responderId], references: [id])
+  targetResponderId  String?
+  targetResponder    User?     @relation("TargetResponder", fields: [targetResponderId], references: [id])
+  sourceCommentId    String?
 
   ante          Float
   totalPot      Float
@@ -71,10 +82,24 @@ model Beef {
   viewCount     Int       @default(0)
 
   messages      Message[]
+  offers        BeefOffer[]
   threadImport  ThreadImport?
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+model BeefOffer {
+  id        String   @id @default(cuid())
+  beefId    String
+  beef      Beef     @relation(fields: [beefId], references: [id], onDelete: Cascade)
+  fromId    String
+  from      User     @relation(fields: [fromId], references: [id])
+  type      String   // RAISE | CLOSE
+  amount    Float    @default(0)
+  status    String   @default("PENDING") // PENDING | ACCEPTED | REJECTED | EXPIRED
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model Message {
@@ -120,6 +145,28 @@ model ThreadImport {
   participants  String
 
   createdAt     DateTime  @default(now())
+}
+
+model ForumThread {
+  id        String         @id @default(cuid())
+  title     String
+  body      String
+  authorId  String
+  author    User           @relation(fields: [authorId], references: [id])
+  comments  ForumComment[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model ForumComment {
+  id        String       @id @default(cuid())
+  threadId  String
+  thread    ForumThread  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User         @relation(fields: [authorId], references: [id])
+  content   String
+  parentId  String?
+  createdAt DateTime     @default(now())
 }
 
 model Transaction {
