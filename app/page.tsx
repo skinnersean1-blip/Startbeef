@@ -7,6 +7,7 @@ import { AuthHeader } from "@/components/AuthHeader";
 import { HeroCTA } from "@/components/HeroCTA";
 import { BrowseBar } from "@/components/BrowseBar";
 import { ForumPanel } from "@/components/ForumPanel";
+import { SearchBar } from "@/components/SearchBar";
 
 async function getStats() {
   const [openCount, livePotResult, spectatorResult, completedCount, startedCount] =
@@ -100,7 +101,8 @@ export default async function Home({
               BEEF
             </h1>
           </div>
-          <div className="flex-shrink-0">
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <SearchBar />
             <AuthHeader />
           </div>
         </div>

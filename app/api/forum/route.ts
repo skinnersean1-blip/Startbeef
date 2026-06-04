@@ -25,8 +25,10 @@ export async function GET(req: NextRequest) {
 }
 
 const createSchema = z.object({
-  title: z.string().min(4).max(200),
-  body: z.string().min(1).max(5000),
+  title:     z.string().min(4).max(200),
+  body:      z.string().min(1).max(5000),
+  textColor: z.string().max(20).optional(),
+  fontStyle: z.string().max(20).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -36,10 +38,10 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { title, body: threadBody } = createSchema.parse(body);
+  const { title, body: threadBody, textColor, fontStyle } = createSchema.parse(body);
 
   const thread = await prisma.forumThread.create({
-    data: { title, body: threadBody, authorId: session.user.id },
+    data: { title, body: threadBody, authorId: session.user.id, textColor, fontStyle },
     include: {
       author: { select: { handle: true, username: true, isAnonymous: true, anonHandle: true } },
       _count: { select: { comments: true } },

@@ -7,8 +7,10 @@ import { z } from "zod";
 export const dynamic = "force-dynamic";
 
 const schema = z.object({
-  content: z.string().min(1).max(2000),
-  parentId: z.string().optional(),
+  content:   z.string().min(1).max(2000),
+  parentId:  z.string().optional(),
+  textColor: z.string().max(20).optional(),
+  fontStyle: z.string().max(20).optional(),
 });
 
 export async function POST(
@@ -25,10 +27,10 @@ export async function POST(
   if (!thread) return NextResponse.json({ error: "Thread not found" }, { status: 404 });
 
   const body = await req.json();
-  const { content, parentId } = schema.parse(body);
+  const { content, parentId, textColor, fontStyle } = schema.parse(body);
 
   const comment = await prisma.forumComment.create({
-    data: { threadId, authorId: session.user.id, content, parentId: parentId ?? null },
+    data: { threadId, authorId: session.user.id, content, parentId: parentId ?? null, textColor, fontStyle },
     include: {
       author: { select: { id: true, handle: true, username: true, isAnonymous: true, anonHandle: true } },
     },

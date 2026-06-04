@@ -17,9 +17,29 @@ type Thread = {
   title: string;
   body: string;
   createdAt: string;
+  textColor: string | null;
+  fontStyle: string | null;
   author: ThreadAuthor;
   _count: { comments: number };
 };
+
+const COLORS = [
+  { label: "Default", value: "", swatch: "#F2DFA8" },
+  { label: "Gold",    value: "#C9A840", swatch: "#C9A840" },
+  { label: "Orange",  value: "#C97A38", swatch: "#C97A38" },
+  { label: "Red",     value: "#E05555", swatch: "#E05555" },
+  { label: "Green",   value: "#55C97A", swatch: "#55C97A" },
+  { label: "Blue",    value: "#5590C9", swatch: "#5590C9" },
+  { label: "Purple",  value: "#9055C9", swatch: "#9055C9" },
+];
+
+function getStyle(textColor: string | null, fontStyle: string | null): React.CSSProperties {
+  return {
+    color: textColor || undefined,
+    fontWeight: fontStyle?.includes("bold") ? "bold" : undefined,
+    fontStyle: fontStyle?.includes("italic") ? "italic" : undefined,
+  };
+}
 
 function timeAgo(dateStr: string) {
   const s = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
@@ -34,6 +54,53 @@ function authorName(author: ThreadAuthor) {
   return `@${author.handle || author.username}`;
 }
 
+function StyleToolbar({
+  textColor, fontStyle,
+  onColor, onToggleBold, onToggleItalic,
+}: {
+  textColor: string; fontStyle: string;
+  onColor: (c: string) => void;
+  onToggleBold: () => void;
+  onToggleItalic: () => void;
+}) {
+  const bold = fontStyle.includes("bold");
+  const italic = fontStyle.includes("italic");
+
+  return (
+    <div className="flex items-center justify-between py-2 border-t border-beef-border/40">
+      <div className="flex items-center gap-1.5">
+        {COLORS.map((c) => (
+          <button
+            key={c.label}
+            onClick={() => onColor(c.value)}
+            title={c.label}
+            className="w-4 h-4 transition-transform hover:scale-125"
+            style={{
+              background: c.swatch,
+              outline: textColor === c.value ? "2px solid #F2DFA8" : "none",
+              outlineOffset: "2px",
+            }}
+          />
+        ))}
+      </div>
+      <div className="flex items-center gap-1">
+        <button
+          onClick={onToggleBold}
+          className={`px-2 py-0.5 text-xs font-bold border transition-colors ${bold ? "border-beef-gold text-beef-gold" : "border-beef-border text-beef-text-muted hover:border-beef-gold/50"}`}
+        >
+          B
+        </button>
+        <button
+          onClick={onToggleItalic}
+          className={`px-2 py-0.5 text-xs italic border transition-colors ${italic ? "border-beef-gold text-beef-gold" : "border-beef-border text-beef-text-muted hover:border-beef-gold/50"}`}
+        >
+          I
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function ForumPanel() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -43,6 +110,8 @@ export function ForumPanel() {
   const [showNew, setShowNew] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newBody, setNewBody] = useState("");
+  const [textColor, setTextColor] = useState("");
+  const [fontStyle, setFontStyle] = useState("");
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState("");
 
@@ -56,9 +125,21 @@ export function ForumPanel() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchThreads();
-  }, [fetchThreads]);
+  useEffect(() => { fetchThreads(); }, [fetchThreads]);
+
+  const toggleBold = () => setFontStyle((s) => {
+    if (s === "bold") return "";
+    if (s === "italic") return "bold-italic";
+    if (s === "bold-italic") return "italic";
+    return "bold";
+  });
+
+  const toggleItalic = () => setFontStyle((s) => {
+    if (s === "italic") return "";
+    if (s === "bold") return "bold-italic";
+    if (s === "bold-italic") return "bold";
+    return "italic";
+  });
 
   const handlePost = async () => {
     if (!newTitle.trim() || !newBody.trim()) return;
@@ -68,13 +149,20 @@ export function ForumPanel() {
       const res = await fetch("/api/forum", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: newTitle.trim(), body: newBody.trim() }),
+        body: JSON.stringify({
+          title: newTitle.trim(),
+          body: newBody.trim(),
+          textColor: textColor || undefined,
+          fontStyle: fontStyle || undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Something went wrong"); return; }
       setThreads((prev) => [data.thread, ...prev]);
       setNewTitle("");
       setNewBody("");
+      setTextColor("");
+      setFontStyle("");
       setShowNew(false);
       router.refresh();
     } catch {
@@ -83,6 +171,8 @@ export function ForumPanel() {
       setPosting(false);
     }
   };
+
+  const previewStyle = getStyle(textColor, fontStyle);
 
   return (
     <div className="flex flex-col gap-4 font-mono [&_*]:rounded-none" style={{ fontFamily: "Courier New, Courier, monospace" }}>
@@ -100,10 +190,7 @@ export function ForumPanel() {
             {showNew ? "CANCEL" : "+ POST"}
           </button>
         ) : (
-          <Link
-            href="/auth/signin"
-            className="text-xs font-bold tracking-widest text-beef-text-muted hover:text-beef-gold transition-colors"
-          >
+          <Link href="/auth/signin" className="text-xs font-bold tracking-widest text-beef-text-muted hover:text-beef-gold transition-colors">
             SIGN IN TO POST
           </Link>
         )}
@@ -113,27 +200,34 @@ export function ForumPanel() {
       {showNew && (
         <div className="card-beef border-beef-gold/40">
           <p className="section-label mb-3">NEW THREAD</p>
-          {error && (
-            <p className="text-xs text-red-400 mb-2">{error}</p>
-          )}
+          {error && <p className="text-xs text-red-400 mb-2">{error}</p>}
           <input
             type="text"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value.slice(0, 200))}
             placeholder="Thread title..."
-            className="w-full px-3 py-2 bg-beef-bg-light border border-beef-border rounded focus:outline-none focus:border-beef-gold text-sm mb-2"
+            style={previewStyle}
+            className="w-full px-3 py-2 bg-beef-bg-light border border-beef-border focus:outline-none focus:border-beef-gold text-sm mb-2"
           />
           <textarea
             value={newBody}
             onChange={(e) => setNewBody(e.target.value.slice(0, 5000))}
             placeholder="Say something..."
             rows={3}
-            className="w-full px-3 py-2 bg-beef-bg-light border border-beef-border rounded focus:outline-none focus:border-beef-gold text-sm resize-none mb-3"
+            style={previewStyle}
+            className="w-full px-3 py-2 bg-beef-bg-light border border-beef-border focus:outline-none focus:border-beef-gold text-sm resize-none"
+          />
+          <StyleToolbar
+            textColor={textColor}
+            fontStyle={fontStyle}
+            onColor={setTextColor}
+            onToggleBold={toggleBold}
+            onToggleItalic={toggleItalic}
           />
           <button
             onClick={handlePost}
             disabled={posting || newTitle.trim().length < 4 || newBody.trim().length < 1}
-            className="w-full btn-primary py-2.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full btn-primary py-2.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed mt-3"
           >
             {posting ? "POSTING..." : "POST THREAD"}
           </button>
@@ -142,9 +236,7 @@ export function ForumPanel() {
 
       {/* Thread list */}
       {loading ? (
-        <div className="text-beef-text-muted text-xs text-center py-8 tracking-widest animate-pulse">
-          LOADING...
-        </div>
+        <div className="text-beef-text-muted text-xs text-center py-8 tracking-widest animate-pulse">LOADING...</div>
       ) : threads.length === 0 ? (
         <div className="card-beef text-center py-10">
           <p className="text-beef-text-muted text-sm mb-2">No threads yet.</p>
@@ -155,10 +247,16 @@ export function ForumPanel() {
           {threads.map((thread) => (
             <Link key={thread.id} href={`/forum/${thread.id}`}>
               <div className="card-beef hover:border-beef-gold/40 transition-all duration-150 cursor-pointer group">
-                <p className="font-bold text-sm leading-snug mb-1.5 group-hover:text-beef-gold transition-colors line-clamp-2">
+                <p
+                  className="font-bold text-sm leading-snug mb-1.5 group-hover:text-beef-gold transition-colors line-clamp-2"
+                  style={getStyle(thread.textColor, thread.fontStyle)}
+                >
                   {thread.title}
                 </p>
-                <p className="text-beef-text-muted text-xs leading-relaxed mb-3 line-clamp-2">
+                <p
+                  className="text-beef-text-muted text-xs leading-relaxed mb-3 line-clamp-2"
+                  style={getStyle(thread.textColor, thread.fontStyle)}
+                >
                   {thread.body}
                 </p>
                 <div className="flex items-center justify-between text-xs text-beef-text-muted">

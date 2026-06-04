@@ -150,6 +150,8 @@ model ForumThread {
   authorId  String
   author    User           @relation(fields: [authorId], references: [id])
   comments  ForumComment[]
+  textColor String?
+  fontStyle String?
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 }
@@ -162,6 +164,8 @@ model ForumComment {
   author    User         @relation(fields: [authorId], references: [id])
   content   String
   parentId  String?
+  textColor String?
+  fontStyle String?
   createdAt DateTime     @default(now())
 }
 

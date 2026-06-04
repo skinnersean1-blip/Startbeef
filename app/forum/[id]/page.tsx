@@ -19,6 +19,8 @@ type Comment = {
   parentId: string | null;
   createdAt: string;
   author: Author;
+  textColor: string | null;
+  fontStyle: string | null;
 };
 
 type Thread = {
@@ -28,7 +30,27 @@ type Thread = {
   createdAt: string;
   author: Author;
   comments: Comment[];
+  textColor: string | null;
+  fontStyle: string | null;
 };
+
+const COLORS = [
+  { label: "Default", value: "", swatch: "#F2DFA8" },
+  { label: "Gold",    value: "#C9A840", swatch: "#C9A840" },
+  { label: "Orange",  value: "#C97A38", swatch: "#C97A38" },
+  { label: "Red",     value: "#E05555", swatch: "#E05555" },
+  { label: "Green",   value: "#55C97A", swatch: "#55C97A" },
+  { label: "Blue",    value: "#5590C9", swatch: "#5590C9" },
+  { label: "Purple",  value: "#9055C9", swatch: "#9055C9" },
+];
+
+function getStyle(textColor: string | null, fontStyle: string | null): React.CSSProperties {
+  return {
+    color: textColor || undefined,
+    fontWeight: fontStyle?.includes("bold") ? "bold" : undefined,
+    fontStyle: fontStyle?.includes("italic") ? "italic" : undefined,
+  };
+}
 
 function timeAgo(dateStr: string) {
   const s = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
@@ -67,7 +89,7 @@ function CommentCard({
             <span className="text-beef-gold text-xs font-bold">{authorName(comment.author)}</span>
             <span className="text-beef-text-muted text-xs">{timeAgo(comment.createdAt)}</span>
           </div>
-          <p className="text-sm leading-relaxed mb-2">{comment.content}</p>
+          <p className="text-sm leading-relaxed mb-2" style={getStyle(comment.textColor, comment.fontStyle)}>{comment.content}</p>
           <div className="flex items-center gap-3">
             {sessionUserId && (
               <button
@@ -101,8 +123,19 @@ export default function ForumThreadPage() {
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
+  const [textColor, setTextColor] = useState("");
+  const [fontStyle, setFontStyle] = useState("");
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState("");
+
+  const toggleBold = () => setFontStyle((s) => {
+    if (s === "bold") return ""; if (s === "italic") return "bold-italic";
+    if (s === "bold-italic") return "italic"; return "bold";
+  });
+  const toggleItalic = () => setFontStyle((s) => {
+    if (s === "italic") return ""; if (s === "bold") return "bold-italic";
+    if (s === "bold-italic") return "bold"; return "italic";
+  });
 
   const fetchThread = useCallback(async () => {
     try {
@@ -126,7 +159,7 @@ export default function ForumThreadPage() {
       const res = await fetch(`/api/forum/thread/${id}/comment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: comment.trim(), parentId: replyTo }),
+        body: JSON.stringify({ content: comment.trim(), parentId: replyTo, textColor: textColor || undefined, fontStyle: fontStyle || undefined }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Something went wrong"); return; }
@@ -202,8 +235,8 @@ export default function ForumThreadPage() {
               <span className="text-beef-gold text-xs font-bold">{authorName(thread.author)}</span>
               <span className="text-beef-text-muted text-xs">{timeAgo(thread.createdAt)}</span>
             </div>
-            <h1 className="text-2xl font-bold mb-3">{thread.title}</h1>
-            <p className="text-beef-text-muted text-sm leading-relaxed whitespace-pre-wrap">{thread.body}</p>
+            <h1 className="text-2xl font-bold mb-3" style={getStyle(thread.textColor, thread.fontStyle)}>{thread.title}</h1>
+            <p className="text-beef-text-muted text-sm leading-relaxed whitespace-pre-wrap" style={getStyle(thread.textColor, thread.fontStyle)}>{thread.body}</p>
             {session?.user && session.user.id !== thread.author.id && (
               <div className="mt-4 pt-3 border-t border-beef-border/40">
                 <button
@@ -260,8 +293,36 @@ export default function ForumThreadPage() {
                 onChange={(e) => setComment(e.target.value.slice(0, 2000))}
                 placeholder="Say something..."
                 rows={3}
-                className="w-full px-3 py-2 bg-beef-bg-light border border-beef-border rounded focus:outline-none focus:border-beef-gold text-sm resize-none mb-3"
+                style={getStyle(textColor, fontStyle)}
+                className="w-full px-3 py-2 bg-beef-bg-light border border-beef-border focus:outline-none focus:border-beef-gold text-sm resize-none"
               />
+              {/* Style toolbar */}
+              <div className="flex items-center justify-between py-2 border-t border-beef-border/40 mb-3">
+                <div className="flex items-center gap-1.5">
+                  {[
+                    { label: "Default", value: "", swatch: "#F2DFA8" },
+                    { label: "Gold",   value: "#C9A840", swatch: "#C9A840" },
+                    { label: "Orange", value: "#C97A38", swatch: "#C97A38" },
+                    { label: "Red",    value: "#E05555", swatch: "#E05555" },
+                    { label: "Green",  value: "#55C97A", swatch: "#55C97A" },
+                    { label: "Blue",   value: "#5590C9", swatch: "#5590C9" },
+                    { label: "Purple", value: "#9055C9", swatch: "#9055C9" },
+                  ].map((c) => (
+                    <button key={c.label} onClick={() => setTextColor(c.value)} title={c.label}
+                      className="w-4 h-4 transition-transform hover:scale-125"
+                      style={{ background: c.swatch, outline: textColor === c.value ? "2px solid #F2DFA8" : "none", outlineOffset: "2px" }}
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center gap-1">
+                  <button onClick={toggleBold}
+                    className={`px-2 py-0.5 text-xs font-bold border transition-colors ${fontStyle.includes("bold") ? "border-beef-gold text-beef-gold" : "border-beef-border text-beef-text-muted hover:border-beef-gold/50"}`}
+                  >B</button>
+                  <button onClick={toggleItalic}
+                    className={`px-2 py-0.5 text-xs italic border transition-colors ${fontStyle.includes("italic") ? "border-beef-gold text-beef-gold" : "border-beef-border text-beef-text-muted hover:border-beef-gold/50"}`}
+                  >I</button>
+                </div>
+              </div>
               <button
                 onClick={handleComment}
                 disabled={posting || comment.trim().length === 0}
