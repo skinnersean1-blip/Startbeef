@@ -188,7 +188,7 @@ export default function ForumThreadPage() {
         </div>
       </header>
 
-      <div className="container-beef pb-24">
+      <div className="container-beef pb-24" style={{ fontFamily: "Courier New, Courier, monospace" }}>
         <div className="max-w-2xl mx-auto">
 
           {/* Back */}

@@ -85,7 +85,7 @@ export function ForumPanel() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 font-mono" style={{ fontFamily: "Courier New, Courier, monospace" }}>
       {/* Panel header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
