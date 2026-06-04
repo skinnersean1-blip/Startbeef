@@ -89,7 +89,7 @@ export function ForumPanel() {
       {/* Panel header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <p className="section-label">RINGSIDE FORUM</p>
+          <p className="section-label">THE FLOOR</p>
           <div className="flex-1 border-t border-beef-border/40 w-8" />
         </div>
         {session?.user ? (

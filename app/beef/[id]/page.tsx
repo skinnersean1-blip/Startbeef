@@ -170,10 +170,10 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
           {!session?.user && beef.status === "OPEN" && (
             <div className="card-beef border-dashed border-beef-gold/50 mb-8 text-center">
               <p className="section-label mb-3">WANT TO TAKE THIS?</p>
-              <p className="text-muted text-sm mb-6">Sign in to match the ${beef.ante} ante and sit ringside.</p>
+              <p className="text-muted text-sm mb-6">Sign in to match the ${beef.ante} ante and get in on this.</p>
               <div className="flex gap-3 justify-center">
                 <Link href="/auth/signin" className="btn-secondary text-sm px-6 py-3">SIGN IN</Link>
-                <Link href="/auth/signup" className="btn-primary text-sm px-6 py-3">SIT RINGSIDE</Link>
+                <Link href="/auth/signup" className="btn-primary text-sm px-6 py-3">GET IN</Link>
               </div>
             </div>
           )}
@@ -226,7 +226,7 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
 
           <div className="text-center mt-10">
             <Link href="/" className="text-muted text-sm hover:text-beef-gold transition-colors">
-              ← BACK TO RINGSIDE
+              ← BACK
             </Link>
           </div>
         </div>

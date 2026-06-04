@@ -166,7 +166,7 @@ export default function ForumThreadPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-2xl font-bold mb-4">THREAD NOT FOUND</p>
-          <Link href="/" className="text-beef-gold hover:underline text-sm">← Back to ringside</Link>
+          <Link href="/" className="text-beef-gold hover:underline text-sm">← Back to home</Link>
         </div>
       </div>
     );
@@ -193,7 +193,7 @@ export default function ForumThreadPage() {
 
           {/* Back */}
           <Link href="/" className="text-beef-text-muted text-xs hover:text-beef-gold transition-colors tracking-widest mb-6 inline-block">
-            ← RINGSIDE FORUM
+            ← THE FLOOR
           </Link>
 
           {/* Thread OP */}

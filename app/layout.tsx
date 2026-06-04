@@ -16,7 +16,7 @@ const courierPrime = Courier_Prime({
 
 export const metadata: Metadata = {
   title: "Beef - Opinion Market",
-  description: "Put money where your mouth is. No endless reply chains. Post a claim, price the conviction, and let the internet watch it burn from ringside.",
+  description: "Put money where your mouth is. No endless reply chains. Post a claim, price the conviction, and let the internet watch it burn.",
   icons: {
     icon: "/icon.svg",
     shortcut: "/icon.svg",

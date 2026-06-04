@@ -158,7 +158,7 @@ export default async function Home({
           <div className="flex-1 min-w-0">
             {feed.length === 0 ? (
               <div className="card-beef text-center py-20">
-                <p className="text-3xl font-bold mb-4">RINGSIDE IS EMPTY.</p>
+                <p className="text-3xl font-bold mb-4">NO BEEFS YET.</p>
                 <p className="text-beef-text-muted mb-8">Someone has to go first.</p>
                 <Link href="/beef/new">
                   <button className="btn-primary">START A BEEF</button>
@@ -270,7 +270,7 @@ export default async function Home({
           </div>
 
           {/* Right: Forum panel */}
-          <div className="w-full lg:w-[360px] lg:sticky lg:top-6 shrink-0">
+          <div className="w-full lg:w-[46%] lg:sticky lg:top-6 shrink-0">
             <ForumPanel />
           </div>
 

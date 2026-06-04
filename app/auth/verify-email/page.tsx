@@ -33,7 +33,7 @@ function VerifyContent() {
       {status === "ok" && (
         <>
           <p className="text-3xl font-bold mb-3">YOU&apos;RE VERIFIED</p>
-          <p className="text-beef-text-muted text-sm">Welcome to ringside. Redirecting...</p>
+          <p className="text-beef-text-muted text-sm">Welcome to BEEF. Redirecting...</p>
         </>
       )}
       {status === "error" && (
