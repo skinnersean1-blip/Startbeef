@@ -193,7 +193,7 @@ export default function ForumThreadPage() {
 
           {/* Back */}
           <Link href="/" className="text-beef-text-muted text-xs hover:text-beef-gold transition-colors tracking-widest mb-6 inline-block">
-            ← THE FLOOR
+            ← POST
           </Link>
 
           {/* Thread OP */}
