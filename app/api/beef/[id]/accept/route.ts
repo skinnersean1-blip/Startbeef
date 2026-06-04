@@ -27,9 +27,7 @@ export async function POST(
   if (beef.status !== "OPEN") return NextResponse.json({ error: "This beef is no longer open" }, { status: 409 });
   if (beef.challengerId === session.user.id) return NextResponse.json({ error: "You can't accept your own beef" }, { status: 400 });
   if (beef.responderId) return NextResponse.json({ error: "This beef already has a responder" }, { status: 409 });
-  if (beef.targetResponderId && beef.targetResponderId !== session.user.id) {
-    return NextResponse.json({ error: "This beef was issued to a specific person — only they can accept it" }, { status: 403 });
-  }
+
 
   // Check responder has enough in bank
   const responder = await prisma.user.findUnique({
