@@ -135,10 +135,12 @@ export default async function Home({
               ${stats.livePot.toLocaleString()}
             </p>
           </div>
-          <div className="card-beef py-5">
-            <p className="section-label mb-2">OPEN CHALLENGES</p>
-            <p className="text-3xl font-bold">{stats.openCount}</p>
-          </div>
+          <Link href="/challenges">
+            <div className="card-beef py-5 hover:border-beef-gold/50 transition-colors cursor-pointer">
+              <p className="section-label mb-2">OPEN CHALLENGES</p>
+              <p className="text-3xl font-bold">{stats.openCount}</p>
+            </div>
+          </Link>
           <div className="card-beef py-5">
             <p className="section-label mb-2">SIDELINE SPECTATORS</p>
             <p className="text-3xl font-bold">{stats.spectators.toLocaleString()}</p>
