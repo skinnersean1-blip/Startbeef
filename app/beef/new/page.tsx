@@ -20,9 +20,10 @@ function StartBeefForm() {
   const targetId = searchParams.get("targetId");
   const commentId = searchParams.get("commentId");
   const targetHandle = searchParams.get("targetHandle");
+  const claimParam = searchParams.get("claim");
 
   const [step, setStep] = useState<Step>(1);
-  const [claim, setClaim] = useState(targetHandle ? `@${targetHandle} ` : "");
+  const [claim, setClaim] = useState(claimParam || (targetHandle ? `@${targetHandle} ` : ""));
   const [ante, setAnte] = useState<number>(ANTE_MIN);
   const [goAnon, setGoAnon] = useState(false);
   const [bankBalance, setBankBalance] = useState<number | null>(null);
@@ -121,6 +122,16 @@ function StartBeefForm() {
         <div className="mb-4">
           <BackButton />
         </div>
+
+        {/* Shared from banner */}
+        {claimParam && (
+          <div className="mb-4 px-4 py-3 rounded-lg border border-beef-border bg-beef-bg-light">
+            <p className="text-xs tracking-widest text-beef-text-muted font-bold mb-0.5">IMPORTED TAKE</p>
+            <p className="text-sm text-beef-text-muted">
+              Pre-filled from a shared link. Edit it to make it your own, then set your ante.
+            </p>
+          </div>
+        )}
 
         {/* Targeted challenge banner */}
         {targetHandle && (
