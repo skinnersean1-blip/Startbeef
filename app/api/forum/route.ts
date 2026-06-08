@@ -10,18 +10,23 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const cursor = searchParams.get("cursor");
 
-  const threads = await prisma.forumThread.findMany({
-    take: 20,
-    ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-    orderBy: { createdAt: "desc" },
-    include: {
-      author: { select: { handle: true, username: true, isAnonymous: true, anonHandle: true } },
-      _count: { select: { comments: true } },
-    },
-  });
+  try {
+    const threads = await prisma.forumThread.findMany({
+      take: 20,
+      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+      orderBy: { createdAt: "desc" },
+      include: {
+        author: { select: { handle: true, username: true, isAnonymous: true, anonHandle: true } },
+        _count: { select: { comments: true } },
+      },
+    });
 
-  const nextCursor = threads.length === 20 ? threads[threads.length - 1].id : null;
-  return NextResponse.json({ threads, nextCursor });
+    const nextCursor = threads.length === 20 ? threads[threads.length - 1].id : null;
+    return NextResponse.json({ threads, nextCursor });
+  } catch (err: any) {
+    console.error("GET /api/forum error:", err);
+    return NextResponse.json({ threads: [], nextCursor: null, error: err?.message }, { status: 500 });
+  }
 }
 
 const createSchema = z.object({
@@ -40,13 +45,17 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { title, body: threadBody, textColor, fontStyle } = createSchema.parse(body);
 
-  const thread = await prisma.forumThread.create({
-    data: { title, body: threadBody, authorId: session.user.id, textColor, fontStyle },
-    include: {
-      author: { select: { handle: true, username: true, isAnonymous: true, anonHandle: true } },
-      _count: { select: { comments: true } },
-    },
-  });
-
-  return NextResponse.json({ thread }, { status: 201 });
+  try {
+    const thread = await prisma.forumThread.create({
+      data: { title, body: threadBody, authorId: session.user.id, textColor, fontStyle },
+      include: {
+        author: { select: { handle: true, username: true, isAnonymous: true, anonHandle: true } },
+        _count: { select: { comments: true } },
+      },
+    });
+    return NextResponse.json({ thread }, { status: 201 });
+  } catch (err: any) {
+    console.error("POST /api/forum error:", err);
+    return NextResponse.json({ error: err?.message ?? "Failed to create thread" }, { status: 500 });
+  }
 }

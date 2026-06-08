@@ -157,7 +157,7 @@ export function ForumPanel() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error || "Something went wrong"); return; }
+      if (!res.ok) { setError(data.error || `Error ${res.status}`); return; }
       setThreads((prev) => [data.thread, ...prev]);
       setNewTitle("");
       setNewBody("");
@@ -165,8 +165,8 @@ export function ForumPanel() {
       setFontStyle("");
       setShowNew(false);
       router.refresh();
-    } catch {
-      setError("Something went wrong");
+    } catch (err: any) {
+      setError(err?.message || "Something went wrong");
     } finally {
       setPosting(false);
     }
