@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense, type FormEvent } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -42,7 +42,7 @@ function SearchResults() {
     if (q) search(q);
   }, [q, search]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (input.trim().length < 2) return;
     router.push(`/search?q=${encodeURIComponent(input.trim())}`);

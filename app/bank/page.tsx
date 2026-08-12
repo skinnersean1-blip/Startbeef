@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense, type FormEvent } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -86,7 +86,7 @@ function BankContent() {
     }
   }, [depositStatus]);
 
-  const handleDeposit = async (e: React.FormEvent) => {
+  const handleDeposit = async (e: FormEvent) => {
     e.preventDefault();
     setMessage(null);
     setDepositLoading(true);
@@ -118,7 +118,7 @@ function BankContent() {
     }
   };
 
-  const handleWithdraw = async (e: React.FormEvent) => {
+  const handleWithdraw = async (e: FormEvent) => {
     e.preventDefault();
     setMessage(null);
     setWithdrawLoading(true);

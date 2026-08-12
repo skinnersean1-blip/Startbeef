@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -35,7 +35,7 @@ export default function InterestsPage() {
   const removeCustom = (val: string) =>
     setCustom((prev) => prev.filter((v) => v !== val));
 
-  const handleKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKey = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") { e.preventDefault(); addCustom(); }
   };
 
@@ -104,7 +104,7 @@ export default function InterestsPage() {
         <div className="card-beef border-beef-border/50 mb-8">
           <p className="section-label mb-3">✏️ ADD YOUR OWN</p>
           <p className="text-beef-text-muted text-xs mb-3">
-            Got a niche? Type it in — climate policy, hip-hop beef, crypto, whatever you'd actually argue about.
+            Got a niche? Type it in — climate policy, hip-hop beef, crypto, whatever you&apos;d actually argue about.
           </p>
           <div className="flex gap-2">
             <input

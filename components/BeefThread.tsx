@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 
 interface Message {
@@ -59,7 +59,7 @@ function OfferExpiry({ expiresAt }: { expiresAt: string }) {
   const s = Math.floor((ms % 60000) / 1000);
   return (
     <p className="text-xs text-beef-text-muted font-mono shrink-0">
-      {ms > 0 ? `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")} left` : "EXPIRED"}
+      {ms > 0 ? `${String(m).padStart(2,"00")}:${String(s).padStart(2,"00")} left` : "EXPIRED"}
     </p>
   );
 }
@@ -176,7 +176,7 @@ export function BeefThread({
     router.refresh();
   };
 
-  const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
       handlePost();

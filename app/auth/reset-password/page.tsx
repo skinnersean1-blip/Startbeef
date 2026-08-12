@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, type FormEvent } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -30,7 +30,7 @@ function ResetForm() {
     }).catch(() => {});
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (password !== confirm) { setError("Passwords don't match"); return; }
     if (password.length < 8) { setError("Password must be at least 8 characters"); return; }

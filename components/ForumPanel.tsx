@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, type CSSProperties } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -33,7 +33,7 @@ const COLORS = [
   { label: "Purple",  value: "#9055C9", swatch: "#9055C9" },
 ];
 
-function getStyle(textColor: string | null, fontStyle: string | null): React.CSSProperties {
+function getStyle(textColor: string | null, fontStyle: string | null): CSSProperties {
   return {
     color: textColor || undefined,
     fontWeight: fontStyle?.includes("bold") ? "bold" : undefined,

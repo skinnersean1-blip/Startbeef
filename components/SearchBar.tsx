@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 
 export function SearchBar() {
@@ -8,7 +8,7 @@ export function SearchBar() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (query.trim().length < 2) return;
     router.push(`/search?q=${encodeURIComponent(query.trim())}`);
@@ -16,7 +16,7 @@ export function SearchBar() {
     setOpen(false);
   };
 
-  const handleKey = (e: React.KeyboardEvent) => {
+  const handleKey = (e: KeyboardEvent) => {
     if (e.key === "Escape") { setOpen(false); setQuery(""); }
   };
 
