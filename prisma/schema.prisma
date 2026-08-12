@@ -69,7 +69,7 @@ model Beef {
   startedAt     DateTime?
   endsAt        DateTime?
 
-  status        String    @default("OPEN") // OPEN, LIVE, JUDGING, COMPLETED
+  status        String    @default("OPEN")
 
   challengerIsAnon Boolean @default(false)
   responderIsAnon  Boolean @default(false)
@@ -95,9 +95,9 @@ model BeefOffer {
   beef      Beef     @relation(fields: [beefId], references: [id], onDelete: Cascade)
   fromId    String
   from      User     @relation(fields: [fromId], references: [id])
-  type      String   // RAISE | CLOSE
+  type      String
   amount    Float    @default(0)
-  status    String   @default("PENDING") // PENDING | ACCEPTED | REJECTED | EXPIRED
+  status    String   @default("PENDING")
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
@@ -154,8 +154,6 @@ model ForumThread {
   authorId  String
   author    User           @relation(fields: [authorId], references: [id])
   comments  ForumComment[]
-  textColor String?
-  fontStyle String?
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 }
@@ -168,8 +166,6 @@ model ForumComment {
   author    User         @relation(fields: [authorId], references: [id])
   content   String
   parentId  String?
-  textColor String?
-  fontStyle String?
   createdAt DateTime     @default(now())
 }
 
@@ -186,9 +182,9 @@ model Transaction {
   id            String    @id @default(cuid())
 
   userId        String
-  type          String    // DEPOSIT, WITHDRAWAL, ANTE, PAYOUT, REFUND
+  type          String
   amount        Float
-  status        String    // PENDING, COMPLETED, FAILED
+  status        String
 
   relatedBeefId String?
 
