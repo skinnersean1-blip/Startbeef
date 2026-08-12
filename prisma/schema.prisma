@@ -169,6 +169,15 @@ model ForumComment {
   createdAt DateTime     @default(now())
 }
 
+model Feedback {
+  id        String   @id @default(cuid())
+  content   String
+  category  String   @default("general")
+  userId    String?
+  email     String?
+  createdAt DateTime @default(now())
+}
+
 model Transaction {
   id            String    @id @default(cuid())
 

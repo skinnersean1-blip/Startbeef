@@ -7,6 +7,7 @@ import { AuthHeader } from "@/components/AuthHeader";
 import { HeroCTA } from "@/components/HeroCTA";
 import { BrowseBar } from "@/components/BrowseBar";
 import { ForumPanel } from "@/components/ForumPanel";
+import { SearchBar } from "@/components/SearchBar";
 
 async function getStats() {
   const [openCount, livePotResult, spectatorResult, completedCount, startedCount] =
@@ -92,7 +93,6 @@ export default async function Home({
     <div className="min-h-screen" style={{ background: "radial-gradient(ellipse 160% 120% at 85% 95%, rgba(212,165,116,0.38) 0%, rgba(196,140,60,0.18) 35%, rgba(196,140,60,0.06) 65%, transparent 100%)" }}>
       {/* Header */}
       <header className="container-beef py-6 sm:py-8">
-        {/* Mobile: stacked layout */}
         <div className="flex items-center justify-between gap-4 mb-4 sm:mb-0">
           <div className="flex-shrink-0">
             <p className="section-label mb-1 text-[10px] sm:text-xs">TALK SHIT, MAKE MONEY</p>
@@ -100,12 +100,13 @@ export default async function Home({
               BEEF
             </h1>
           </div>
-          <div className="flex-shrink-0">
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <SearchBar />
+            <Link href="/about" className="hidden sm:block text-beef-text-muted text-xs tracking-widest hover:text-beef-gold transition-colors">HOW IT WORKS</Link>
             <AuthHeader />
           </div>
         </div>
 
-        {/* Hero copy + CTA — hidden on smallest screens, shown below logo on sm+ */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mt-2 sm:mt-4">
           <div className="max-w-xl">
             <h2 className="text-lg sm:text-2xl font-bold leading-tight mb-1">
@@ -121,12 +122,10 @@ export default async function Home({
         </div>
       </header>
 
-      {/* Browse / Sort bar */}
       <Suspense>
         <BrowseBar />
       </Suspense>
 
-      {/* Stats strip */}
       <section className="container-beef py-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div className="card-beef py-5">
@@ -135,12 +134,14 @@ export default async function Home({
               ${stats.livePot.toLocaleString()}
             </p>
           </div>
+          <Link href="/challenges">
+            <div className="card-beef py-5 hover:border-beef-gold/50 transition-colors cursor-pointer">
+              <p className="section-label mb-2">OPEN CHALLENGES</p>
+              <p className="text-3xl font-bold">{stats.openCount}</p>
+            </div>
+          </Link>
           <div className="card-beef py-5">
-            <p className="section-label mb-2">OPEN CHALLENGES</p>
-            <p className="text-3xl font-bold">{stats.openCount}</p>
-          </div>
-          <div className="card-beef py-5">
-            <p className="section-label mb-2">SIDELINE SPECTATORS</p>
+            <p className="section-label mb-2">PEOPLE WATCHING</p>
             <p className="text-3xl font-bold">{stats.spectators.toLocaleString()}</p>
           </div>
           <div className="card-beef py-5">
@@ -150,15 +151,13 @@ export default async function Home({
         </div>
       </section>
 
-      {/* Two-column layout: beefs left, forum right */}
       <section id="feed" className="container-beef py-6 pb-24">
         <div className="flex flex-col lg:flex-row gap-8 items-start">
 
-          {/* Left: Beef tiles */}
           <div className="flex-1 min-w-0">
             {feed.length === 0 ? (
               <div className="card-beef text-center py-20">
-                <p className="text-3xl font-bold mb-4">RINGSIDE IS EMPTY.</p>
+                <p className="text-3xl font-bold mb-4">NO BEEFS YET.</p>
                 <p className="text-beef-text-muted mb-8">Someone has to go first.</p>
                 <Link href="/beef/new">
                   <button className="btn-primary">START A BEEF</button>
@@ -269,8 +268,7 @@ export default async function Home({
             })()}
           </div>
 
-          {/* Right: Forum panel */}
-          <div className="w-full lg:w-[360px] lg:sticky lg:top-6 shrink-0">
+          <div className="w-full lg:w-[46%] lg:sticky lg:top-6 shrink-0">
             <ForumPanel />
           </div>
 
@@ -283,24 +281,10 @@ export default async function Home({
             © 2026 BEEF. TALK SHIT, MAKE MONEY.
           </p>
           <div className="flex gap-6 text-xs">
-            <Link
-              href="/about"
-              className="text-beef-text-muted hover:text-beef-gold transition-colors tracking-widest"
-            >
-              ABOUT
-            </Link>
-            <Link
-              href="/rules"
-              className="text-beef-text-muted hover:text-beef-gold transition-colors tracking-widest"
-            >
-              RULES
-            </Link>
-            <Link
-              href="/terms"
-              className="text-beef-text-muted hover:text-beef-gold transition-colors tracking-widest"
-            >
-              TERMS
-            </Link>
+            <Link href="/about" className="text-beef-text-muted hover:text-beef-gold transition-colors tracking-widest">ABOUT</Link>
+            <Link href="/rules" className="text-beef-text-muted hover:text-beef-gold transition-colors tracking-widest">RULES</Link>
+            <Link href="/verdict" className="text-beef-text-muted hover:text-beef-gold transition-colors tracking-widest">THE VERDICT</Link>
+            <Link href="/terms" className="text-beef-text-muted hover:text-beef-gold transition-colors tracking-widest">TERMS</Link>
           </div>
         </div>
       </footer>
