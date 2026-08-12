@@ -102,8 +102,8 @@ export default async function Home({
             </h1>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">
-            <Link href="/about" className="hidden sm:block text-beef-text-muted text-xs tracking-widest hover:text-beef-gold transition-colors">HOW IT WORKS</Link>
             <SearchBar />
+            <Link href="/about" className="hidden sm:block text-beef-text-muted text-xs tracking-widest hover:text-beef-gold transition-colors">HOW IT WORKS</Link>
             <AuthHeader />
           </div>
         </div>
