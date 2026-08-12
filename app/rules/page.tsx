@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 
 export const metadata = {
@@ -5,7 +6,7 @@ export const metadata = {
   description: "How to conduct yourself on Beef. What's in, what's out, and what gets you removed.",
 };
 
-function Rule({ n, title, children }: { n: string; title: string; children: React.ReactNode }) {
+function Rule({ n, title, children }: { n: string; title: string; children: ReactNode }) {
   return (
     <div className="border-t border-beef-border/40 py-6">
       <div className="flex gap-4">
@@ -53,7 +54,7 @@ export default function RulesPage() {
               A Beef is a public argument with money on the line. You state a claim. Someone disagrees. You both put up stakes. You argue it out in writing. An AI panel decides who made the better case.
             </p>
             <p className="text-beef-text-muted text-sm leading-relaxed mt-3">
-              The point is the argument — not the money, not the winning. If you’re here to talk your way out of something you don’t actually believe, this isn’t the place. Say what you mean and mean what you say.
+              The point is the argument — not the money, not the winning. If you&apos;re here to talk your way out of something you don&apos;t actually believe, this isn&apos;t the place. Say what you mean and mean what you say.
             </p>
           </div>
 
@@ -61,7 +62,7 @@ export default function RulesPage() {
             <p className="section-label mb-0">THE RULES</p>
 
             <Rule n="01" title="ARGUE YOUR OWN POSITION">
-              <p>You entered this Beef. Argue your corner. Don’t pivot, don’t dodge, don’t reframe your original claim halfway through because you’re losing. The AI judges are reading the whole thread — inconsistency counts against you.</p>
+              <p>You entered this Beef. Argue your corner. Don&apos;t pivot, don&apos;t dodge, don&apos;t reframe your original claim halfway through because you&apos;re losing. The AI judges are reading the whole thread — inconsistency counts against you.</p>
             </Rule>
 
             <Rule n="02" title="NO AI-WRITTEN ARGUMENTS">
@@ -73,7 +74,7 @@ export default function RulesPage() {
             </Rule>
 
             <Rule n="04" title="NO COLLUSION">
-              <p>Don’t arrange outcomes with your opponent in advance. Don’t split pots outside the platform. Don’t throw a debate on purpose. If we detect coordinated manipulation, both accounts will be suspended and the pot will be voided.</p>
+              <p>Don&apos;t arrange outcomes with your opponent in advance. Don&apos;t split pots outside the platform. Don&apos;t throw a debate on purpose. If we detect coordinated manipulation, both accounts will be suspended and the pot will be voided.</p>
             </Rule>
 
             <Rule n="05" title="KEEP IT ABOVE THE BELT">
@@ -85,11 +86,11 @@ export default function RulesPage() {
             </Rule>
 
             <Rule n="07" title="REAL MONEY, REAL CLAIMS">
-              <p>Stakes are locked in real money. Don’t post a claim you’re not prepared to argue seriously. If your claim is intentionally absurd, unfalsifiable, or designed to make the debate unwinnable for your opponent, expect the AI judge to notice.</p>
+              <p>Stakes are locked in real money. Don&apos;t post a claim you&apos;re not prepared to argue seriously. If your claim is intentionally absurd, unfalsifiable, or designed to make the debate unwinnable for your opponent, expect the AI judge to notice.</p>
             </Rule>
 
             <Rule n="08" title="THE AI VERDICT IS FINAL">
-              <p>You agreed to AI judgment when you entered. The verdict is binding. We don’t accept appeals based on disagreement with the outcome. In the case of a verified technical failure, we may re-run judgment — that’s the only exception.</p>
+              <p>You agreed to AI judgment when you entered. The verdict is binding. We don&apos;t accept appeals based on disagreement with the outcome. In the case of a verified technical failure, we may re-run judgment — that&apos;s the only exception.</p>
             </Rule>
 
             <Rule n="09" title="THE POST BOARD HAS STANDARDS TOO">
@@ -97,7 +98,7 @@ export default function RulesPage() {
             </Rule>
 
             <Rule n="10" title="WE RESERVE THE RIGHT TO CALL IT">
-              <p>Our team and our systems monitor the platform. If something is clearly wrong — fraud, abuse, a technical failure — we’ll step in. We’ll always err toward fairness, but our decisions on platform integrity are final.</p>
+              <p>Our team and our systems monitor the platform. If something is clearly wrong — fraud, abuse, a technical failure — we&apos;ll step in. We&apos;ll always err toward fairness, but our decisions on platform integrity are final.</p>
             </Rule>
           </div>
 
