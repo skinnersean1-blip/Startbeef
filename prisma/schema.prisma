@@ -36,6 +36,7 @@ model User {
 
   challengesCreated  Beef[]      @relation("Challenger")
   challengesAccepted Beef[]      @relation("Responder")
+  targetedBeefs      Beef[]      @relation("TargetResponder")
   messages           Message[]
   offers             BeefOffer[]
   following          Follow[]    @relation("Follower")
@@ -58,6 +59,9 @@ model Beef {
   challenger         User      @relation("Challenger", fields: [challengerId], references: [id])
   responderId        String?
   responder          User?     @relation("Responder", fields: [responderId], references: [id])
+  targetResponderId  String?
+  targetResponder    User?     @relation("TargetResponder", fields: [targetResponderId], references: [id])
+  sourceCommentId    String?
 
   ante          Float
   totalPot      Float
@@ -150,8 +154,6 @@ model ForumThread {
   authorId  String
   author    User           @relation(fields: [authorId], references: [id])
   comments  ForumComment[]
-  textColor String?
-  fontStyle String?
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 }
@@ -164,9 +166,16 @@ model ForumComment {
   author    User         @relation(fields: [authorId], references: [id])
   content   String
   parentId  String?
-  textColor String?
-  fontStyle String?
   createdAt DateTime     @default(now())
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  content   String
+  category  String   @default("general")
+  userId    String?
+  email     String?
+  createdAt DateTime @default(now())
 }
 
 model Transaction {

@@ -102,12 +102,13 @@ export default async function Home({
             </h1>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">
+            <Link href="/about" className="hidden sm:block text-beef-text-muted text-xs tracking-widest hover:text-beef-gold transition-colors">HOW IT WORKS</Link>
             <SearchBar />
             <AuthHeader />
           </div>
         </div>
 
-        {/* Hero copy + CTA — hidden on smallest screens, shown below logo on sm+ */}
+        {/* Hero copy + CTA */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mt-2 sm:mt-4">
           <div className="max-w-xl">
             <h2 className="text-lg sm:text-2xl font-bold leading-tight mb-1">
@@ -287,24 +288,10 @@ export default async function Home({
             © 2026 BEEF. TALK SHIT, MAKE MONEY.
           </p>
           <div className="flex gap-6 text-xs">
-            <Link
-              href="/about"
-              className="text-beef-text-muted hover:text-beef-gold transition-colors tracking-widest"
-            >
-              ABOUT
-            </Link>
-            <Link
-              href="/rules"
-              className="text-beef-text-muted hover:text-beef-gold transition-colors tracking-widest"
-            >
-              RULES
-            </Link>
-            <Link
-              href="/terms"
-              className="text-beef-text-muted hover:text-beef-gold transition-colors tracking-widest"
-            >
-              TERMS
-            </Link>
+            <Link href="/about" className="text-beef-text-muted hover:text-beef-gold transition-colors tracking-widest">ABOUT</Link>
+            <Link href="/rules" className="text-beef-text-muted hover:text-beef-gold transition-colors tracking-widest">RULES</Link>
+            <Link href="/verdict" className="text-beef-text-muted hover:text-beef-gold transition-colors tracking-widest">THE VERDICT</Link>
+            <Link href="/terms" className="text-beef-text-muted hover:text-beef-gold transition-colors tracking-widest">TERMS</Link>
           </div>
         </div>
       </footer>
