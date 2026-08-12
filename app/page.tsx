@@ -10,24 +10,28 @@ import { ForumPanel } from "@/components/ForumPanel";
 import { SearchBar } from "@/components/SearchBar";
 
 async function getStats() {
-  const [openCount, livePotResult, spectatorResult, completedCount, startedCount] =
-    await Promise.all([
-      prisma.beef.count({ where: { status: "OPEN" } }),
-      prisma.beef.aggregate({ where: { status: "LIVE" }, _sum: { totalPot: true } }),
-      prisma.beef.aggregate({ _sum: { viewCount: true } }),
-      prisma.beef.count({ where: { status: "COMPLETED" } }),
-      prisma.beef.count({ where: { status: { in: ["LIVE", "JUDGING", "COMPLETED"] } } }),
-    ]);
+  try {
+    const [openCount, livePotResult, spectatorResult, completedCount, startedCount] =
+      await Promise.all([
+        prisma.beef.count({ where: { status: "OPEN" } }),
+        prisma.beef.aggregate({ where: { status: "LIVE" }, _sum: { totalPot: true } }),
+        prisma.beef.aggregate({ _sum: { viewCount: true } }),
+        prisma.beef.count({ where: { status: "COMPLETED" } }),
+        prisma.beef.count({ where: { status: { in: ["LIVE", "JUDGING", "COMPLETED"] } } }),
+      ]);
 
-  const judgedRate =
-    startedCount > 0 ? Math.round((completedCount / startedCount) * 100) : 100;
+    const judgedRate =
+      startedCount > 0 ? Math.round((completedCount / startedCount) * 100) : 100;
 
-  return {
-    livePot: livePotResult._sum.totalPot ?? 0,
-    openCount,
-    spectators: spectatorResult._sum.viewCount ?? 0,
-    judgedRate,
-  };
+    return {
+      livePot: livePotResult._sum.totalPot ?? 0,
+      openCount,
+      spectators: spectatorResult._sum.viewCount ?? 0,
+      judgedRate,
+    };
+  } catch {
+    return { livePot: 0, openCount: 0, spectators: 0, judgedRate: 100 };
+  }
 }
 
 async function getFeed(category: string, sort: string) {
@@ -47,16 +51,20 @@ async function getFeed(category: string, sort: string) {
     sort === "new"     ? { createdAt: "desc" as const } :
                          { updatedAt: "desc" as const };
 
-  return prisma.beef.findMany({
-    where: { ...statusFilter, ...categoryFilter },
-    orderBy,
-    take: 20,
-    include: {
-      challenger: { select: { handle: true, username: true, isAnonymous: true, anonHandle: true, wins: true, losses: true } },
-      responder:  { select: { handle: true, username: true, isAnonymous: true, anonHandle: true } },
-      _count:     { select: { messages: true } },
-    },
-  });
+  try {
+    return await prisma.beef.findMany({
+      where: { ...statusFilter, ...categoryFilter },
+      orderBy,
+      take: 20,
+      include: {
+        challenger: { select: { handle: true, username: true, isAnonymous: true, anonHandle: true, wins: true, losses: true } },
+        responder:  { select: { handle: true, username: true, isAnonymous: true, anonHandle: true } },
+        _count:     { select: { messages: true } },
+      },
+    });
+  } catch {
+    return [];
+  }
 }
 
 function timeLeft(endsAt: Date) {
