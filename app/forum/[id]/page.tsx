@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, type CSSProperties } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -44,7 +44,7 @@ const COLORS = [
   { label: "Purple",  value: "#9055C9", swatch: "#9055C9" },
 ];
 
-function getStyle(textColor: string | null, fontStyle: string | null): React.CSSProperties {
+function getStyle(textColor: string | null, fontStyle: string | null): CSSProperties {
   return {
     color: textColor || undefined,
     fontWeight: fontStyle?.includes("bold") ? "bold" : undefined,
@@ -224,12 +224,10 @@ export default function ForumThreadPage() {
       <div className="container-beef pb-24 [&_*]:rounded-none" style={{ fontFamily: "Courier New, Courier, monospace" }}>
         <div className="max-w-2xl mx-auto">
 
-          {/* Back */}
           <Link href="/" className="text-beef-text-muted text-xs hover:text-beef-gold transition-colors tracking-widest mb-6 inline-block">
             ← POST
           </Link>
 
-          {/* Thread OP */}
           <div className="card-beef border-beef-gold/30 mb-6">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-beef-gold text-xs font-bold">{authorName(thread.author)}</span>
@@ -249,7 +247,6 @@ export default function ForumThreadPage() {
             )}
           </div>
 
-          {/* Comments */}
           {thread.comments.length > 0 && (
             <div className="mb-6">
               <p className="section-label mb-4">{thread.comments.length} REPL{thread.comments.length === 1 ? "Y" : "IES"}</p>
@@ -268,7 +265,6 @@ export default function ForumThreadPage() {
             </div>
           )}
 
-          {/* Reply form */}
           {session?.user ? (
             <div className="card-beef">
               <p className="section-label mb-3">
@@ -296,7 +292,6 @@ export default function ForumThreadPage() {
                 style={getStyle(textColor, fontStyle)}
                 className="w-full px-3 py-2 bg-beef-bg-light border border-beef-border focus:outline-none focus:border-beef-gold text-sm resize-none"
               />
-              {/* Style toolbar */}
               <div className="flex items-center justify-between py-2 border-t border-beef-border/40 mb-3">
                 <div className="flex items-center gap-1.5">
                   {[
