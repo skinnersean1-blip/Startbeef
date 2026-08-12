@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 
 export const metadata = {
@@ -278,7 +279,7 @@ export default function TermsPage() {
   );
 }
 
-function Section({ n, title, children }: { n: string; title: string; children: React.ReactNode }) {
+function Section({ n, title, children }: { n: string; title: string; children: ReactNode }) {
   return (
     <div>
       <p className="section-label mb-2">{n.padStart(2, "0")} — {title}</p>
