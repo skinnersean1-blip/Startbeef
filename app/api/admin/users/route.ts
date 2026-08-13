@@ -65,9 +65,33 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { id, action } = await req.json();
-  if (!id || !["verify", "unverify"].includes(action)) {
+  const { id, action, amount, note } = await req.json();
+  if (!id || !["verify", "unverify", "credit"].includes(action)) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+
+  if (action === "credit") {
+    const creditAmount = parseFloat(amount);
+    if (!creditAmount || creditAmount <= 0 || creditAmount > 10000) {
+      return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
+    }
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id },
+        data: { bankBalance: { increment: creditAmount } },
+      }),
+      prisma.transaction.create({
+        data: {
+          userId: id,
+          type: "REFUND",
+          amount: creditAmount,
+          status: "COMPLETED",
+          paymentProvider: "admin",
+          paymentId: note || "admin-credit",
+        },
+      }),
+    ]);
+    return NextResponse.json({ success: true });
   }
 
   await prisma.user.update({

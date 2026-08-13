@@ -117,6 +117,8 @@ function UsersTab() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [creditingId, setCreditingId] = useState<string | null>(null);
+  const [creditAmount, setCreditAmount] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -139,6 +141,20 @@ function UsersTab() {
     });
     setUpdating(null);
     load();
+  }
+
+  async function creditBalance(id: string) {
+    const amt = parseFloat(creditAmount);
+    if (!amt || amt <= 0) return;
+    setUpdating(id);
+    const res = await fetch("/api/admin/users", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, action: "credit", amount: amt, note: "admin-credit" }),
+    });
+    setUpdating(null);
+    if (res.ok) { setMsg(`Credited $${amt.toFixed(2)}`); setCreditingId(null); setCreditAmount(""); load(); }
+    else { const d = await res.json(); setMsg(d.error || "Failed"); }
   }
 
   return (
@@ -177,13 +193,45 @@ function UsersTab() {
                     <span>{timeAgo(u.createdAt)}</span>
                   </div>
                 </div>
-                <button
-                  onClick={() => toggleVerify(u.id, u.isVerified)}
-                  disabled={updating === u.id}
-                  className="text-xs px-3 py-1.5 border border-gray-200 rounded-lg hover:border-orange-400 hover:text-orange-500 transition-colors disabled:opacity-40 whitespace-nowrap"
-                >
-                  {updating === u.id ? "..." : u.isVerified ? "Unverify" : "Verify"}
-                </button>
+                <div className="flex flex-col gap-1 items-end shrink-0">
+                  <button
+                    onClick={() => toggleVerify(u.id, u.isVerified)}
+                    disabled={updating === u.id}
+                    className="text-xs px-3 py-1.5 border border-gray-200 rounded-lg hover:border-orange-400 hover:text-orange-500 transition-colors disabled:opacity-40 whitespace-nowrap"
+                  >
+                    {updating === u.id ? "..." : u.isVerified ? "Unverify" : "Verify"}
+                  </button>
+                  {creditingId === u.id ? (
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        min="1"
+                        max="10000"
+                        step="1"
+                        placeholder="$"
+                        value={creditAmount}
+                        onChange={(e) => setCreditAmount(e.target.value)}
+                        className="w-16 px-2 py-1 text-xs border border-gray-200 rounded focus:outline-none focus:border-orange-400"
+                      />
+                      <button
+                        onClick={() => creditBalance(u.id)}
+                        disabled={updating === u.id}
+                        className="text-xs px-2 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors disabled:opacity-40"
+                      >OK</button>
+                      <button
+                        onClick={() => { setCreditingId(null); setCreditAmount(""); }}
+                        className="text-xs px-2 py-1 border border-gray-200 rounded hover:border-gray-400 transition-colors"
+                      >✕</button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setCreditingId(u.id)}
+                      className="text-xs px-3 py-1.5 border border-gray-200 rounded-lg hover:border-green-500 hover:text-green-600 transition-colors whitespace-nowrap"
+                    >
+                      + Credit
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
