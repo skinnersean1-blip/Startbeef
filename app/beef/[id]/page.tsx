@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { AuthHeader } from "@/components/AuthHeader";
 import { AcceptBeefButton } from "@/components/AcceptBeefButton";
 import { BeefThread } from "@/components/BeefThread";
+import { CancelBeefButton } from "@/components/CancelBeefButton";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -20,17 +21,35 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const session = await getServerSession(authOptions);
 
-  const beef = await prisma.beef.findUnique({
-    where: { id },
-    include: {
-      challenger: { select: { id: true, username: true, handle: true, wins: true, losses: true } },
-      responder:  { select: { id: true, username: true, handle: true, wins: true, losses: true } },
-      messages: {
-        include: { user: { select: { id: true, handle: true, username: true } } },
-        orderBy: { createdAt: "asc" },
+  let beef;
+  try {
+    beef = await prisma.beef.findUnique({
+      where: { id },
+      include: {
+        challenger: { select: { id: true, username: true, handle: true, wins: true, losses: true } },
+        responder:  { select: { id: true, username: true, handle: true, wins: true, losses: true } },
+        messages: {
+          include: { user: { select: { id: true, handle: true, username: true } } },
+          orderBy: { createdAt: "asc" },
+        },
       },
-    },
-  });
+    });
+  } catch (error) {
+    console.error("Error fetching beef:", error);
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="card-beef max-w-md text-center">
+          <p className="section-label mb-4">DATABASE ERROR</p>
+          <p className="text-muted mb-6">
+            Unable to load this beef. The database might not be configured correctly.
+          </p>
+          <Link href="/" className="btn-primary">
+            BACK TO ARENA
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (!beef) notFound();
 
@@ -152,9 +171,14 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
 
           {/* Own beef notice */}
           {isChallenger && beef.status === "OPEN" && (
-            <div className="card-beef bg-beef-bg-light border-beef-gold/30 mb-8 text-center">
-              <p className="section-label mb-2">YOUR BEEF IS LIVE</p>
-              <p className="text-muted text-sm">Waiting for someone to match your ${beef.ante}. Share the link to speed it up.</p>
+            <div className="space-y-4 mb-8">
+              <div className="card-beef bg-beef-bg-light border-beef-gold/30 text-center">
+                <p className="section-label mb-2">YOUR BEEF IS LIVE</p>
+                <p className="text-muted text-sm mb-4">Waiting for someone to match your ${beef.ante}. Share the link to speed it up.</p>
+                <div className="flex justify-center">
+                  <CancelBeefButton beefId={beef.id} />
+                </div>
+              </div>
             </div>
           )}
 
