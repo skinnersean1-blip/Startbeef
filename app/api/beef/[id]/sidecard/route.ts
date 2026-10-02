@@ -59,20 +59,7 @@ export async function POST(
       );
     }
 
-    // Check if user already has a bet on this beef
-    const existingBet = await prisma.sidecard.findFirst({
-      where: {
-        beefId,
-        userId: session.user.id,
-      },
-    });
-
-    if (existingBet) {
-      return NextResponse.json(
-        { error: "You already have a bet on this beef" },
-        { status: 400 }
-      );
-    }
+    // Allow multiple bets - users can shore up or hedge their positions
 
     // Calculate commission (1%)
     const commission = stake * BEEF_COMMISSION_RATE;
