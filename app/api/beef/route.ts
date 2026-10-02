@@ -131,6 +131,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
     }
     console.error("Create beef error:", error);
-    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+    // TEST MODE: Return actual error message for debugging
+    return NextResponse.json({
+      error: error instanceof Error ? error.message : "Something went wrong",
+      details: error instanceof Error ? error.stack : undefined
+    }, { status: 500 });
   }
 }
