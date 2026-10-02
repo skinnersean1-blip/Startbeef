@@ -62,8 +62,8 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
 
   // Check if this is a test beef (prevent real money betting on test users)
   const isTestBeef =
-    beef.challenger.email.endsWith("@test.com") ||
-    (beef.responder && beef.responder.email.endsWith("@test.com"));
+    beef.challenger.email?.endsWith("@test.com") ||
+    (beef.responder && beef.responder.email?.endsWith("@test.com"));
 
   return (
     <div className="min-h-screen">

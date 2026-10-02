@@ -56,8 +56,8 @@ export async function POST(
 
     // Prevent betting on test/fake user beefs
     const isTestBeef =
-      beef.challenger.email.endsWith("@test.com") ||
-      (beef.responder && beef.responder.email.endsWith("@test.com"));
+      beef.challenger.email?.endsWith("@test.com") ||
+      (beef.responder && beef.responder.email?.endsWith("@test.com"));
 
     if (isTestBeef) {
       return NextResponse.json(
