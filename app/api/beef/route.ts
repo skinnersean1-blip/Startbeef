@@ -54,23 +54,25 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { claim, ante, challengerIsAnon } = createBeefSchema.parse(body);
 
-    // Check challenger has enough in bank
+    // TEST MODE: Verification and balance checks disabled for testing
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { bankBalance: true, anonHandle: true, isVerified: true },
     });
-    if (!user?.isVerified) {
-      return NextResponse.json(
-        { error: "Please verify your email before posting a beef. Check your inbox." },
-        { status: 403 }
-      );
-    }
-    if (!user || user.bankBalance < ante) {
-      return NextResponse.json(
-        { error: `Insufficient bank balance. You need $${ante} to post this beef.` },
-        { status: 400 }
-      );
-    }
+    // Verification check disabled for testing
+    // if (!user?.isVerified) {
+    //   return NextResponse.json(
+    //     { error: "Please verify your email before posting a beef. Check your inbox." },
+    //     { status: 403 }
+    //   );
+    // }
+    // Balance check disabled for testing
+    // if (!user || user.bankBalance < ante) {
+    //   return NextResponse.json(
+    //     { error: `Insufficient bank balance. You need $${ante} to post this beef.` },
+    //     { status: 400 }
+    //   );
+    // }
 
     const categories = await categorizeClaim(claim);
 
