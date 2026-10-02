@@ -76,24 +76,26 @@ export async function POST(req: NextRequest) {
 
     const categories = await categorizeClaim(claim);
 
-    const [beef] = await prisma.$transaction([
-      prisma.beef.create({
-        data: {
-          claim,
-          categories: JSON.stringify(categories),
-          ante,
-          totalPot: ante,
-          status: "OPEN",
-          challengerId: session.user.id,
-          challengerIsAnon,
-        },
-      }),
-      // Lock the ante from the challenger's balance
-      prisma.user.update({
-        where: { id: session.user.id },
-        data: { bankBalance: { decrement: ante } },
-      }),
-    ]);
+    // TEST MODE: Create beef without deducting balance
+    const beef = await prisma.beef.create({
+      data: {
+        claim,
+        categories: JSON.stringify(categories),
+        ante,
+        totalPot: ante,
+        status: "OPEN",
+        challengerId: session.user.id,
+        challengerIsAnon,
+      },
+    });
+    // Balance deduction disabled for testing
+    // const [beef] = await prisma.$transaction([
+    //   prisma.beef.create({...}),
+    //   prisma.user.update({
+    //     where: { id: session.user.id },
+    //     data: { bankBalance: { decrement: ante } },
+    //   }),
+    // ]);
 
     await prisma.transaction.create({
       data: {
