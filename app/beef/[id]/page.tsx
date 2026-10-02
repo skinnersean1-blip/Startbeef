@@ -7,6 +7,7 @@ import { AuthHeader } from "@/components/AuthHeader";
 import { AcceptBeefButton } from "@/components/AcceptBeefButton";
 import { BeefThread } from "@/components/BeefThread";
 import { CancelBeefButton } from "@/components/CancelBeefButton";
+import { PredictionMarket } from "@/components/PredictionMarket";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -180,6 +181,18 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Prediction Market */}
+          {beef.status === "LIVE" && beef.responder && (
+            <PredictionMarket
+              beefId={beef.id}
+              challengerId={beef.challengerId}
+              challengerHandle={beef.challenger.handle || beef.challenger.username}
+              responderId={beef.responderId!}
+              responderHandle={beef.responder.handle || beef.responder.username}
+              status={beef.status}
+            />
           )}
 
           {/* Thread */}
