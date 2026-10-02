@@ -58,6 +58,26 @@ async function getFeed(category: string, sort: string) {
       take: 20,
       include: {
         challenger: { select: { handle: true, username: true, isAnonymous: true, anonHandle: true, wins: true, losses: true } },
+        responder:  { select: { handle: true, username: true, isAnonymous: true, anonHandle: true, winnerId: true } },
+        _count:     { select: { messages: true } },
+      },
+    });
+  } catch {
+    return [];
+  }
+}
+
+async function getCompletedBeefs(category: string) {
+  const categoryFilter =
+    category !== "ALL" ? { categories: { contains: category } } : {};
+
+  try {
+    return await prisma.beef.findMany({
+      where: { status: "COMPLETED", ...categoryFilter },
+      orderBy: { updatedAt: "desc" as const },
+      take: 10,
+      include: {
+        challenger: { select: { handle: true, username: true, isAnonymous: true, anonHandle: true, wins: true, losses: true } },
         responder:  { select: { handle: true, username: true, isAnonymous: true, anonHandle: true } },
         _count:     { select: { messages: true } },
       },
@@ -92,9 +112,10 @@ export default async function Home({
   const category = cat || "ALL";
   const sortKey  = sort || "hot";
 
-  const [stats, feed] = await Promise.all([
+  const [stats, feed, completedBeefs] = await Promise.all([
     getStats(),
     getFeed(category, sortKey),
+    getCompletedBeefs(category),
   ]);
 
   return (
@@ -274,6 +295,33 @@ export default async function Home({
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {open.map((beef) => <BeefTile key={beef.id} beef={beef} />)}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Decorative Divider */}
+                  {completedBeefs.length > 0 && (live.length > 0 || open.length > 0) && (
+                    <div className="relative py-12">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-beef-border/30"></div>
+                      </div>
+                      <div className="relative flex justify-center">
+                        <span className="bg-beef-bg px-6 text-beef-text-muted text-xs tracking-[0.3em] font-bold">
+                          ✦ SETTLED ✦
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Completed Beefs */}
+                  {completedBeefs.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-4 mb-4">
+                        <p className="section-label text-beef-text-muted">HALL OF FAME</p>
+                        <div className="flex-1 border-t border-beef-border/20" />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 opacity-75">
+                        {completedBeefs.map((beef) => <BeefTile key={beef.id} beef={beef} />)}
                       </div>
                     </div>
                   )}
