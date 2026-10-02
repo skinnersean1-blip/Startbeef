@@ -53,6 +53,8 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           username: user.username,
           handle: user.handle,
+          isAnonymous: user.isAnonymous,
+          anonHandle: user.anonHandle,
         };
       },
     }),
@@ -63,6 +65,8 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.username = user.username;
         token.handle = user.handle;
+        token.isAnonymous = user.isAnonymous;
+        token.anonHandle = user.anonHandle;
       }
       return token;
     },
@@ -71,6 +75,8 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.username = token.username as string;
         session.user.handle = token.handle as string;
+        session.user.isAnonymous = token.isAnonymous as boolean;
+        session.user.anonHandle = token.anonHandle as string | null;
       }
       return session;
     },

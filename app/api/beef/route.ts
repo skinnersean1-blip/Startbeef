@@ -3,13 +3,16 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { categorizeClaim } from "@/lib/categorize";
+import { ANTE_MIN, ANTE_MAX } from "@/lib/stripe";
+import { sendAdminNewBeefEmail } from "@/lib/email";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
 const createBeefSchema = z.object({
-  claim: z.string().min(10, "Claim must be at least 10 characters").max(500, "Claim must be under 500 characters"),
-  ante: z.number().refine((v) => [10, 25, 50, 100].includes(v), "Invalid ante amount"),
+  claim:            z.string().min(10, "Claim must be at least 10 characters").max(500, "Claim must be under 500 characters"),
+  ante:             z.number().min(ANTE_MIN, `Minimum ante is $${ANTE_MIN}`).max(ANTE_MAX, `Maximum ante is $${ANTE_MAX}`),
+  challengerIsAnon: z.boolean().default(false),
 });
 
 export async function GET(req: NextRequest) {
@@ -22,7 +25,7 @@ export async function GET(req: NextRequest) {
     : { status: "OPEN" };
 
   const orderBy =
-    sort === "hot" ? { sideVolume: "desc" as const } :
+    sort === "hot" ? { totalPot: "desc" as const } :
     sort === "pot" ? { totalPot: "desc" as const } :
     { createdAt: "desc" as const };
 
@@ -47,10 +50,31 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { claim, ante } = createBeefSchema.parse(body);
+    const { claim, ante, challengerIsAnon } = createBeefSchema.parse(body);
+
+    // TEST MODE: Verification and balance checks disabled for testing
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { bankBalance: true, anonHandle: true, isVerified: true },
+    });
+    // Verification check disabled for testing
+    // if (!user?.isVerified) {
+    //   return NextResponse.json(
+    //     { error: "Please verify your email before posting a beef. Check your inbox." },
+    //     { status: 403 }
+    //   );
+    // }
+    // Balance check disabled for testing
+    // if (!user || user.bankBalance < ante) {
+    //   return NextResponse.json(
+    //     { error: `Insufficient bank balance. You need $${ante} to post this beef.` },
+    //     { status: 400 }
+    //   );
+    // }
 
     const categories = await categorizeClaim(claim);
 
+    // TEST MODE: Create beef without deducting balance
     const beef = await prisma.beef.create({
       data: {
         claim,
@@ -59,7 +83,36 @@ export async function POST(req: NextRequest) {
         totalPot: ante,
         status: "OPEN",
         challengerId: session.user.id,
+        challengerIsAnon,
       },
+    });
+    // Balance deduction disabled for testing
+    // const [beef] = await prisma.$transaction([
+    //   prisma.beef.create({...}),
+    //   prisma.user.update({
+    //     where: { id: session.user.id },
+    //     data: { bankBalance: { decrement: ante } },
+    //   }),
+    // ]);
+
+    await prisma.transaction.create({
+      data: {
+        userId: session.user.id,
+        type: "ANTE",
+        amount: ante,
+        status: "COMPLETED",
+        relatedBeefId: beef.id,
+      },
+    });
+
+    // Admin alert — fire and forget
+    const challengerName = challengerIsAnon
+      ? (user as any).anonHandle ?? "GHOST"
+      : `@${session.user.handle || session.user.username}`;
+    sendAdminNewBeefEmail(beef.id, claim, challengerName).catch(() => {});
+
+    const beefWithSelect = await prisma.beef.findUnique({
+      where: { id: beef.id },
       select: {
         id: true,
         claim: true,
@@ -70,12 +123,16 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ beef }, { status: 201 });
+    return NextResponse.json({ beef: beefWithSelect }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
     }
     console.error("Create beef error:", error);
-    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+    // TEST MODE: Return actual error message for debugging
+    return NextResponse.json({
+      error: error instanceof Error ? error.message : "Something went wrong",
+      details: error instanceof Error ? error.stack : undefined
+    }, { status: 500 });
   }
 }

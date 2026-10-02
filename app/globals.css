@@ -25,6 +25,15 @@
     @apply bg-beef-bg-card border border-beef-border rounded-2xl p-6;
   }
 
+  /* Beef record cards — sharp corners, monospace, terminal feel */
+  .card-beef-record {
+    @apply bg-beef-bg-card border border-beef-border rounded-none p-6 font-courier;
+  }
+
+  .card-beef-record-live {
+    @apply bg-beef-bg-card border border-beef-orange/50 rounded-none p-6 font-courier;
+  }
+
   .btn-primary {
     @apply bg-beef-orange hover:bg-beef-orange-dark text-white font-semibold px-8 py-4 rounded-full transition-all duration-200 shadow-orange-glow;
   }

@@ -5,6 +5,8 @@ declare module "next-auth" {
     id: string;
     username: string;
     handle: string | null;
+    isAnonymous: boolean;
+    anonHandle: string | null;
   }
 
   interface Session {
@@ -13,6 +15,8 @@ declare module "next-auth" {
       email: string;
       username: string;
       handle: string | null;
+      isAnonymous: boolean;
+      anonHandle: string | null;
     };
   }
 }
@@ -22,5 +26,7 @@ declare module "next-auth/jwt" {
     id: string;
     username: string;
     handle: string | null;
+    isAnonymous: boolean;
+    anonHandle: string | null;
   }
 }

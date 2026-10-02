@@ -307,3 +307,4 @@ This is currently a private project. Contributions will be opened up in future p
 **Beef turns performative posting into a structured contest. Conviction has a price, the arena has rules, and the crowd fuels the spectacle without owning the result.**
 
 *Put money where your mouth is.*
+# Trigger redeploy after Sidecard table creation

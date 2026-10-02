@@ -59,20 +59,7 @@ export async function POST(
       );
     }
 
-    // Check if user already has a bet on this beef
-    const existingBet = await prisma.sidecard.findFirst({
-      where: {
-        beefId,
-        userId: session.user.id,
-      },
-    });
-
-    if (existingBet) {
-      return NextResponse.json(
-        { error: "You already have a bet on this beef" },
-        { status: 400 }
-      );
-    }
+    // Allow multiple bets - users can shore up or hedge their positions
 
     // Calculate commission (1%)
     const commission = stake * BEEF_COMMISSION_RATE;
@@ -139,8 +126,12 @@ export async function POST(
     }
 
     console.error("Sidecard error:", error);
+    // TEST MODE: Return actual error for debugging
     return NextResponse.json(
-      { error: "Failed to place bet" },
+      {
+        error: error instanceof Error ? error.message : "Failed to place bet",
+        details: error instanceof Error ? error.stack : undefined
+      },
       { status: 500 }
     );
   }

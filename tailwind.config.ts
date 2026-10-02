@@ -9,14 +9,15 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans:    ["var(--font-inter)", "system-ui", "sans-serif"],
+        courier: ["var(--font-courier)", "Courier New", "monospace"],
       },
       colors: {
         // Beef color palette - dark brown/gold aesthetic
         beef: {
-          bg: "#0A0806",           // Very dark brown, almost black
-          "bg-light": "#1A1410",   // Slightly lighter brown
-          "bg-card": "#2A1F18",    // Card background
+          bg: "#130E09",           // Dark brown, slightly lifted
+          "bg-light": "#1E1710",   // Slightly lighter brown
+          "bg-card": "#2E231A",    // Card background
           gold: "#D4A574",         // Muted gold
           "gold-light": "#E8C9A1", // Light gold
           orange: "#FF6B47",       // Bright orange (CTA)

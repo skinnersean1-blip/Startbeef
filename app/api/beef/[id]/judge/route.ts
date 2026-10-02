@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { judgeBeef, type JudgeMessage } from "@/lib/judges";
+import { executeJudgment } from "@/lib/executeJudgment";
 
 export const dynamic = "force-dynamic";
 
@@ -17,17 +17,7 @@ export async function POST(
 
   const { id } = await params;
 
-  const beef = await prisma.beef.findUnique({
-    where: { id },
-    include: {
-      challenger: { select: { handle: true, username: true } },
-      responder:  { select: { handle: true, username: true } },
-      messages: {
-        include: { user: { select: { handle: true, username: true } } },
-        orderBy: { createdAt: "asc" },
-      },
-    },
-  });
+  const beef = await prisma.beef.findUnique({ where: { id } });
 
   if (!beef) return NextResponse.json({ error: "Beef not found" }, { status: 404 });
 
@@ -53,41 +43,12 @@ export async function POST(
   // Mark as JUDGING to prevent double-triggering
   await prisma.beef.update({ where: { id }, data: { status: "JUDGING" } });
 
-  const messages: JudgeMessage[] = beef.messages.map((m) => ({
-    side: m.userId === beef.challengerId ? "CHALLENGER" : "RESPONDER",
-    handle: m.user.handle || m.user.username,
-    content: m.content,
-    createdAt: m.createdAt.toISOString(),
-  }));
-
-  let result;
   try {
-    result = await judgeBeef(beef.claim, messages);
+    await executeJudgment(id);
   } catch (err) {
-    // Roll back to LIVE if judge fails so they can retry
-    await prisma.beef.update({ where: { id }, data: { status: "LIVE" } });
     console.error("Judge error:", err);
     return NextResponse.json({ error: "The judge could not be reached. Try again." }, { status: 503 });
   }
 
-  const winnerId =
-    result.winner === "CHALLENGER" ? beef.challengerId : beef.responderId;
-
-  await prisma.beef.update({
-    where: { id },
-    data: {
-      status: "COMPLETED",
-      winnerId: winnerId ?? null,
-      judgeId: result.judgeId,
-      judgeName: result.judgeName,
-      judgeDecision: result.decision,
-    },
-  });
-
-  return NextResponse.json({
-    winner: result.winner,
-    judgeId: result.judgeId,
-    judgeName: result.judgeName,
-    decision: result.decision,
-  });
+  return NextResponse.json({ ok: true });
 }
