@@ -29,39 +29,42 @@ export async function POST(
   if (beef.responderId) return NextResponse.json({ error: "This beef already has a responder" }, { status: 409 });
 
 
-  // Check responder has enough in bank
-  const responder = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { bankBalance: true },
-  });
-  if (!responder || responder.bankBalance < beef.ante) {
-    return NextResponse.json(
-      { error: `You need $${beef.ante} in your Bank to accept this beef.` },
-      { status: 400 }
-    );
-  }
+  // TEST MODE: Balance check disabled
+  // const responder = await prisma.user.findUnique({
+  //   where: { id: session.user.id },
+  //   select: { bankBalance: true },
+  // });
+  // if (!responder || responder.bankBalance < beef.ante) {
+  //   return NextResponse.json(
+  //     { error: `You need $${beef.ante} in your Bank to accept this beef.` },
+  //     { status: 400 }
+  //   );
+  // }
 
   const now = new Date();
   const endsAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-  const [updated] = await prisma.$transaction([
-    prisma.beef.update({
-      where: { id },
-      data: {
-        responderId: session.user.id,
-        responderIsAnon,
-        status: "LIVE",
-        totalPot: beef.ante * 2,
-        startedAt: now,
-        endsAt,
-      },
-      select: { id: true, status: true, endsAt: true },
-    }),
-    prisma.user.update({
-      where: { id: session.user.id },
-      data: { bankBalance: { decrement: beef.ante } },
-    }),
-  ]);
+  // TEST MODE: Accept without balance deduction
+  const updated = await prisma.beef.update({
+    where: { id },
+    data: {
+      responderId: session.user.id,
+      responderIsAnon,
+      status: "LIVE",
+      totalPot: beef.ante * 2,
+      startedAt: now,
+      endsAt,
+    },
+    select: { id: true, status: true, endsAt: true },
+  });
+  // Balance deduction disabled
+  // const [updated] = await prisma.$transaction([
+  //   prisma.beef.update({...}),
+  //   prisma.user.update({
+  //     where: { id: session.user.id },
+  //     data: { bankBalance: { decrement: beef.ante } },
+  //   }),
+  // ]);
 
   await prisma.transaction.create({
     data: {
