@@ -8,6 +8,7 @@ import { AcceptBeefButton } from "@/components/AcceptBeefButton";
 import { BeefThread } from "@/components/BeefThread";
 import { BackButton } from "@/components/BackButton";
 import { PredictionMarket } from "@/components/PredictionMarket";
+import { PeanutGallery } from "@/components/PeanutGallery";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -202,39 +203,56 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
             />
           )}
 
-          {/* Thread */}
+          {/* Thread + Peanut Gallery */}
           {(beef.status === "LIVE" || beef.status === "JUDGING" || beef.status === "COMPLETED") && (
-            <BeefThread
-              beefId={beef.id}
-              messages={beef.messages.map((m) => ({
-                id: m.id,
-                content: m.content,
-                createdAt: m.createdAt.toISOString(),
-                user: { id: m.user.id, handle: m.user.handle, username: m.user.username, anonHandle: m.user.anonHandle, isAnonymous: m.user.isAnonymous },
-              }))}
-              initialOffers={beef.offers.map((o) => ({
-                id: o.id,
-                fromId: o.fromId,
-                type: o.type,
-                amount: o.amount,
-                status: o.status,
-                expiresAt: o.expiresAt.toISOString(),
-              }))}
-              endsAt={beef.endsAt?.toISOString() ?? null}
-              status={beef.status}
-              isParticipant={isParticipant}
-              currentUserId={session?.user?.id ?? null}
-              challengerId={beef.challengerId}
-              challengerHandle={challengerDisplay}
-              challengerIsAnon={challengerIsAnon}
-              responderId={beef.responderId ?? null}
-              responderHandle={responderDisplay}
-              responderIsAnon={responderIsAnon}
-              judgeId={beef.judgeId ?? null}
-              judgeName={beef.judgeName ?? null}
-              judgeDecision={beef.judgeDecision ?? null}
-              winnerId={beef.winnerId ?? null}
-            />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <BeefThread
+                  beefId={beef.id}
+                  messages={beef.messages.map((m) => ({
+                    id: m.id,
+                    content: m.content,
+                    createdAt: m.createdAt.toISOString(),
+                    user: { id: m.user.id, handle: m.user.handle, username: m.user.username, anonHandle: m.user.anonHandle, isAnonymous: m.user.isAnonymous },
+                  }))}
+                  initialOffers={beef.offers.map((o) => ({
+                    id: o.id,
+                    fromId: o.fromId,
+                    type: o.type,
+                    amount: o.amount,
+                    status: o.status,
+                    expiresAt: o.expiresAt.toISOString(),
+                  }))}
+                  endsAt={beef.endsAt?.toISOString() ?? null}
+                  status={beef.status}
+                  isParticipant={isParticipant}
+                  currentUserId={session?.user?.id ?? null}
+                  challengerId={beef.challengerId}
+                  challengerHandle={challengerDisplay}
+                  challengerIsAnon={challengerIsAnon}
+                  responderId={beef.responderId ?? null}
+                  responderHandle={responderDisplay}
+                  responderIsAnon={responderIsAnon}
+                  judgeId={beef.judgeId ?? null}
+                  judgeName={beef.judgeName ?? null}
+                  judgeDecision={beef.judgeDecision ?? null}
+                  winnerId={beef.winnerId ?? null}
+                />
+              </div>
+              {beef.status === "LIVE" && beef.responder && (
+                <div className="lg:col-span-1">
+                  <div className="sticky top-6">
+                    <PeanutGallery
+                      beefId={beef.id}
+                      challengerId={beef.challengerId}
+                      challengerHandle={beef.challenger.handle || beef.challenger.username}
+                      responderId={beef.responderId!}
+                      responderHandle={beef.responder.handle || beef.responder.username}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
           <div className="text-center mt-10">

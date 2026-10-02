@@ -439,31 +439,39 @@ export function BeefThread({
           <div className="space-y-3">
             {messages.map((msg) => {
               const isCurrentUser = msg.user.id === currentUserId;
-              const isChallenge = msg.user.id === challengerId;
+              const isChallenger = msg.user.id === challengerId;
               const isWinner = msg.user.id === winnerId;
               return (
                 <div
                   key={msg.id}
-                  className={`card-beef border-l-4 ${
-                    isChallenge ? "border-l-beef-gold" : "border-l-beef-orange"
-                  } ${isWinner && isCompleted ? "bg-beef-bg-light" : ""}`}
+                  className={`${
+                    isChallenger ? "mr-8" : "ml-8"
+                  }`}
                 >
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className={`text-xs font-bold tracking-widest ${isChallenge ? "text-beef-gold" : "text-beef-orange"}`}>
-                      {getSide(msg.user.id)}
-                    </span>
-                    <span className="text-muted text-sm">{getMsgHandle(msg)}</span>
-                    {isCurrentUser && (
-                      <span className="text-xs text-muted bg-beef-bg-light px-2 py-0.5 rounded-full">YOU</span>
-                    )}
-                    {isWinner && isCompleted && (
-                      <span className="text-xs font-bold text-beef-gold bg-beef-gold/20 px-2 py-0.5 rounded-full ml-auto">WINNER</span>
-                    )}
-                    <span className={`text-muted text-xs ${isWinner && isCompleted ? "" : "ml-auto"}`}>
-                      {new Date(msg.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
-                    </span>
+                  <div
+                    className={`card-beef ${
+                      isChallenger
+                        ? "border-l-4 border-l-red-500"
+                        : "border-r-4 border-r-yellow-500"
+                    } ${isWinner && isCompleted ? "bg-beef-bg-light" : ""}`}
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className={`text-xs font-bold tracking-widest ${isChallenger ? "text-red-400" : "text-yellow-400"}`}>
+                        {getSide(msg.user.id)}
+                      </span>
+                      <span className="text-muted text-sm">{getMsgHandle(msg)}</span>
+                      {isCurrentUser && (
+                        <span className="text-xs text-muted bg-beef-bg-light px-2 py-0.5 rounded-full">YOU</span>
+                      )}
+                      {isWinner && isCompleted && (
+                        <span className="text-xs font-bold text-beef-gold bg-beef-gold/20 px-2 py-0.5 rounded-full ml-auto">WINNER</span>
+                      )}
+                      <span className={`text-muted text-xs ${isWinner && isCompleted ? "" : "ml-auto"}`}>
+                        {new Date(msg.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </div>
+                    <p className="text-beef-text leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                   </div>
-                  <p className="text-beef-text leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                 </div>
               );
             })}
