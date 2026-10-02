@@ -52,22 +52,10 @@ export function PeanutGallery({
   const challengerBets = bets.filter(b => b.predictedWinnerId === challengerId);
   const responderBets = bets.filter(b => b.predictedWinnerId === responderId);
 
-  // Aggregate bets by user
-  const aggregateByUser = (userBets: Bet[]) => {
-    const userMap = new Map<string, { handle: string; total: number }>();
-    userBets.forEach(bet => {
-      const existing = userMap.get(bet.userId);
-      if (existing) {
-        existing.total += bet.stake;
-      } else {
-        userMap.set(bet.userId, { handle: bet.userHandle, total: bet.stake });
-      }
-    });
-    return Array.from(userMap.values()).sort((a, b) => b.total - a.total);
-  };
-
-  const challengerUsers = aggregateByUser(challengerBets);
-  const responderUsers = aggregateByUser(responderBets);
+  const challengerTotal = challengerBets.reduce((sum, b) => sum + b.stake, 0);
+  const responderTotal = responderBets.reduce((sum, b) => sum + b.stake, 0);
+  const challengerBettors = new Set(challengerBets.map(b => b.userId)).size;
+  const responderBettors = new Set(responderBets.map(b => b.userId)).size;
 
   if (loading) {
     return (
@@ -95,24 +83,18 @@ export function PeanutGallery({
       {/* Challenger bets */}
       {challengerBets.length > 0 && (
         <div className="mb-4">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-3">
             <div className="w-1 h-4 bg-red-500 rounded"></div>
             <p className="text-xs font-bold text-red-400">BETTING ON @{challengerHandle}</p>
           </div>
-          <div className="space-y-1.5 pl-3">
-            {challengerUsers.map((user, i) => (
-              <div key={i} className="flex items-center justify-between text-xs">
-                <span className="text-beef-text-muted">@{user.handle}</span>
-                <span className="text-beef-gold font-mono">${user.total.toFixed(2)}</span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-2 pt-2 border-t border-beef-border/30">
+          <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted">Total:</span>
-              <span className="text-red-400 font-bold font-mono">
-                ${challengerUsers.reduce((sum, u) => sum + u.total, 0).toFixed(2)}
-              </span>
+              <span className="text-beef-text-muted">{challengerBettors} bettor{challengerBettors !== 1 ? 's' : ''}</span>
+              <span className="text-red-400 font-bold font-mono">${challengerTotal.toFixed(2)}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-beef-text-muted">Avg bet:</span>
+              <span className="text-muted font-mono">${(challengerTotal / challengerBettors).toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -121,24 +103,18 @@ export function PeanutGallery({
       {/* Responder bets */}
       {responderBets.length > 0 && (
         <div>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-3">
             <div className="w-1 h-4 bg-yellow-500 rounded"></div>
             <p className="text-xs font-bold text-yellow-400">BETTING ON @{responderHandle}</p>
           </div>
-          <div className="space-y-1.5 pl-3">
-            {responderUsers.map((user, i) => (
-              <div key={i} className="flex items-center justify-between text-xs">
-                <span className="text-beef-text-muted">@{user.handle}</span>
-                <span className="text-beef-gold font-mono">${user.total.toFixed(2)}</span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-2 pt-2 border-t border-beef-border/30">
+          <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted">Total:</span>
-              <span className="text-yellow-400 font-bold font-mono">
-                ${responderUsers.reduce((sum, u) => sum + u.total, 0).toFixed(2)}
-              </span>
+              <span className="text-beef-text-muted">{responderBettors} bettor{responderBettors !== 1 ? 's' : ''}</span>
+              <span className="text-yellow-400 font-bold font-mono">${responderTotal.toFixed(2)}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-beef-text-muted">Avg bet:</span>
+              <span className="text-muted font-mono">${(responderTotal / responderBettors).toFixed(2)}</span>
             </div>
           </div>
         </div>
