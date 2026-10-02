@@ -12,20 +12,17 @@ export async function GET(
 
     const sidecards = await prisma.sidecard.findMany({
       where: { beefId },
-      include: {
-        user: {
-          select: {
-            handle: true,
-            username: true,
-          },
-        },
+      select: {
+        userId: true,
+        predictedWinnerId: true,
+        stake: true,
+        createdAt: true,
       },
       orderBy: { createdAt: "desc" },
     });
 
     const bets = sidecards.map((sc) => ({
       userId: sc.userId,
-      userHandle: sc.user.handle || sc.user.username,
       predictedWinnerId: sc.predictedWinnerId,
       stake: sc.stake,
       createdAt: sc.createdAt.toISOString(),

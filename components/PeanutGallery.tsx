@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 
 interface Bet {
   userId: string;
-  userHandle: string;
   predictedWinnerId: string;
   stake: number;
   createdAt: string;
