@@ -109,7 +109,18 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
 
           {/* The Claim */}
           <div className="card-beef border-2 border-beef-gold mb-8">
-            <p className="section-label mb-4">THE CLAIM</p>
+            <div className="flex items-center justify-between mb-4">
+              <p className="section-label">THE CLAIM</p>
+              <div className="text-xs text-beef-gold font-bold">
+                BY {challengerIsAnon ? (
+                  <span>{challengerDisplay}</span>
+                ) : (
+                  <Link href={`/@${beef.challenger.handle || beef.challenger.username}`} className="hover:text-beef-text transition-colors">
+                    @{challengerDisplay}
+                  </Link>
+                )}
+              </div>
+            </div>
             <p className="text-xl sm:text-3xl font-bold leading-snug">&ldquo;{beef.claim}&rdquo;</p>
           </div>
 
