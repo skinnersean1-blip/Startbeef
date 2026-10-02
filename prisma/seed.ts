@@ -11,10 +11,10 @@ const prisma = new PrismaClient({ adapter } as any);
 async function main() {
   console.log("🌱 Seeding test data for Beef prediction market...\n");
 
-  // Create 3 test users
+  // Create 7 test users
   const password = await hash("password123", 12);
 
-  const [alice, bob, charlie] = await Promise.all([
+  const [alice, bob, charlie, dave, eve, frank, grace] = await Promise.all([
     prisma.user.upsert({
       where: { email: "alice@test.com" },
       update: {},
@@ -45,12 +45,56 @@ async function main() {
         passwordHash: password,
       },
     }),
+    prisma.user.upsert({
+      where: { email: "dave@test.com" },
+      update: {},
+      create: {
+        email: "dave@test.com",
+        username: "dave_test",
+        handle: "dave",
+        passwordHash: password,
+      },
+    }),
+    prisma.user.upsert({
+      where: { email: "eve@test.com" },
+      update: {},
+      create: {
+        email: "eve@test.com",
+        username: "eve_test",
+        handle: "eve",
+        passwordHash: password,
+      },
+    }),
+    prisma.user.upsert({
+      where: { email: "frank@test.com" },
+      update: {},
+      create: {
+        email: "frank@test.com",
+        username: "frank_test",
+        handle: "frank",
+        passwordHash: password,
+      },
+    }),
+    prisma.user.upsert({
+      where: { email: "grace@test.com" },
+      update: {},
+      create: {
+        email: "grace@test.com",
+        username: "grace_test",
+        handle: "grace",
+        passwordHash: password,
+      },
+    }),
   ]);
 
-  console.log("✅ Created 3 test users:");
+  console.log("✅ Created 7 test users:");
   console.log("   - alice@test.com / password123 (@alice)");
   console.log("   - bob@test.com / password123 (@bob)");
-  console.log("   - charlie@test.com / password123 (@charlie)\n");
+  console.log("   - charlie@test.com / password123 (@charlie)");
+  console.log("   - dave@test.com / password123 (@dave)");
+  console.log("   - eve@test.com / password123 (@eve)");
+  console.log("   - frank@test.com / password123 (@frank)");
+  console.log("   - grace@test.com / password123 (@grace)\n");
 
   // Create a LIVE beef (Alice challenges, Bob accepts)
   const ante = 25;
