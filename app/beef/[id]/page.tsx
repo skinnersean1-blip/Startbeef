@@ -9,6 +9,7 @@ import { BeefThread } from "@/components/BeefThread";
 import { BackButton } from "@/components/BackButton";
 import { PredictionMarket } from "@/components/PredictionMarket";
 import { PeanutGallery } from "@/components/PeanutGallery";
+import { MyExposure } from "@/components/MyExposure";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -200,6 +201,17 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
               responderId={beef.responderId!}
               responderHandle={beef.responder.handle || beef.responder.username}
               status={beef.status}
+            />
+          )}
+
+          {/* My Exposure Widget */}
+          {beef.status === "LIVE" && beef.responder && (
+            <MyExposure
+              beefId={beef.id}
+              challengerId={beef.challengerId}
+              challengerHandle={beef.challenger.handle || beef.challenger.username}
+              responderId={beef.responderId!}
+              responderHandle={beef.responder.handle || beef.responder.username}
             />
           )}
 
