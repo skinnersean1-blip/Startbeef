@@ -52,10 +52,21 @@ export function PeanutGallery({
   const challengerBets = bets.filter(b => b.predictedWinnerId === challengerId);
   const responderBets = bets.filter(b => b.predictedWinnerId === responderId);
 
+  // Aggregate bets by user (for showing individual contributions anonymously)
+  const aggregateByUser = (userBets: Bet[]) => {
+    const userMap = new Map<string, number>();
+    userBets.forEach(bet => {
+      const existing = userMap.get(bet.userId) || 0;
+      userMap.set(bet.userId, existing + bet.stake);
+    });
+    return Array.from(userMap.values()).sort((a, b) => b - a);
+  };
+
+  const challengerContributions = aggregateByUser(challengerBets);
+  const responderContributions = aggregateByUser(responderBets);
+
   const challengerTotal = challengerBets.reduce((sum, b) => sum + b.stake, 0);
   const responderTotal = responderBets.reduce((sum, b) => sum + b.stake, 0);
-  const challengerBettors = new Set(challengerBets.map(b => b.userId)).size;
-  const responderBettors = new Set(responderBets.map(b => b.userId)).size;
 
   if (loading) {
     return (
@@ -87,14 +98,18 @@ export function PeanutGallery({
             <div className="w-1 h-4 bg-red-500 rounded"></div>
             <p className="text-xs font-bold text-red-400">BETTING ON @{challengerHandle}</p>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5 pl-3 mb-2">
+            {challengerContributions.map((amount, i) => (
+              <div key={i} className="flex items-center justify-between text-xs">
+                <span className="text-beef-text-muted">Anonymous {i + 1}</span>
+                <span className="text-beef-gold font-mono">${amount.toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+          <div className="pt-2 border-t border-beef-border/30">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-beef-text-muted">{challengerBettors} bettor{challengerBettors !== 1 ? 's' : ''}</span>
+              <span className="text-muted">Total:</span>
               <span className="text-red-400 font-bold font-mono">${challengerTotal.toFixed(2)}</span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-beef-text-muted">Avg bet:</span>
-              <span className="text-muted font-mono">${(challengerTotal / challengerBettors).toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -107,14 +122,18 @@ export function PeanutGallery({
             <div className="w-1 h-4 bg-yellow-500 rounded"></div>
             <p className="text-xs font-bold text-yellow-400">BETTING ON @{responderHandle}</p>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5 pl-3 mb-2">
+            {responderContributions.map((amount, i) => (
+              <div key={i} className="flex items-center justify-between text-xs">
+                <span className="text-beef-text-muted">Anonymous {i + 1}</span>
+                <span className="text-beef-gold font-mono">${amount.toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+          <div className="pt-2 border-t border-beef-border/30">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-beef-text-muted">{responderBettors} bettor{responderBettors !== 1 ? 's' : ''}</span>
+              <span className="text-muted">Total:</span>
               <span className="text-yellow-400 font-bold font-mono">${responderTotal.toFixed(2)}</span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-beef-text-muted">Avg bet:</span>
-              <span className="text-muted font-mono">${(responderTotal / responderBettors).toFixed(2)}</span>
             </div>
           </div>
         </div>
