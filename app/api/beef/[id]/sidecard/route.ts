@@ -37,11 +37,33 @@ export async function POST(
         responderId: true,
         totalPot: true,
         sideVolume: true,
+        challenger: {
+          select: {
+            email: true,
+          },
+        },
+        responder: {
+          select: {
+            email: true,
+          },
+        },
       },
     });
 
     if (!beef) {
       return NextResponse.json({ error: "Beef not found" }, { status: 404 });
+    }
+
+    // Prevent betting on test/fake user beefs
+    const isTestBeef =
+      beef.challenger.email.endsWith("@test.com") ||
+      (beef.responder && beef.responder.email.endsWith("@test.com"));
+
+    if (isTestBeef) {
+      return NextResponse.json(
+        { error: "Cannot place bets on test beefs" },
+        { status: 403 }
+      );
     }
 
     if (beef.status !== "LIVE") {

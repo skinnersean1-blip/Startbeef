@@ -27,8 +27,8 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
   const beef = await prisma.beef.findUnique({
     where: { id },
     include: {
-      challenger: { select: { id: true, username: true, handle: true, anonHandle: true, isAnonymous: true, wins: true, losses: true } },
-      responder:  { select: { id: true, username: true, handle: true, anonHandle: true, isAnonymous: true, wins: true, losses: true } },
+      challenger: { select: { id: true, username: true, handle: true, anonHandle: true, isAnonymous: true, wins: true, losses: true, email: true } },
+      responder:  { select: { id: true, username: true, handle: true, anonHandle: true, isAnonymous: true, wins: true, losses: true, email: true } },
       messages: {
         include: { user: { select: { id: true, handle: true, username: true, anonHandle: true, isAnonymous: true } } },
         orderBy: { createdAt: "asc" },
@@ -59,6 +59,11 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
   const isResponder  = session?.user?.id === beef.responderId;
   const isParticipant = isChallenger || isResponder;
   const canAccept = !isChallenger && !beef.responderId && beef.status === "OPEN" && !!session?.user;
+
+  // Check if this is a test beef (prevent real money betting on test users)
+  const isTestBeef =
+    beef.challenger.email.endsWith("@test.com") ||
+    (beef.responder && beef.responder.email.endsWith("@test.com"));
 
   return (
     <div className="min-h-screen">
@@ -107,6 +112,16 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
             <p className="section-label mb-4">THE CLAIM</p>
             <p className="text-xl sm:text-3xl font-bold leading-snug">&ldquo;{beef.claim}&rdquo;</p>
           </div>
+
+          {/* Test Beef Notice */}
+          {isTestBeef && (
+            <div className="card-beef bg-beef-bg-light border-beef-text-muted/30 mb-6">
+              <p className="section-label mb-2 text-beef-text-muted">TEST BEEF</p>
+              <p className="text-muted text-sm">
+                This is a test debate for demonstration purposes. Betting is disabled.
+              </p>
+            </div>
+          )}
 
           {/* Participants */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -193,7 +208,7 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
           )}
 
           {/* Prediction Market */}
-          {beef.status === "LIVE" && beef.responder && (
+          {beef.status === "LIVE" && beef.responder && !isTestBeef && (
             <PredictionMarket
               beefId={beef.id}
               challengerId={beef.challengerId}
@@ -205,7 +220,7 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
           )}
 
           {/* My Exposure Widget */}
-          {beef.status === "LIVE" && beef.responder && (
+          {beef.status === "LIVE" && beef.responder && !isTestBeef && (
             <MyExposure
               beefId={beef.id}
               challengerId={beef.challengerId}
@@ -251,7 +266,7 @@ export default async function BeefPage({ params }: { params: Promise<{ id: strin
                   winnerId={beef.winnerId ?? null}
                 />
               </div>
-              {beef.status === "LIVE" && beef.responder && (
+              {beef.status === "LIVE" && beef.responder && !isTestBeef && (
                 <div className="lg:col-span-1">
                   <div className="sticky top-6">
                     <PeanutGallery
