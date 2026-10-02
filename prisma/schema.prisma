@@ -36,7 +36,6 @@ model User {
 
   challengesCreated  Beef[]      @relation("Challenger")
   challengesAccepted Beef[]      @relation("Responder")
-  targetedBeefs      Beef[]      @relation("TargetResponder")
   messages           Message[]
   sidecards          Sidecard[]
   offers             BeefOffer[]
@@ -60,9 +59,6 @@ model Beef {
   challenger         User      @relation("Challenger", fields: [challengerId], references: [id])
   responderId        String?
   responder          User?     @relation("Responder", fields: [responderId], references: [id])
-  targetResponderId  String?
-  targetResponder    User?     @relation("TargetResponder", fields: [targetResponderId], references: [id])
-  sourceCommentId    String?
 
   ante          Float
   totalPot      Float

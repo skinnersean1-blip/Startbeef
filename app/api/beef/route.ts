@@ -13,8 +13,6 @@ const createBeefSchema = z.object({
   claim:            z.string().min(10, "Claim must be at least 10 characters").max(500, "Claim must be under 500 characters"),
   ante:             z.number().min(ANTE_MIN, `Minimum ante is $${ANTE_MIN}`).max(ANTE_MAX, `Maximum ante is $${ANTE_MAX}`),
   challengerIsAnon: z.boolean().default(false),
-  targetResponderId: z.string().optional(),
-  sourceCommentId:   z.string().optional(),
 });
 
 export async function GET(req: NextRequest) {
