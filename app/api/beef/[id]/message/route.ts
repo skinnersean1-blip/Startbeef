@@ -44,7 +44,7 @@ export async function POST(
   const message = await prisma.message.create({
     data: { beefId: id, userId: session.user.id, content: content.trim() },
     include: {
-      user: { select: { handle: true, username: true } },
+      user: { select: { id: true, handle: true, username: true } },
     },
   });
 
