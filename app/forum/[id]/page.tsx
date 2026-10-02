@@ -102,9 +102,9 @@ function CommentCard({
             {sessionUserId && !isOwn && (
               <button
                 onClick={() => onStartBeef(comment.author, comment.id)}
-                className="text-xs font-bold tracking-widest text-beef-orange hover:text-beef-gold transition-colors border border-beef-orange/30 hover:border-beef-gold/40 px-2 py-0.5"
+                className="text-sm font-bold text-beef-orange hover:text-beef-gold transition-colors border-2 border-beef-orange hover:border-beef-gold px-3 py-1"
               >
-                ⚡ START BEEF
+                Start Beef
               </button>
             )}
           </div>
@@ -239,9 +239,9 @@ export default function ForumThreadPage() {
               <div className="mt-4 pt-3 border-t border-beef-border/40">
                 <button
                   onClick={() => handleStartBeef(thread.author, "")}
-                  className="text-xs font-bold tracking-widest text-beef-orange hover:text-beef-gold transition-colors border border-beef-orange/30 hover:border-beef-gold/40 px-3 py-1.5"
+                  className="text-sm font-bold text-beef-orange hover:text-beef-gold transition-colors border-2 border-beef-orange hover:border-beef-gold px-4 py-2"
                 >
-                  ⚡ CHALLENGE THIS TAKE — START BEEF
+                  Start Beef
                 </button>
               </div>
             )}
