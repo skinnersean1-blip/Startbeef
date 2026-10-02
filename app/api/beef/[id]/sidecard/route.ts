@@ -139,8 +139,12 @@ export async function POST(
     }
 
     console.error("Sidecard error:", error);
+    // TEST MODE: Return actual error for debugging
     return NextResponse.json(
-      { error: "Failed to place bet" },
+      {
+        error: error instanceof Error ? error.message : "Failed to place bet",
+        details: error instanceof Error ? error.stack : undefined
+      },
       { status: 500 }
     );
   }
