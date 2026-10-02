@@ -65,7 +65,7 @@ function StartBeefForm() {
 
   const canAdvance = () => {
     if (step === 1) return claim.trim().length >= 10;
-    if (step === 2) return ante >= ANTE_MIN && (bankBalance === null || bankBalance >= ante);
+    if (step === 2) return ante >= ANTE_MIN; // Removed balance check for testing
     return true;
   };
 
@@ -255,17 +255,10 @@ function StartBeefForm() {
                 </div>
               </div>
 
-              {bankBalance !== null && bankBalance < ante && (
-                <div className="bg-red-900/20 border border-red-500 text-red-400 px-4 py-3 rounded-lg text-sm">
-                  Insufficient balance. You have ${bankBalance.toFixed(2)} in your Bank.{" "}
-                  <Link href="/bank" className="underline hover:text-red-300">Deposit funds →</Link>
-                </div>
-              )}
-              {bankBalance !== null && bankBalance >= ante && (
-                <p className="text-xs text-beef-text-muted text-center">
-                  Bank balance: ${bankBalance.toFixed(2)} · ${ante} will be locked when posted
-                </p>
-              )}
+              {/* Balance check removed for testing */}
+              <p className="text-xs text-beef-text-muted text-center">
+                TEST MODE: Balance checks disabled
+              </p>
             </div>
           )}
 
