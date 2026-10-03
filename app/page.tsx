@@ -58,7 +58,7 @@ async function getFeed(category: string, sort: string) {
       take: 20,
       include: {
         challenger: { select: { handle: true, username: true, isAnonymous: true, anonHandle: true, wins: true, losses: true } },
-        responder:  { select: { handle: true, username: true, isAnonymous: true, anonHandle: true, winnerId: true } },
+        responder:  { select: { handle: true, username: true, isAnonymous: true, anonHandle: true } },
         _count:     { select: { messages: true } },
       },
     });
