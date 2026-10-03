@@ -184,6 +184,8 @@ model ForumComment {
   author    User         @relation(fields: [authorId], references: [id])
   content   String
   parentId  String?
+  textColor String?
+  fontStyle String?
   createdAt DateTime     @default(now())
 }
 
