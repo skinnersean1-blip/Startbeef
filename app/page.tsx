@@ -57,8 +57,8 @@ async function getFeed(category: string, sort: string) {
       orderBy,
       take: 20,
       include: {
-        challenger: { select: { handle: true, username: true, isAnonymous: true, anonHandle: true, wins: true, losses: true } },
-        responder:  { select: { handle: true, username: true, isAnonymous: true, anonHandle: true } },
+        challenger: { select: { id: true, handle: true, username: true, isAnonymous: true, anonHandle: true, wins: true, losses: true } },
+        responder:  { select: { id: true, handle: true, username: true, isAnonymous: true, anonHandle: true } },
         _count:     { select: { messages: true } },
       },
     });
@@ -77,8 +77,8 @@ async function getCompletedBeefs(category: string) {
       orderBy: { updatedAt: "desc" as const },
       take: 10,
       include: {
-        challenger: { select: { handle: true, username: true, isAnonymous: true, anonHandle: true, wins: true, losses: true } },
-        responder:  { select: { handle: true, username: true, isAnonymous: true, anonHandle: true } },
+        challenger: { select: { id: true, handle: true, username: true, isAnonymous: true, anonHandle: true, wins: true, losses: true } },
+        responder:  { select: { id: true, handle: true, username: true, isAnonymous: true, anonHandle: true } },
         _count:     { select: { messages: true } },
       },
     });
@@ -244,7 +244,15 @@ export default async function Home({
                             {isLive && beef.endsAt && (
                               <p className="text-xs text-beef-orange font-bold">{timeLeft(beef.endsAt)}</p>
                             )}
-                            {!isLive && (
+                            {beef.status === "COMPLETED" && beef.winnerId && (
+                              <p className="text-xs font-bold text-beef-gold">
+                                🏆 {beef.winnerId === beef.challengerId ? challengerName : responderName}
+                              </p>
+                            )}
+                            {beef.status === "JUDGING" && (
+                              <p className="text-xs text-beef-orange font-bold">JUDGING...</p>
+                            )}
+                            {beef.status === "OPEN" && (
                               <p className="text-xs text-beef-text-muted">{timeAgo(beef.createdAt)}</p>
                             )}
                             {beef._count.messages > 0 && (

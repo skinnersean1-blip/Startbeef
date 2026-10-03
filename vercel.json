@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/judge-expired-beefs",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}
