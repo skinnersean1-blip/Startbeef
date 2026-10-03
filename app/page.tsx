@@ -89,7 +89,7 @@ async function getCompletedBeefs(category: string) {
 
 function timeLeft(endsAt: Date) {
   const ms = endsAt.getTime() - Date.now();
-  if (ms <= 0) return "EXPIRED";
+  if (ms <= 0) return "AWAITING JUDGMENT";
   const h = Math.floor(ms / 3600000);
   const m = Math.floor((ms % 3600000) / 60000);
   return h > 0 ? `${h}h ${m}m left` : `${m}m left`;
