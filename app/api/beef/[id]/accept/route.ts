@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendBeefAcceptedEmail } from "@/lib/email";
+import { inngest } from "@/lib/inngest";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +66,13 @@ export async function POST(
   //     data: { bankBalance: { decrement: beef.ante } },
   //   }),
   // ]);
+
+  // Schedule judgment at exact expiry time
+  await inngest.send({
+    name: "beef/judgment.scheduled",
+    data: { beefId: id },
+    ts: endsAt.getTime(),
+  });
 
   await prisma.transaction.create({
     data: {
