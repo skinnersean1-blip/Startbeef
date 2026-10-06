@@ -3,7 +3,7 @@ import { executeJudgment } from "@/lib/executeJudgment";
 
 // Function that judges a beef at its exact expiry time
 export const judgeExpiredBeef = inngest.createFunction(
-  { id: "judge-expired-beef", name: "Judge Expired Beef" },
+  { id: "judge-expired-beef" },
   { event: "beef/judgment.scheduled" },
   async ({ event, step }) => {
     const { beefId } = event.data;
