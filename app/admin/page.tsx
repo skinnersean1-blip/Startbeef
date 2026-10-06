@@ -257,6 +257,7 @@ function BeefsTab() {
   const [pages, setPages]       = useState(1);
   const [loading, setLoading]   = useState(true);
   const [cancelling, setCancelling] = useState<string | null>(null);
+  const [judging, setJudging] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
   const load = useCallback(async () => {
@@ -284,6 +285,26 @@ function BeefsTab() {
     else { const d = await res.json(); setMsg({ type: "err", text: d.error || "Failed" }); }
   }
 
+  async function judgeExpired() {
+    if (!confirm("Judge all expired LIVE beefs now?")) return;
+    setJudging(true);
+    setMsg(null);
+    const res = await fetch("/api/admin/trigger-judgment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    setJudging(false);
+    if (res.ok) {
+      const data = await res.json();
+      setMsg({ type: "ok", text: `Judged ${data.judged} beef${data.judged !== 1 ? "s" : ""}. ${data.failed > 0 ? `${data.failed} failed.` : ""}` });
+      load();
+    } else {
+      const d = await res.json();
+      setMsg({ type: "err", text: d.error || "Failed to trigger judgment" });
+    }
+  }
+
   const statuses = ["ALL", "OPEN", "LIVE", "JUDGING", "COMPLETED"];
 
   return (
@@ -299,6 +320,13 @@ function BeefsTab() {
           </button>
         ))}
         <span className="text-xs text-gray-400 ml-auto">{total} beefs</span>
+        <button
+          onClick={judgeExpired}
+          disabled={judging}
+          className="text-xs px-4 py-1.5 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors disabled:opacity-40"
+        >
+          {judging ? "Judging..." : "Judge Expired Beefs"}
+        </button>
       </div>
 
       {msg && (
