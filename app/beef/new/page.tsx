@@ -173,7 +173,7 @@ function StartBeefForm() {
                   onChange={(e) => setClaim(e.target.value.slice(0, CLAIM_MAX))}
                   rows={5}
                   className="w-full px-4 py-3 bg-beef-bg-light border border-beef-border rounded-lg focus:outline-none focus:border-beef-gold transition-colors resize-none text-lg"
-                  placeholder={`e.g. "Kendrick Lamar won the rap beef and it wasn't even close."`}
+                  placeholder={`e.g. "French fries are better than tater tots, no question!"`}
                   autoFocus
                 />
                 <div className="flex justify-between items-center mt-3">
