@@ -259,6 +259,7 @@ function BeefsTab() {
   const [cancelling, setCancelling] = useState<string | null>(null);
   const [recategorizing, setRecategorizing] = useState<string | null>(null);
   const [judging, setJudging] = useState(false);
+  const [judgingId, setJudgingId] = useState<string | null>(null);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
   const load = useCallback(async () => {
@@ -303,6 +304,26 @@ function BeefsTab() {
     } else {
       const d = await res.json();
       setMsg({ type: "err", text: d.error || "Failed to recategorize" });
+    }
+  }
+
+  async function judgeSingle(id: string) {
+    if (!confirm("Judge this beef now?")) return;
+    setJudgingId(id);
+    setMsg(null);
+    const res = await fetch("/api/admin/trigger-judgment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ beefId: id }),
+    });
+    setJudgingId(null);
+    if (res.ok) {
+      const data = await res.json();
+      setMsg({ type: "ok", text: data.message || "Beef judged successfully" });
+      load();
+    } else {
+      const d = await res.json();
+      setMsg({ type: "err", text: d.error || "Failed to judge beef" });
     }
   }
 
@@ -394,6 +415,15 @@ function BeefsTab() {
                     >
                       {recategorizing === b.id ? "..." : "Recategorize"}
                     </button>
+                    {b.status === "LIVE" && (
+                      <button
+                        onClick={() => judgeSingle(b.id)}
+                        disabled={judgingId === b.id}
+                        className="text-xs px-3 py-1.5 border border-green-200 text-green-600 rounded-lg hover:border-green-400 transition-colors disabled:opacity-40"
+                      >
+                        {judgingId === b.id ? "..." : "Judge Beef"}
+                      </button>
+                    )}
                     {b.status !== "COMPLETED" && (
                       <button
                         onClick={() => cancel(b.id)}
