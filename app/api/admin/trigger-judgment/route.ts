@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { isAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { executeJudgment } from "@/lib/executeJudgment";
 
 export const dynamic = "force-dynamic";
 
-// Manual trigger for judging expired beefs
+// Manual trigger for judging expired beefs (admin-only)
 // Use this when cron isn't working or you need to judge specific beefs
 export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!isAdmin(session?.user?.email)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const body = await req.json();
     const { beefId } = body;
@@ -56,7 +64,7 @@ export async function POST(req: NextRequest) {
       where: {
         status: "LIVE",
         endsAt: {
-          lte: new Date(),
+          lte: new Date(), // ended before or at now
         },
       },
       select: {
@@ -66,12 +74,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    console.log(`Found ${expiredBeefs.length} expired beefs to judge`);
+    console.log(`[ADMIN] Found ${expiredBeefs.length} expired beefs to judge`);
 
     const results = [];
     for (const beef of expiredBeefs) {
       try {
-        // Mark as JUDGING first
+        // Mark as JUDGING first to prevent race conditions
         await prisma.beef.update({
           where: { id: beef.id },
           data: { status: "JUDGING" },
@@ -86,11 +94,11 @@ export async function POST(req: NextRequest) {
           claim: beef.claim.substring(0, 50) + "...",
         });
 
-        console.log(`✅ Judged beef ${beef.id}`);
+        console.log(`[ADMIN] ✅ Judged beef ${beef.id}`);
       } catch (error) {
-        console.error(`❌ Failed to judge beef ${beef.id}:`, error);
+        console.error(`[ADMIN] ❌ Failed to judge beef ${beef.id}:`, error);
 
-        // Revert to LIVE on error
+        // Revert to LIVE on error so it can be retried
         await prisma.beef.update({
           where: { id: beef.id },
           data: { status: "LIVE" },
@@ -111,10 +119,10 @@ export async function POST(req: NextRequest) {
       results,
     });
   } catch (error) {
-    console.error("Manual judgment error:", error);
+    console.error("[ADMIN] Judgment trigger error:", error);
     return NextResponse.json(
       {
-        error: "Failed to execute judgment",
+        error: "Failed to process expired beefs",
         details: error instanceof Error ? error.message : undefined,
       },
       { status: 500 }

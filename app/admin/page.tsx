@@ -257,6 +257,7 @@ function BeefsTab() {
   const [pages, setPages]       = useState(1);
   const [loading, setLoading]   = useState(true);
   const [cancelling, setCancelling] = useState<string | null>(null);
+  const [recategorizing, setRecategorizing] = useState<string | null>(null);
   const [judging, setJudging] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
@@ -285,6 +286,26 @@ function BeefsTab() {
     else { const d = await res.json(); setMsg({ type: "err", text: d.error || "Failed" }); }
   }
 
+  async function recategorize(id: string) {
+    if (!confirm("Re-run AI categorization on this beef?")) return;
+    setRecategorizing(id);
+    setMsg(null);
+    const res = await fetch("/api/admin/beefs", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, action: "recategorize" }),
+    });
+    setRecategorizing(null);
+    if (res.ok) {
+      const data = await res.json();
+      setMsg({ type: "ok", text: `Recategorized to: ${data.categories.join(", ")}` });
+      load();
+    } else {
+      const d = await res.json();
+      setMsg({ type: "err", text: d.error || "Failed to recategorize" });
+    }
+  }
+
   async function judgeExpired() {
     if (!confirm("Judge all expired LIVE beefs now?")) return;
     setJudging(true);
@@ -304,7 +325,6 @@ function BeefsTab() {
       setMsg({ type: "err", text: d.error || "Failed to trigger judgment" });
     }
   }
-
   const statuses = ["ALL", "OPEN", "LIVE", "JUDGING", "COMPLETED"];
 
   return (
@@ -367,6 +387,13 @@ function BeefsTab() {
                     <Link href={`/beef/${b.id}`} target="_blank" className="text-xs px-3 py-1.5 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors">
                       View
                     </Link>
+                    <button
+                      onClick={() => recategorize(b.id)}
+                      disabled={recategorizing === b.id}
+                      className="text-xs px-3 py-1.5 border border-blue-200 text-blue-500 rounded-lg hover:border-blue-400 transition-colors disabled:opacity-40"
+                    >
+                      {recategorizing === b.id ? "..." : "Recategorize"}
+                    </button>
                     {b.status !== "COMPLETED" && (
                       <button
                         onClick={() => cancel(b.id)}
@@ -691,7 +718,14 @@ export default function AdminPage() {
               <span className="text-xs font-bold tracking-widest text-gray-400 border border-gray-200 px-2 py-0.5 rounded">ADMIN</span>
             </div>
           </Link>
-          <p className="text-xs text-gray-400">{session?.user?.email}</p>
+          <div className="flex items-center gap-4">
+            <p className="text-xs text-gray-400">{session?.user?.email}</p>
+            <Link href="/">
+              <button className="bg-white text-black text-xs font-bold px-4 py-2 rounded-lg border-2 border-gray-900 hover:bg-gray-100 transition-colors">
+                View Live Site
+              </button>
+            </Link>
+          </div>
         </div>
 
         {/* Tab bar */}

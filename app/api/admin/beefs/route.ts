@@ -3,6 +3,7 @@ import { isAdmin } from "@/lib/admin";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { categorizeClaim } from "@/lib/categorize";
 
 export const dynamic = "force-dynamic";
 
@@ -44,8 +45,27 @@ export async function PATCH(req: NextRequest) {
   }
 
   const { id, action } = await req.json();
-  if (!id || action !== "cancel") {
+  if (!id || !action) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+
+  // Handle recategorize action
+  if (action === "recategorize") {
+    const beef = await prisma.beef.findUnique({ where: { id }, select: { claim: true } });
+    if (!beef) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    const categories = await categorizeClaim(beef.claim);
+    await prisma.beef.update({
+      where: { id },
+      data: { categories: JSON.stringify(categories) },
+    });
+
+    return NextResponse.json({ success: true, categories });
+  }
+
+  // Handle cancel action
+  if (action !== "cancel") {
+    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   }
 
   const beef = await prisma.beef.findUnique({

@@ -6,31 +6,45 @@ type Category = typeof CATEGORIES[number];
 const CATEGORY_DEFINITIONS = `
 - POLITICS: government, elections, politicians, policy, political parties, law, geopolitics, war, diplomacy, public officials (presidents, senators, ministers, VPs, etc.)
 - CULTURE: entertainment, music, film, art, social trends, celebrities, media, religion, lifestyle, philosophy
-- SPORTS: athletics, teams, players, leagues, tournaments, coaches, sporting events
+- SPORTS: athletics, teams, players, leagues, tournaments, coaches, sporting events, championships
 - TECH: technology, software, AI, startups, companies, science, engineering, the internet
 - CALLOUTS: direct personal challenges or accusations targeting a specific named individual (not a public policy debate — a personal beef with someone)
 `.trim();
 
 export async function categorizeClaim(claim: string): Promise<string[]> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return ["POLITICS"];
+  if (!apiKey) return ["CULTURE"];
 
   try {
     const client = new Anthropic({ apiKey });
     const response = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 64,
-      system: `You categorize debate claims. Apply ALL categories that clearly fit — do not limit yourself to one.
+      model: "claude-sonnet-4-5-20250929",
+      max_tokens: 100,
+      system: `You categorize debate claims. Apply ALL categories that clearly fit — use multiple when appropriate.
 
-Categories and what they mean:
+Categories:
 ${CATEGORY_DEFINITIONS}
 
+Examples:
+- "The Chiefs will win the Super Bowl" → ["SPORTS"]
+- "LeBron is washed up" → ["SPORTS"]
+- "JD Vance is a menace to society" → ["POLITICS", "CALLOUTS"]
+- "Trump's policies will destroy America" → ["POLITICS"]
+- "Pineapple belongs on pizza" → ["CULTURE"]
+- "Taylor Swift is overrated" → ["CULTURE"]
+- "AI will replace all jobs by 2030" → ["TECH"]
+- "Elon Musk is ruining Twitter" → ["TECH", "CALLOUTS"]
+- "@john123 doesn't know what he's talking about" → ["CALLOUTS"]
+
 Rules:
-- A claim about a politician or government official ALWAYS gets POLITICS, even if it also touches culture.
-- A claim that directly targets a named person for personal conduct gets CALLOUTS in addition to any other relevant tag.
-- Respond with ONLY a JSON array of uppercase strings from this list: ${CATEGORIES.join(", ")}.
-- Example: ["POLITICS","CULTURE"] or ["SPORTS"] or ["POLITICS","CALLOUTS"]
-- No explanation. No other text.`,
+- Sports teams, players, leagues, championships → ALWAYS SPORTS
+- Politicians, government officials, policy → ALWAYS POLITICS
+- Direct attacks on named people → add CALLOUTS
+- Can assign multiple categories when truly relevant
+- Be specific: don't default to POLITICS unless it's actually political
+
+Respond with ONLY a JSON array: ${CATEGORIES.join(", ")}
+No explanation. No markdown. Just the array.`,
       messages: [{ role: "user", content: claim }],
     });
 
@@ -45,9 +59,10 @@ Rules:
     ) {
       return parsed;
     }
-  } catch {
-    // fall through to default
+  } catch (error) {
+    console.error("Categorization failed:", error);
   }
 
-  return ["POLITICS"];
+  // Default fallback if categorization fails
+  return ["CULTURE"];
 }
