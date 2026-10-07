@@ -178,10 +178,12 @@ export default async function Home({
             <p className="section-label mb-2">PEOPLE WATCHING</p>
             <p className="text-3xl font-bold">{stats.spectators.toLocaleString()}</p>
           </div>
-          <div className="card-beef py-5">
-            <p className="section-label mb-2">SETTLED BEEFS</p>
-            <p className="text-3xl font-bold">{stats.completedCount.toLocaleString()}</p>
-          </div>
+          <Link href="/settled">
+            <div className="card-beef py-5 cursor-pointer hover:border-beef-gold transition-colors">
+              <p className="section-label mb-2">SETTLED BEEFS</p>
+              <p className="text-3xl font-bold">{stats.completedCount.toLocaleString()}</p>
+            </div>
+          </Link>
         </div>
       </section>
 
