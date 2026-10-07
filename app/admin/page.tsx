@@ -18,6 +18,7 @@ type Stats = {
   totalVolume: number;
   platformRevenue: number;
   newUsersThisWeek: number;
+  judgedRate: number;
 };
 
 type User = {
@@ -94,6 +95,7 @@ function OverviewTab({ stats }: { stats: Stats | null }) {
     { label: "TOTAL BEEFS",       value: stats.totalBeefs.toLocaleString(),        sub: `${stats.liveBeefs} live · ${stats.openBeefs} open` },
     { label: "TOTAL POT VOLUME",  value: fmt(stats.totalVolume),                   sub: `${stats.completedBeefs} completed` },
     { label: "PLATFORM REVENUE",  value: fmt(stats.platformRevenue),               sub: "1.5% fee on all pots" },
+    { label: "JUDGED IN 24H",     value: `${stats.judgedRate}%`,                   sub: "Completion rate" },
   ];
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

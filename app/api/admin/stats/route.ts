@@ -42,6 +42,10 @@ export async function GET(_req: NextRequest) {
   const totalPayouts = feeResult._sum.amount ?? 0;
   const platformRevenue = parseFloat((totalVolume * 0.015).toFixed(2));
 
+  // Judgment rate calculation
+  const startedCount = openBeefs + liveBeefs + completedBeefs;
+  const judgedRate = startedCount > 0 ? Math.round((completedBeefs / startedCount) * 100) : 100;
+
   return NextResponse.json({
     totalUsers,
     totalBeefs,
@@ -51,5 +55,6 @@ export async function GET(_req: NextRequest) {
     totalVolume,
     platformRevenue,
     newUsersThisWeek: recentUsers,
+    judgedRate,
   });
 }

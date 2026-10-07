@@ -28,9 +28,10 @@ async function getStats() {
       openCount,
       spectators: spectatorResult._sum.viewCount ?? 0,
       judgedRate,
+      completedCount,
     };
   } catch {
-    return { livePot: 0, openCount: 0, spectators: 0, judgedRate: 100 };
+    return { livePot: 0, openCount: 0, spectators: 0, judgedRate: 100, completedCount: 0 };
   }
 }
 
@@ -178,8 +179,8 @@ export default async function Home({
             <p className="text-3xl font-bold">{stats.spectators.toLocaleString()}</p>
           </div>
           <div className="card-beef py-5">
-            <p className="section-label mb-2">JUDGED IN 24H</p>
-            <p className="text-3xl font-bold">{stats.judgedRate}%</p>
+            <p className="section-label mb-2">SETTLED BEEFS</p>
+            <p className="text-3xl font-bold">{stats.completedCount.toLocaleString()}</p>
           </div>
         </div>
       </section>
