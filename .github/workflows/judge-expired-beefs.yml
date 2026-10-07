@@ -1,0 +1,17 @@
+name: Judge Expired Beefs
+
+on:
+  schedule:
+    # Run every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  judge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Judgment
+        run: |
+          curl -X POST https://www.startbeef.com/api/admin/trigger-judgment \
+            -H "Content-Type: application/json" \
+            -d '{}'
