@@ -339,7 +339,16 @@ function BeefsTab() {
     setJudging(false);
     if (res.ok) {
       const data = await res.json();
-      setMsg({ type: "ok", text: `Judged ${data.judged} beef${data.judged !== 1 ? "s" : ""}. ${data.failed > 0 ? `${data.failed} failed.` : ""}` });
+      let message = `Judged ${data.judged} beef${data.judged !== 1 ? "s" : ""}.`;
+
+      // Show error details if any failed
+      if (data.failed > 0 && data.results) {
+        const errors = data.results.filter((r: any) => r.status === "error");
+        const errorDetails = errors.map((e: any) => e.error).join("; ");
+        message += ` ${data.failed} failed: ${errorDetails}`;
+      }
+
+      setMsg({ type: data.failed > 0 ? "err" : "ok", text: message });
       load();
     } else {
       const d = await res.json();

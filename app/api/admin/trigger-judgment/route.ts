@@ -55,7 +55,14 @@ export async function POST(req: NextRequest) {
           where: { id: beefId },
           data: { status: "LIVE" },
         });
-        throw error;
+
+        const errorMsg = error instanceof Error ? error.message : "Unknown error";
+        console.error(`[ADMIN] Failed to judge beef ${beefId}:`, errorMsg);
+
+        return NextResponse.json(
+          { error: `Failed to judge: ${errorMsg}` },
+          { status: 500 }
+        );
       }
     }
 
