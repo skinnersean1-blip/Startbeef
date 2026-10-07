@@ -17,6 +17,7 @@ declare module "next-auth" {
       handle: string | null;
       isAnonymous: boolean;
       anonHandle: string | null;
+      isAdmin: boolean;
     };
   }
 }
@@ -28,5 +29,6 @@ declare module "next-auth/jwt" {
     handle: string | null;
     isAnonymous: boolean;
     anonHandle: string | null;
+    isAdmin: boolean;
   }
 }

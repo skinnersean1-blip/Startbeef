@@ -23,11 +23,13 @@ export function AuthHeader() {
             : `@${session.user.handle || session.user.username}`}
         </Link>
         <BankBadge />
-        <Link href="/admin">
-          <button className="bg-white text-black text-xs font-bold px-4 py-2 rounded-lg border-2 border-gray-900 hover:bg-gray-100 transition-colors">
-            Admin
-          </button>
-        </Link>
+        {session.user.isAdmin && (
+          <Link href="/admin">
+            <button className="bg-white text-black text-xs font-bold px-4 py-2 rounded-lg border-2 border-gray-900 hover:bg-gray-100 transition-colors">
+              Admin
+            </button>
+          </Link>
+        )}
         <Link href="/beef/new">
           <button className="btn-primary text-xs sm:text-sm px-4 sm:px-6 py-3">
             START A BEEF

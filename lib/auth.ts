@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { prisma } from "./prisma";
+import { isAdmin } from "./admin";
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -67,7 +68,10 @@ export const authOptions: NextAuthOptions = {
         token.handle = user.handle;
         token.isAnonymous = user.isAnonymous;
         token.anonHandle = user.anonHandle;
+        token.email = user.email;
       }
+      // Check admin status on every token refresh
+      token.isAdmin = isAdmin(token.email as string);
       return token;
     },
     async session({ session, token }) {
@@ -77,6 +81,7 @@ export const authOptions: NextAuthOptions = {
         session.user.handle = token.handle as string;
         session.user.isAnonymous = token.isAnonymous as boolean;
         session.user.anonHandle = token.anonHandle as string | null;
+        session.user.isAdmin = token.isAdmin as boolean;
       }
       return session;
     },
