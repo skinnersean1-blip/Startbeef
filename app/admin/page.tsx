@@ -257,6 +257,8 @@ function BeefsTab() {
   const [pages, setPages]       = useState(1);
   const [loading, setLoading]   = useState(true);
   const [cancelling, setCancelling] = useState<string | null>(null);
+  const [recategorizing, setRecategorizing] = useState<string | null>(null);
+  const [judging, setJudging] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
   const load = useCallback(async () => {
@@ -284,6 +286,45 @@ function BeefsTab() {
     else { const d = await res.json(); setMsg({ type: "err", text: d.error || "Failed" }); }
   }
 
+  async function recategorize(id: string) {
+    if (!confirm("Re-run AI categorization on this beef?")) return;
+    setRecategorizing(id);
+    setMsg(null);
+    const res = await fetch("/api/admin/beefs", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, action: "recategorize" }),
+    });
+    setRecategorizing(null);
+    if (res.ok) {
+      const data = await res.json();
+      setMsg({ type: "ok", text: `Recategorized to: ${data.categories.join(", ")}` });
+      load();
+    } else {
+      const d = await res.json();
+      setMsg({ type: "err", text: d.error || "Failed to recategorize" });
+    }
+  }
+
+  async function judgeExpired() {
+    if (!confirm("Judge all expired LIVE beefs now?")) return;
+    setJudging(true);
+    setMsg(null);
+    const res = await fetch("/api/admin/trigger-judgment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    setJudging(false);
+    if (res.ok) {
+      const data = await res.json();
+      setMsg({ type: "ok", text: `Judged ${data.judged} beef${data.judged !== 1 ? "s" : ""}. ${data.failed > 0 ? `${data.failed} failed.` : ""}` });
+      load();
+    } else {
+      const d = await res.json();
+      setMsg({ type: "err", text: d.error || "Failed to trigger judgment" });
+    }
+  }
   const statuses = ["ALL", "OPEN", "LIVE", "JUDGING", "COMPLETED"];
 
   return (
@@ -299,6 +340,13 @@ function BeefsTab() {
           </button>
         ))}
         <span className="text-xs text-gray-400 ml-auto">{total} beefs</span>
+        <button
+          onClick={judgeExpired}
+          disabled={judging}
+          className="text-xs px-4 py-1.5 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors disabled:opacity-40"
+        >
+          {judging ? "Judging..." : "Judge Expired Beefs"}
+        </button>
       </div>
 
       {msg && (
@@ -339,6 +387,13 @@ function BeefsTab() {
                     <Link href={`/beef/${b.id}`} target="_blank" className="text-xs px-3 py-1.5 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors">
                       View
                     </Link>
+                    <button
+                      onClick={() => recategorize(b.id)}
+                      disabled={recategorizing === b.id}
+                      className="text-xs px-3 py-1.5 border border-blue-200 text-blue-500 rounded-lg hover:border-blue-400 transition-colors disabled:opacity-40"
+                    >
+                      {recategorizing === b.id ? "..." : "Recategorize"}
+                    </button>
                     {b.status !== "COMPLETED" && (
                       <button
                         onClick={() => cancel(b.id)}
