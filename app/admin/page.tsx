@@ -718,7 +718,14 @@ export default function AdminPage() {
               <span className="text-xs font-bold tracking-widest text-gray-400 border border-gray-200 px-2 py-0.5 rounded">ADMIN</span>
             </div>
           </Link>
-          <p className="text-xs text-gray-400">{session?.user?.email}</p>
+          <div className="flex items-center gap-4">
+            <p className="text-xs text-gray-400">{session?.user?.email}</p>
+            <Link href="/">
+              <button className="bg-white text-black text-xs font-bold px-4 py-2 rounded-lg border-2 border-gray-900 hover:bg-gray-100 transition-colors">
+                View Live Site
+              </button>
+            </Link>
+          </div>
         </div>
 
         {/* Tab bar */}
