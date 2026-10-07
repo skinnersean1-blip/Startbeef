@@ -35,15 +35,6 @@ async function getSettledBeefs(category: string) {
             anonHandle: true
           }
         },
-        winner: {
-          select: {
-            id: true,
-            handle: true,
-            username: true,
-            isAnonymous: true,
-            anonHandle: true
-          }
-        },
         _count: { select: { messages: true } },
       },
     });
@@ -119,7 +110,14 @@ export default async function SettledPage({
             {beefs.map((beef) => {
               const challengerName = displayName(beef.challenger, beef.challengerIsAnon);
               const responderName = beef.responder ? displayName(beef.responder, beef.responderIsAnon) : null;
-              const winnerName = beef.winner ? displayName(beef.winner) : null;
+
+              // Determine winner name from winnerId
+              let winnerName = null;
+              if (beef.winnerId === beef.challenger.id) {
+                winnerName = challengerName;
+              } else if (beef.winnerId && beef.responder && beef.winnerId === beef.responder.id) {
+                winnerName = responderName;
+              }
               const categories = (() => {
                 try {
                   return JSON.parse(beef.categories || "[]");
