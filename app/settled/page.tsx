@@ -77,9 +77,10 @@ function fmt(n: number) {
 export default async function SettledPage({
   searchParams,
 }: {
-  searchParams: { category?: string };
+  searchParams: Promise<{ category?: string }>;
 }) {
-  const category = searchParams.category || "ALL";
+  const params = await searchParams;
+  const category = params.category || "ALL";
   const beefs = await getSettledBeefs(category);
 
   return (
