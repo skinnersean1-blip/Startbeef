@@ -12,10 +12,6 @@ export function AuthHeader() {
   }
 
   if (session?.user) {
-    // Check if user is admin (simple client-side check for UX)
-    const adminEmails = process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(',').map(e => e.trim().toLowerCase()) || [];
-    const isAdmin = session.user.email && adminEmails.includes(session.user.email.toLowerCase());
-
     return (
       <div className="flex items-center gap-2 sm:gap-4 flex-wrap justify-end">
         <Link
@@ -27,13 +23,11 @@ export function AuthHeader() {
             : `@${session.user.handle || session.user.username}`}
         </Link>
         <BankBadge />
-        {isAdmin && (
-          <Link href="/admin">
-            <button className="bg-white text-black text-xs font-bold px-4 py-2 rounded-lg border-2 border-gray-900 hover:bg-gray-100 transition-colors">
-              Admin
-            </button>
-          </Link>
-        )}
+        <Link href="/admin">
+          <button className="bg-white text-black text-xs font-bold px-4 py-2 rounded-lg border-2 border-gray-900 hover:bg-gray-100 transition-colors">
+            Admin
+          </button>
+        </Link>
         <Link href="/beef/new">
           <button className="btn-primary text-xs sm:text-sm px-4 sm:px-6 py-3">
             START A BEEF

@@ -721,7 +721,7 @@ export default function AdminPage() {
           <div className="flex items-center gap-4">
             <p className="text-xs text-gray-400">{session?.user?.email}</p>
             <Link href="/">
-              <button className="bg-orange-500 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors">
+              <button className="bg-amber-900 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-amber-800 transition-colors">
                 Beef
               </button>
             </Link>
