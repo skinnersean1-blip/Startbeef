@@ -3,9 +3,15 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { AuthHeader } from "@/components/AuthHeader";
-import { BrowseBar } from "@/components/BrowseBar";
+import type { Beef, User } from "@prisma/client";
 
-async function getSettledBeefs(category: string) {
+type SettledBeef = Beef & {
+  challenger: Pick<User, "id" | "handle" | "username" | "isAnonymous" | "anonHandle" | "wins" | "losses">;
+  responder: Pick<User, "id" | "handle" | "username" | "isAnonymous" | "anonHandle"> | null;
+  _count: { messages: number };
+};
+
+async function getSettledBeefs(category: string): Promise<SettledBeef[]> {
   const categoryFilter =
     category !== "ALL" ? { categories: { contains: category } } : {};
 
@@ -91,7 +97,25 @@ export default async function SettledPage({
           <p className="text-beef-text-muted">Browse past debates and see who won</p>
         </div>
 
-        <BrowseBar activeCategory={category} />
+        {/* Category filter */}
+        <div className="border-y border-beef-border py-3 mb-6">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+            <span className="section-label shrink-0">FILTER</span>
+            {["ALL", "POLITICS", "CULTURE", "SPORTS", "TECH", "CALLOUTS"].map((cat) => (
+              <Link key={cat} href={`/settled${cat === "ALL" ? "" : `?category=${cat}`}`}>
+                <button
+                  className={`text-xs font-bold tracking-widest px-3 py-1.5 rounded-full border transition-all shrink-0 ${
+                    category === cat
+                      ? "border-beef-gold bg-beef-gold/10 text-beef-gold"
+                      : "border-beef-border text-beef-text-muted hover:border-beef-gold/50"
+                  }`}
+                >
+                  {cat}
+                </button>
+              </Link>
+            ))}
+          </div>
+        </div>
 
         {beefs.length === 0 ? (
           <div className="card-beef text-center py-20 mt-6">
@@ -107,7 +131,7 @@ export default async function SettledPage({
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-            {beefs.map((beef) => {
+            {beefs.map((beef: SettledBeef) => {
               const challengerName = displayName(beef.challenger, beef.challengerIsAnon);
               const responderName = beef.responder ? displayName(beef.responder, beef.responderIsAnon) : null;
 
