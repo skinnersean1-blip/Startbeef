@@ -34,15 +34,33 @@ export async function sendPushNotification(
   notification: PushNotificationData
 ) {
   try {
-    // Get all push subscriptions for this user
-    const subscriptions = await prisma.pushSubscription.findMany({
-      where: { userId },
+    // Get user and their preferences
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        notificationPrefs: true,
+        pushSubscriptions: true,
+      },
     });
 
-    if (subscriptions.length === 0) {
+    if (!user || user.pushSubscriptions.length === 0) {
       console.log(`[PUSH] No subscriptions found for user ${userId}`);
       return;
     }
+
+    // Check if user wants this type of notification
+    const prefs = JSON.parse(user.notificationPrefs || "{}");
+    const prefKey = type === "CHALLENGE_ACCEPTED" ? "challengeAccepted" :
+                    type === "NEW_MESSAGE" ? "newMessage" :
+                    type === "JUDGMENT_COMPLETE" ? "judgmentComplete" :
+                    type === "BEEF_ENDING_SOON" ? "beefEndingSoon" : null;
+
+    if (prefKey && prefs[prefKey] === false) {
+      console.log(`[PUSH] User ${userId} has disabled ${type} notifications`);
+      return;
+    }
+
+    const subscriptions = user.pushSubscriptions;
 
     // Store notification in database
     await prisma.notification.create({

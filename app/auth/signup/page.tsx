@@ -76,7 +76,7 @@ export default function SignUpPage() {
       return;
     }
 
-    router.push("/auth/interests");
+    router.push("/auth/notifications");
     router.refresh();
   };
 

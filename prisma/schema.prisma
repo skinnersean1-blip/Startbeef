@@ -33,6 +33,7 @@ model User {
   emailVerifyToken   String?
   emailVerifyExpiry  DateTime?
   interests          String    @default("[]")
+  notificationPrefs  String    @default("{\"challengeAccepted\":true,\"newMessage\":true,\"judgmentComplete\":true,\"beefEndingSoon\":true}")
 
   challengesCreated  Beef[]      @relation("Challenger")
   challengesAccepted Beef[]      @relation("Responder")
