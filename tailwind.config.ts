@@ -18,7 +18,7 @@ const config: Config = {
           bg: "#130E09",           // Dark brown, slightly lifted
           "bg-light": "#1E1710",   // Slightly lighter brown
           "bg-card": "#2E231A",    // Card background
-          "bg-card-light": "#4A5560", // Slate grey for forum posts
+          "bg-card-light": "#5A4D42", // Warm tan-brown for forum posts
           gold: "#D4A574",         // Muted gold
           "gold-light": "#E8C9A1", // Light gold
           orange: "#FF6B47",       // Bright orange (CTA)
