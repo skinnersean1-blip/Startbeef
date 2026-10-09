@@ -19,7 +19,10 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ hasSeenPrompt: user.hasSeenNotificationPrompt });
+    // Default to false if field doesn't exist yet (backwards compatibility)
+    return NextResponse.json({
+      hasSeenPrompt: user.hasSeenNotificationPrompt ?? false
+    });
   } catch (error) {
     console.error("[CHECK_NOTIFICATION_PROMPT]", error);
     return NextResponse.json(

@@ -26,15 +26,29 @@ export function NotificationPromptModal() {
   useEffect(() => {
     if (!session?.user) return;
 
-    // Check if user has seen the prompt
+    // Check localStorage first (instant, no API call needed)
+    const localKey = `notification-prompt-seen-${session.user.email}`;
+    const seenInLocalStorage = localStorage.getItem(localKey) === "true";
+
+    if (seenInLocalStorage) {
+      return; // Don't show if already seen
+    }
+
+    // Check if user has seen the prompt in database
     fetch("/api/user/check-notification-prompt")
       .then((res) => res.json())
       .then((data) => {
-        if (!data.hasSeenPrompt) {
+        if (data.hasSeenPrompt) {
+          // Mark in localStorage for future page loads
+          localStorage.setItem(localKey, "true");
+        } else {
           setShow(true);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        // If API fails, don't show modal (fail gracefully)
+        console.log("Could not check notification prompt status");
+      });
   }, [session]);
 
   const toggleAll = (enabled: boolean) => {
@@ -47,6 +61,7 @@ export function NotificationPromptModal() {
   };
 
   const handleSave = async () => {
+    if (!session?.user?.email) return;
     setSaving(true);
 
     try {
@@ -57,31 +72,53 @@ export function NotificationPromptModal() {
         body: JSON.stringify(prefs),
       });
 
-      // Mark prompt as seen
+      // Mark prompt as seen in database
       await fetch("/api/user/mark-notification-prompt-seen", {
         method: "POST",
       });
+
+      // Always mark in localStorage (instant for next page load)
+      const localKey = `notification-prompt-seen-${session.user.email}`;
+      localStorage.setItem(localKey, "true");
 
       setShow(false);
       router.refresh();
     } catch (err) {
       console.error("Failed to save:", err);
+      // Still mark as seen in localStorage to prevent re-showing
+      if (session?.user?.email) {
+        const localKey = `notification-prompt-seen-${session.user.email}`;
+        localStorage.setItem(localKey, "true");
+      }
+      setShow(false);
     } finally {
       setSaving(false);
     }
   };
 
   const handleSkip = async () => {
+    if (!session?.user?.email) return;
+
     try {
       // Just mark as seen without changing preferences
       await fetch("/api/user/mark-notification-prompt-seen", {
         method: "POST",
       });
 
+      // Mark in localStorage
+      const localKey = `notification-prompt-seen-${session.user.email}`;
+      localStorage.setItem(localKey, "true");
+
       setShow(false);
       router.refresh();
     } catch (err) {
       console.error("Failed to skip:", err);
+      // Still mark in localStorage
+      if (session?.user?.email) {
+        const localKey = `notification-prompt-seen-${session.user.email}`;
+        localStorage.setItem(localKey, "true");
+      }
+      setShow(false);
     }
   };
 
