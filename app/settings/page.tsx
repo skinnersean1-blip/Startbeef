@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { BackButton } from "@/components/BackButton";
+import { TwoFactorSettings } from "@/components/TwoFactorSettings";
 
 type NotificationPrefs = {
   challengeAccepted: boolean;
@@ -251,6 +252,9 @@ export default function SettingsPage() {
               {saving ? "Saving..." : "Save Preferences"}
             </button>
           </div>
+
+          {/* Two-Factor Authentication Section */}
+          <TwoFactorSettings />
         </div>
       </div>
     </div>

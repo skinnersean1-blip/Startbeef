@@ -36,6 +36,10 @@ model User {
   notificationPrefs  String    @default("{\"challengeAccepted\":true,\"newMessage\":true,\"judgmentComplete\":true,\"beefEndingSoon\":true}")
   hasSeenNotificationPrompt Boolean @default(false)
 
+  twoFactorEnabled   Boolean   @default(false)
+  twoFactorSecret    String?
+  backupCodes        String?   @default("[]")
+
   challengesCreated  Beef[]      @relation("Challenger")
   challengesAccepted Beef[]      @relation("Responder")
   messages           Message[]

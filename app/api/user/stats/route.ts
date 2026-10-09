@@ -17,6 +17,7 @@ export async function GET() {
         losses: true,
         totalEarnings: true,
         bankBalance: true,
+        twoFactorEnabled: true,
       },
     });
 

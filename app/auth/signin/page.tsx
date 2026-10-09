@@ -25,6 +25,7 @@ function SignInForm() {
     setLoading(true);
 
     try {
+      // First, try signing in to check credentials
       const result = await signIn("credentials", {
         identifier: formData.identifier,
         password: formData.password,
@@ -37,6 +38,23 @@ function SignInForm() {
         return;
       }
 
+      // Check if user has 2FA enabled
+      const statsRes = await fetch("/api/user/stats");
+      if (statsRes.ok) {
+        const stats = await statsRes.json();
+        if (stats.twoFactorEnabled) {
+          // Sign out temporarily and redirect to 2FA page
+          // Store password temporarily for after 2FA verification
+          sessionStorage.setItem("pending-2fa-password", formData.password);
+          sessionStorage.setItem("pending-2fa-email", formData.identifier);
+
+          // Redirect to 2FA verification
+          router.push(`/auth/2fa?email=${encodeURIComponent(formData.identifier)}`);
+          return;
+        }
+      }
+
+      // No 2FA or check failed - proceed normally
       router.push(callbackUrl);
       router.refresh();
     } catch {
