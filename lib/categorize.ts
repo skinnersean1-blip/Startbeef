@@ -3,6 +3,10 @@ import Anthropic from "@anthropic-ai/sdk";
 const CATEGORIES = ["POLITICS", "CULTURE", "SPORTS", "TECH", "CALLOUTS", "CUSTOM"] as const;
 type Category = typeof CATEGORIES[number];
 
+// AI should never select CUSTOM - it's for admin manual override only
+const AI_CATEGORIES = ["POLITICS", "CULTURE", "SPORTS", "TECH", "CALLOUTS"] as const;
+type AICategory = typeof AI_CATEGORIES[number];
+
 const CATEGORY_DEFINITIONS = `
 - POLITICS: government, elections, politicians, policy, political parties, law, geopolitics, war, diplomacy, public officials (presidents, senators, ministers, VPs, etc.)
 - CULTURE: entertainment, music, film, art, social trends, celebrities, media, religion, lifestyle, philosophy
@@ -10,9 +14,6 @@ const CATEGORY_DEFINITIONS = `
 - TECH: technology, software, AI, startups, companies, science, engineering, the internet
 - CALLOUTS: direct personal challenges or accusations targeting a specific named individual (not a public policy debate — a personal beef with someone)
 `.trim();
-
-// AI should never select CUSTOM - it's for admin manual override only
-const AI_CATEGORIES = CATEGORIES.filter(c => c !== "CUSTOM");
 
 export async function categorizeClaim(claim: string): Promise<string[]> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -58,7 +59,7 @@ No explanation. No markdown. Just the array.`,
     if (
       Array.isArray(parsed) &&
       parsed.length > 0 &&
-      parsed.every((c): c is Category => AI_CATEGORIES.includes(c as Category))
+      parsed.every((c): c is AICategory => AI_CATEGORIES.includes(c as AICategory))
     ) {
       return parsed;
     }
