@@ -36,7 +36,14 @@ export async function POST() {
     });
 
     // Generate QR code
-    const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url || "");
+    if (!secret.otpauth_url) {
+      return NextResponse.json(
+        { error: "Failed to generate OTP URL" },
+        { status: 500 }
+      );
+    }
+
+    const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url);
 
     // Store secret temporarily (not enabled yet)
     await prisma.user.update({
