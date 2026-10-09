@@ -34,6 +34,7 @@ model User {
   emailVerifyExpiry  DateTime?
   interests          String    @default("[]")
   notificationPrefs  String    @default("{\"challengeAccepted\":true,\"newMessage\":true,\"judgmentComplete\":true,\"beefEndingSoon\":true}")
+  hasSeenNotificationPrompt Boolean @default(false)
 
   challengesCreated  Beef[]      @relation("Challenger")
   challengesAccepted Beef[]      @relation("Responder")

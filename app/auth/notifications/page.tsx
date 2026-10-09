@@ -59,6 +59,11 @@ export default function NotificationPreferencesPage() {
         return;
       }
 
+      // Mark notification prompt as seen
+      await fetch("/api/user/mark-notification-prompt-seen", {
+        method: "POST",
+      });
+
       router.push("/auth/interests");
     } catch (err) {
       setError("Something went wrong");

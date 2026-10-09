@@ -87,9 +87,11 @@ export default async function ProfilePage({
                 {user.bio && <p className="text-beef-text-muted mt-2">{user.bio}</p>}
               </div>
               {isOwnProfile && (
-                <span className="text-xs text-beef-text-muted bg-beef-bg-light px-3 py-1 rounded-full border border-beef-border">
-                  YOUR PROFILE
-                </span>
+                <Link href="/settings">
+                  <button className="text-xs font-bold text-beef-text-muted hover:text-beef-gold hover:border-beef-gold bg-beef-bg-light px-4 py-2 rounded-full border border-beef-border transition-colors">
+                    ⚙️ Settings
+                  </button>
+                </Link>
               )}
             </div>
           </div>

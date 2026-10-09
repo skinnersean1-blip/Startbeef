@@ -8,6 +8,7 @@ import { HeroCTA } from "@/components/HeroCTA";
 import { BrowseBar } from "@/components/BrowseBar";
 import { ForumPanel } from "@/components/ForumPanel";
 import { SearchBar } from "@/components/SearchBar";
+import { NotificationPromptModal } from "@/components/NotificationPromptModal";
 
 async function getStats() {
   try {
@@ -121,6 +122,7 @@ export default async function Home({
 
   return (
     <div className="min-h-screen" style={{ background: "radial-gradient(ellipse 160% 120% at 85% 95%, rgba(212,165,116,0.38) 0%, rgba(196,140,60,0.18) 35%, rgba(196,140,60,0.06) 65%, transparent 100%)" }}>
+      <NotificationPromptModal />
       {/* Header */}
       <header className="container-beef py-6 sm:py-8">
         {/* Mobile: stacked layout */}
