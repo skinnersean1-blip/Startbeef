@@ -126,12 +126,12 @@ const JUDGES: JudgeDef[] = [
   },
   {
     id: "llama",
-    name: "Llama 3",
+    name: "Llama 3.1",
     envKey: "GROQ_API_KEY",
     call: async (apiKey, prompt) => {
       const client = new OpenAI({ apiKey, baseURL: "https://api.groq.com/openai/v1" });
       const res = await client.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model: "llama-3.1-70b-versatile",
         max_tokens: 512,
         messages: [{ role: "user", content: prompt }],
       });
