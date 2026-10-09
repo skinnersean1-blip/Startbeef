@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendBeefAcceptedEmail } from "@/lib/email";
+import { notifyBeefAccepted } from "@/lib/push";
 
 export const dynamic = "force-dynamic";
 
@@ -87,6 +88,9 @@ export async function POST(
       : `@${responder?.handle || responder?.username}`;
     sendBeefAcceptedEmail(beef.challenger.email, id, beef.claim, responderName).catch(() => {});
   }
+
+  // Send push notification
+  notifyBeefAccepted(id, beef.challengerId).catch(() => {});
 
   return NextResponse.json({ beef: updated });
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { notifyNewMessage } from "@/lib/push";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +48,9 @@ export async function POST(
       user: { select: { id: true, handle: true, username: true } },
     },
   });
+
+  // Send push notification to other participant
+  notifyNewMessage(id, session.user.id).catch(() => {});
 
   return NextResponse.json({ message }, { status: 201 });
 }

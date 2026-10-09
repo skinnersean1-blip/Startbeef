@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { judgeBeef, type JudgeMessage } from "@/lib/judges";
 import { BEEF_FEE_RATE } from "@/lib/stripe";
 import { sendBeefJudgedEmail } from "@/lib/email";
+import { notifyJudgmentComplete } from "@/lib/push";
 
 export async function executeJudgment(beefId: string): Promise<void> {
   const beef = await prisma.beef.findUnique({
@@ -84,4 +85,7 @@ export async function executeJudgment(beefId: string): Promise<void> {
   if (beef.responder?.email) {
     sendBeefJudgedEmail(beef.responder.email, beefId, beef.claim, !challengerWon, !challengerWon ? winnerPayout : 0).catch(() => {});
   }
+
+  // Send push notifications
+  notifyJudgmentComplete(beefId).catch(() => {});
 }
