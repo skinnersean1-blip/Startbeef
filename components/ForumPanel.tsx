@@ -246,7 +246,7 @@ export function ForumPanel() {
         <div className="flex flex-col gap-2">
           {threads.map((thread) => (
             <Link key={thread.id} href={`/forum/${thread.id}`}>
-              <div className="card-beef hover:border-beef-gold/40 transition-all duration-150 cursor-pointer group">
+              <div className="bg-beef-bg-card-light border border-beef-border rounded-2xl p-6 hover:border-beef-gold/40 transition-all duration-150 cursor-pointer group">
                 <p
                   className="font-bold text-sm leading-snug mb-1.5 group-hover:text-beef-gold transition-colors line-clamp-2"
                   style={getStyle(thread.textColor, thread.fontStyle)}
