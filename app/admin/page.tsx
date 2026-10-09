@@ -260,9 +260,13 @@ function BeefsTab() {
   const [loading, setLoading]   = useState(true);
   const [cancelling, setCancelling] = useState<string | null>(null);
   const [recategorizing, setRecategorizing] = useState<string | null>(null);
+  const [editingCategoriesId, setEditingCategoriesId] = useState<string | null>(null);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [judging, setJudging] = useState(false);
   const [judgingId, setJudgingId] = useState<string | null>(null);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+
+  const AVAILABLE_CATEGORIES = ["POLITICS", "CULTURE", "SPORTS", "TECH", "CALLOUTS"];
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -306,6 +310,44 @@ function BeefsTab() {
     } else {
       const d = await res.json();
       setMsg({ type: "err", text: d.error || "Failed to recategorize" });
+    }
+  }
+
+  function startEditCategories(beefId: string, currentCategories: string[]) {
+    setEditingCategoriesId(beefId);
+    setSelectedCategories(currentCategories);
+    setMsg(null);
+  }
+
+  function toggleCategory(category: string) {
+    setSelectedCategories((prev) =>
+      prev.includes(category)
+        ? prev.filter((c) => c !== category)
+        : [...prev, category]
+    );
+  }
+
+  async function saveCategories(id: string) {
+    if (selectedCategories.length === 0) {
+      setMsg({ type: "err", text: "Select at least one category" });
+      return;
+    }
+
+    setMsg(null);
+    const res = await fetch("/api/admin/beefs", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, action: "updateCategories", categories: selectedCategories }),
+    });
+
+    if (res.ok) {
+      setMsg({ type: "ok", text: `Updated to: ${selectedCategories.join(", ")}` });
+      setEditingCategoriesId(null);
+      setSelectedCategories([]);
+      load();
+    } else {
+      const d = await res.json();
+      setMsg({ type: "err", text: d.error || "Failed to update categories" });
     }
   }
 
@@ -415,17 +457,18 @@ function BeefsTab() {
                       <span>{timeAgo(b.createdAt)}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
                     <Link href={`/beef/${b.id}`} target="_blank" className="text-xs px-3 py-1.5 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors">
                       View
                     </Link>
-                    <button
-                      onClick={() => recategorize(b.id)}
-                      disabled={recategorizing === b.id}
-                      className="text-xs px-3 py-1.5 border border-blue-200 text-blue-500 rounded-lg hover:border-blue-400 transition-colors disabled:opacity-40"
-                    >
-                      {recategorizing === b.id ? "..." : "Recategorize"}
-                    </button>
+                    {editingCategoriesId !== b.id && (
+                      <button
+                        onClick={() => startEditCategories(b.id, cats)}
+                        className="text-xs px-3 py-1.5 border border-blue-200 text-blue-500 rounded-lg hover:border-blue-400 transition-colors"
+                      >
+                        Edit Categories
+                      </button>
+                    )}
                     {b.status === "LIVE" && (
                       <button
                         onClick={() => judgeSingle(b.id)}
@@ -446,6 +489,52 @@ function BeefsTab() {
                     )}
                   </div>
                 </div>
+
+                {/* Category editor */}
+                {editingCategoriesId === b.id && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <p className="text-xs font-bold text-gray-600 mb-2">Select Categories:</p>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {AVAILABLE_CATEGORIES.map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => toggleCategory(cat)}
+                          className={`text-xs px-3 py-1.5 rounded-lg transition-colors ${
+                            selectedCategories.includes(cat)
+                              ? "bg-orange-500 text-white"
+                              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => saveCategories(b.id)}
+                        className="text-xs px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingCategoriesId(null);
+                          setSelectedCategories([]);
+                        }}
+                        className="text-xs px-4 py-2 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => recategorize(b.id)}
+                        disabled={recategorizing === b.id}
+                        className="text-xs px-4 py-2 border border-blue-200 text-blue-500 rounded-lg hover:border-blue-400 transition-colors disabled:opacity-40 ml-auto"
+                      >
+                        {recategorizing === b.id ? "..." : "AI Recategorize"}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}

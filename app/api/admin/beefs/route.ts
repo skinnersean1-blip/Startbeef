@@ -44,9 +44,23 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { id, action } = await req.json();
+  const { id, action, categories } = await req.json();
   if (!id || !action) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+
+  // Handle manual category update
+  if (action === "updateCategories") {
+    if (!Array.isArray(categories) || categories.length === 0) {
+      return NextResponse.json({ error: "Invalid categories" }, { status: 400 });
+    }
+
+    await prisma.beef.update({
+      where: { id },
+      data: { categories: JSON.stringify(categories) },
+    });
+
+    return NextResponse.json({ success: true, categories });
   }
 
   // Handle recategorize action
