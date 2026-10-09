@@ -16,7 +16,7 @@ export function AuthHeader() {
     return (
       <div className="flex items-center gap-2 sm:gap-4 flex-wrap justify-end">
         <Link
-          href={`/@${session.user.handle || session.user.username}`}
+          href="/dashboard"
           className="hidden sm:block text-sm text-muted hover:text-beef-gold transition-colors px-2 py-2"
         >
           {session.user.isAnonymous

@@ -107,9 +107,9 @@ export default function SettingsPage() {
           <Link href="/" className="text-2xl font-black tracking-tighter">
             BEEF
           </Link>
-          <Link href={`/@${session?.user?.handle || session?.user?.username}`}>
+          <Link href="/dashboard">
             <button className="text-xs text-beef-text-muted hover:text-beef-gold transition-colors">
-              Back to Profile
+              Back to Dashboard
             </button>
           </Link>
         </div>
