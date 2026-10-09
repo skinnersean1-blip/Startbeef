@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-const CATEGORIES = ["POLITICS", "CULTURE", "SPORTS", "TECH", "CALLOUTS"] as const;
+const CATEGORIES = ["POLITICS", "CULTURE", "SPORTS", "TECH", "CALLOUTS", "CUSTOM"] as const;
 type Category = typeof CATEGORIES[number];
 
 const CATEGORY_DEFINITIONS = `
@@ -10,6 +10,9 @@ const CATEGORY_DEFINITIONS = `
 - TECH: technology, software, AI, startups, companies, science, engineering, the internet
 - CALLOUTS: direct personal challenges or accusations targeting a specific named individual (not a public policy debate — a personal beef with someone)
 `.trim();
+
+// AI should never select CUSTOM - it's for admin manual override only
+const AI_CATEGORIES = CATEGORIES.filter(c => c !== "CUSTOM");
 
 export async function categorizeClaim(claim: string): Promise<string[]> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -43,7 +46,7 @@ Rules:
 - Can assign multiple categories when truly relevant
 - Be specific: don't default to POLITICS unless it's actually political
 
-Respond with ONLY a JSON array: ${CATEGORIES.join(", ")}
+Respond with ONLY a JSON array from these options: ${AI_CATEGORIES.join(", ")}
 No explanation. No markdown. Just the array.`,
       messages: [{ role: "user", content: claim }],
     });
@@ -55,7 +58,7 @@ No explanation. No markdown. Just the array.`,
     if (
       Array.isArray(parsed) &&
       parsed.length > 0 &&
-      parsed.every((c): c is Category => CATEGORIES.includes(c as Category))
+      parsed.every((c): c is Category => AI_CATEGORIES.includes(c as Category))
     ) {
       return parsed;
     }

@@ -266,7 +266,7 @@ function BeefsTab() {
   const [judgingId, setJudgingId] = useState<string | null>(null);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
-  const AVAILABLE_CATEGORIES = ["POLITICS", "CULTURE", "SPORTS", "TECH", "CALLOUTS"];
+  const AVAILABLE_CATEGORIES = ["POLITICS", "CULTURE", "SPORTS", "TECH", "CALLOUTS", "CUSTOM"];
 
   const load = useCallback(async () => {
     setLoading(true);
