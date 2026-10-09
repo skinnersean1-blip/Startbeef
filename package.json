@@ -8,7 +8,8 @@
     "build": "prisma generate && next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "generate-vapid-keys": "node scripts/generate-vapid-keys.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -32,6 +33,7 @@
     "react-dom": "19.2.0",
     "resend": "^6.12.3",
     "stripe": "^22.1.1",
+    "web-push": "^3.6.7",
     "zod": "^4.1.12"
   },
   "devDependencies": {

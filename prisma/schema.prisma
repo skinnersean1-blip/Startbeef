@@ -44,6 +44,8 @@ model User {
   threadImports      ThreadImport[]
   forumThreads       ForumThread[]
   forumComments      ForumComment[]
+  pushSubscriptions  PushSubscription[]
+  notifications      Notification[]
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -213,4 +215,35 @@ model Transaction {
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+model PushSubscription {
+  id            String    @id @default(cuid())
+
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  endpoint      String    @unique
+  p256dh        String
+  auth          String
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Notification {
+  id            String    @id @default(cuid())
+
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type          String    // CHALLENGE_ACCEPTED, BEEF_ENDING_SOON, JUDGMENT_COMPLETE, NEW_MESSAGE
+  title         String
+  body          String
+  beefId        String?
+
+  read          Boolean   @default(false)
+  sent          Boolean   @default(false)
+
+  createdAt     DateTime  @default(now())
 }
