@@ -5,6 +5,23 @@ import { stripe, ANTE_MIN } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
 
+// Calculate total charge to cover Stripe fees (2.9% + $0.30)
+// so that user receives exactly the desired amount
+function calculateTotalWithFees(desiredAmount: number) {
+  const STRIPE_PERCENTAGE = 0.029; // 2.9%
+  const STRIPE_FIXED = 0.30; // $0.30
+
+  // Formula: totalCharge = (desiredAmount + STRIPE_FIXED) / (1 - STRIPE_PERCENTAGE)
+  const totalCharge = (desiredAmount + STRIPE_FIXED) / (1 - STRIPE_PERCENTAGE);
+  const fee = totalCharge - desiredAmount;
+
+  return {
+    desiredAmount,
+    fee: Math.round(fee * 100) / 100,
+    totalCharge: Math.round(totalCharge * 100) / 100
+  };
+}
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
@@ -20,6 +37,9 @@ export async function POST(req: NextRequest) {
 
   const origin = req.headers.get("origin") ?? "https://www.startbeef.com";
 
+  // Calculate total including Stripe fees
+  const { desiredAmount, fee, totalCharge } = calculateTotalWithFees(dollars);
+
   try {
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -30,9 +50,9 @@ export async function POST(req: NextRequest) {
             currency: "usd",
             product_data: {
               name: "Beef Bank Deposit",
-              description: `Add $${dollars} to your Beef Bank`,
+              description: `Add $${desiredAmount.toFixed(2)} to your Beef Bank (includes $${fee.toFixed(2)} processing fee)`,
             },
-            unit_amount: Math.round(dollars * 100),
+            unit_amount: Math.round(totalCharge * 100),
           },
           quantity: 1,
         },
@@ -40,7 +60,7 @@ export async function POST(req: NextRequest) {
       metadata: {
         userId: session.user.id,
         type: "DEPOSIT",
-        amount: dollars.toString(),
+        amount: desiredAmount.toString(), // Credit user the desired amount, not the total charge
       },
       success_url: `${origin}/bank?deposit=success`,
       cancel_url: `${origin}/bank?deposit=cancelled`,

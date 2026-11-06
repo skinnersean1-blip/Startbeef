@@ -54,6 +54,8 @@ function BankContent() {
   const [depositLoading, setDepositLoading] = useState(false);
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [showFeeConfirm, setShowFeeConfirm] = useState(false);
+  const [dontShowFeeAgain, setDontShowFeeAgain] = useState(false);
 
   const depositStatus = searchParams.get("deposit");
 
@@ -86,10 +88,44 @@ function BankContent() {
     }
   }, [depositStatus]);
 
+  // Calculate Stripe fees (2.9% + $0.30)
+  const calculateFees = (amount: number) => {
+    const STRIPE_PERCENTAGE = 0.029;
+    const STRIPE_FIXED = 0.30;
+    const totalCharge = (amount + STRIPE_FIXED) / (1 - STRIPE_PERCENTAGE);
+    const fee = totalCharge - amount;
+    return {
+      amount,
+      fee: Math.round(fee * 100) / 100,
+      total: Math.round(totalCharge * 100) / 100
+    };
+  };
+
   const handleDeposit = async (e: FormEvent) => {
     e.preventDefault();
     setMessage(null);
+
+    // Check if user has opted out of fee confirmation
+    const skipFeeConfirm = localStorage.getItem('skipDepositFeeConfirm') === 'true';
+
+    if (!skipFeeConfirm) {
+      // Show fee confirmation dialog
+      setShowFeeConfirm(true);
+      return;
+    }
+
+    // Proceed with deposit
+    await proceedWithDeposit();
+  };
+
+  const proceedWithDeposit = async () => {
+    setShowFeeConfirm(false);
     setDepositLoading(true);
+
+    // Save preference if checkbox was checked
+    if (dontShowFeeAgain) {
+      localStorage.setItem('skipDepositFeeConfirm', 'true');
+    }
 
     try {
       const res = await fetch("/api/bank/deposit", {
@@ -192,6 +228,62 @@ function BankContent() {
                 : "bg-red-900/20 border-red-500 text-red-400"
             }`}>
               {message.text}
+            </div>
+          )}
+
+          {/* Fee Confirmation Dialog */}
+          {showFeeConfirm && depositAmount && (
+            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+              <div className="card-beef max-w-md w-full">
+                <h3 className="text-xl font-bold mb-4">Confirm Deposit</h3>
+                <div className="space-y-3 mb-6">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-beef-text-muted">Deposit Amount:</span>
+                    <span className="font-bold">${calculateFees(parseFloat(depositAmount)).amount.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-beef-text-muted">Processing Fee:</span>
+                    <span className="text-beef-orange">+${calculateFees(parseFloat(depositAmount)).fee.toFixed(2)}</span>
+                  </div>
+                  <div className="border-t border-beef-border pt-3 flex justify-between">
+                    <span className="font-bold">Total Charge:</span>
+                    <span className="font-bold text-beef-gold text-lg">${calculateFees(parseFloat(depositAmount)).total.toFixed(2)}</span>
+                  </div>
+                  <p className="text-xs text-beef-text-muted">
+                    This fee covers Stripe payment processing (2.9% + $0.30). You&apos;ll receive exactly ${parseFloat(depositAmount).toFixed(2)} in your BEEF account.
+                  </p>
+                </div>
+
+                <div className="mb-6">
+                  <label className="flex items-start gap-2 text-sm cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={dontShowFeeAgain}
+                      onChange={(e) => setDontShowFeeAgain(e.target.checked)}
+                      className="mt-1"
+                    />
+                    <span className="text-beef-text-muted">Don&apos;t show this message again</span>
+                  </label>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowFeeConfirm(false);
+                      setDontShowFeeAgain(false);
+                    }}
+                    className="flex-1 btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={proceedWithDeposit}
+                    className="flex-1 btn-primary"
+                  >
+                    Confirm & Pay
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
