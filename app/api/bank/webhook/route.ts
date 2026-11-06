@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
 
 export const dynamic = "force-dynamic";
+// Rebuild Nov 6 - force Prisma regeneration
 
 // Stripe requires the raw body for signature verification
 export async function POST(req: NextRequest) {
