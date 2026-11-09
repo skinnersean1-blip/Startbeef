@@ -23,6 +23,10 @@ model User {
   totalEarnings Float     @default(0)
   bankBalance   Float     @default(0)
 
+  stripeCustomerId         String?
+  stripeExternalAccountId  String?
+  bankAccountLast4         String?
+
   isAnonymous        Boolean   @default(false)
   anonHandle         String?   @unique
   dateOfBirth        DateTime?
