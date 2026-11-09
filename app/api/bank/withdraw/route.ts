@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Create Stripe payout
+    // Create Stripe payout directly from platform account to user's bank
     const payout = await stripe.payouts.create({
       amount: Math.round(dollars * 100), // Convert to cents
       currency: "usd",
@@ -53,8 +53,6 @@ export async function POST(req: NextRequest) {
         userId: session.user.id,
         email: user.email || "",
       },
-    }, {
-      stripeAccount: user.stripeCustomerId!, // Send from customer's perspective
     });
 
     // Deduct balance and record completed withdrawal
