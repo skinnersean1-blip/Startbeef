@@ -51,6 +51,26 @@ model User {
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  authenticators Authenticator[]
+}
+
+model Authenticator {
+  id                   String  @id @default(cuid())
+  userId               String
+  user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  credentialID         String  @unique
+  credentialPublicKey  String
+  counter              Int     @default(0)
+
+  deviceType           String  // "platform" (Touch ID, Face ID) or "cross-platform" (USB key)
+  backedUp             Boolean @default(false)
+
+  transports           String? // JSON array of transport types
+
+  createdAt            DateTime @default(now())
+  lastUsedAt           DateTime @default(now())
 }
 
 model Beef {
