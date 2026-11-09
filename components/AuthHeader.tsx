@@ -2,11 +2,25 @@
 
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
+import { useState, useRef, useEffect } from "react";
 import { BankBadge } from "./BankBadge";
 import { NotificationToggle } from "./NotificationToggle";
 
 export function AuthHeader() {
   const { data: session, status } = useSession();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   if (status === "loading") {
     return <div className="w-24 h-10 bg-beef-bg-card animate-pulse rounded-full" />;
@@ -15,14 +29,48 @@ export function AuthHeader() {
   if (session?.user) {
     return (
       <div className="flex items-center gap-2 sm:gap-4 flex-wrap justify-end">
-        <Link
-          href="/dashboard"
-          className="hidden sm:block text-sm text-muted hover:text-beef-gold transition-colors px-2 py-2"
-        >
-          {session.user.isAnonymous
-            ? (session.user.anonHandle ?? "GHOST")
-            : `@${session.user.handle || session.user.username}`}
-        </Link>
+        <div className="hidden sm:block relative" ref={menuRef}>
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="text-sm text-muted hover:text-beef-gold transition-colors px-2 py-2 flex items-center gap-1"
+          >
+            {session.user.isAnonymous
+              ? (session.user.anonHandle ?? "GHOST")
+              : `@${session.user.handle || session.user.username}`}
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {showUserMenu && (
+            <div className="absolute right-0 mt-2 w-48 bg-beef-bg-card border border-beef-border rounded-lg shadow-lg py-1 z-50">
+              <Link
+                href="/dashboard"
+                className="block px-4 py-2 text-sm hover:bg-beef-bg transition-colors"
+                onClick={() => setShowUserMenu(false)}
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/account/password"
+                className="block px-4 py-2 text-sm hover:bg-beef-bg transition-colors"
+                onClick={() => setShowUserMenu(false)}
+              >
+                Change Password
+              </Link>
+              <button
+                onClick={() => {
+                  setShowUserMenu(false);
+                  signOut({ callbackUrl: "/" });
+                }}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-beef-bg transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
+          )}
+        </div>
+
         <NotificationToggle />
         <BankBadge />
         {session.user.isAdmin && (
@@ -37,12 +85,6 @@ export function AuthHeader() {
             START A BEEF
           </button>
         </Link>
-        <button
-          onClick={() => signOut({ callbackUrl: "/" })}
-          className="hidden sm:block px-4 py-2 border border-beef-border rounded-full hover:border-beef-gold hover:text-beef-gold transition-colors text-sm"
-        >
-          Sign Out
-        </button>
       </div>
     );
   }
