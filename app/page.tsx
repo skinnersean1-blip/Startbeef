@@ -174,7 +174,7 @@ export default async function Home({
             </div>
           </Link>
           <div className="card-beef py-5">
-            <p className="section-label mb-2">PEOPLE WATCHING</p>
+            <p className="section-label mb-2">HIGHEST VOLUME</p>
             <p className="text-3xl font-bold">{stats.spectators.toLocaleString()}</p>
           </div>
           <div className="card-beef py-5">
