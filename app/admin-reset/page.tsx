@@ -25,7 +25,8 @@ export default function AdminResetPage() {
       if (res.ok) {
         setStatus("✅ Password reset! You can now sign in with StartBeef2026!");
       } else {
-        setStatus(`❌ Error: ${data.error || "Something went wrong"}`);
+        const details = data.details ? ` (${data.details})` : "";
+        setStatus(`❌ Error: ${data.error || "Something went wrong"}${details}`);
       }
     } catch (err) {
       setStatus(`❌ Error: ${err instanceof Error ? err.message : "Network error"}`);
