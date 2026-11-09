@@ -16,21 +16,11 @@ export async function POST(req: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Try both possible column names
-    try {
-      await prisma.$executeRaw`
-        UPDATE User
-        SET password = ${hashedPassword}
-        WHERE email = ${email}
-      `;
-    } catch (e) {
-      // Try passwordHash if password doesn't exist
-      await prisma.$executeRaw`
-        UPDATE User
-        SET passwordHash = ${hashedPassword}
-        WHERE email = ${email}
-      `;
-    }
+    // Update passwordHash using Prisma
+    await prisma.user.update({
+      where: { email },
+      data: { passwordHash: hashedPassword }
+    });
 
     return NextResponse.json({
       success: true,
