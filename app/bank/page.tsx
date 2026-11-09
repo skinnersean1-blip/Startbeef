@@ -108,7 +108,9 @@ function BankContent() {
       setBankAccountLoading(false);
 
       if (!res.ok) {
-        setMessage({ type: "error", text: data.error || "Failed to save bank account" });
+        const errorMsg = data.details ? `${data.error}: ${data.details}` : (data.error || "Failed to save bank account");
+        setMessage({ type: "error", text: errorMsg });
+        console.error("Bank account save error:", data);
         return;
       }
 
