@@ -57,6 +57,15 @@ function BankContent() {
   const [showFeeConfirm, setShowFeeConfirm] = useState(false);
   const [dontShowFeeAgain, setDontShowFeeAgain] = useState(false);
 
+  // Bank account state
+  const [hasBankAccount, setHasBankAccount] = useState(false);
+  const [bankAccountLast4, setBankAccountLast4] = useState("");
+  const [showBankForm, setShowBankForm] = useState(false);
+  const [routingNumber, setRoutingNumber] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [accountHolderName, setAccountHolderName] = useState("");
+  const [bankAccountLoading, setBankAccountLoading] = useState(false);
+
   const depositStatus = searchParams.get("deposit");
 
   const fetchBalance = useCallback(async () => {
@@ -70,6 +79,52 @@ function BankContent() {
     setLoading(false);
   }, []);
 
+  const fetchBankAccount = useCallback(async () => {
+    const res = await fetch("/api/bank/account");
+    if (res.ok) {
+      const data = await res.json();
+      setHasBankAccount(data.hasBankAccount);
+      setBankAccountLast4(data.last4 || "");
+    }
+  }, []);
+
+  const handleSaveBankAccount = async (e: FormEvent) => {
+    e.preventDefault();
+    setMessage(null);
+    setBankAccountLoading(true);
+
+    try {
+      const res = await fetch("/api/bank/account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          routingNumber,
+          accountNumber,
+          accountHolderName,
+        }),
+      });
+
+      const data = await res.json();
+      setBankAccountLoading(false);
+
+      if (!res.ok) {
+        setMessage({ type: "error", text: data.error || "Failed to save bank account" });
+        return;
+      }
+
+      setMessage({ type: "success", text: "Bank account saved successfully!" });
+      setHasBankAccount(true);
+      setBankAccountLast4(data.last4);
+      setShowBankForm(false);
+      setRoutingNumber("");
+      setAccountNumber("");
+      setAccountHolderName("");
+    } catch {
+      setBankAccountLoading(false);
+      setMessage({ type: "error", text: "Failed to save bank account" });
+    }
+  };
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin");
@@ -77,8 +132,9 @@ function BankContent() {
     }
     if (status === "authenticated") {
       fetchBalance();
+      fetchBankAccount();
     }
-  }, [status, router, fetchBalance]);
+  }, [status, router, fetchBalance, fetchBankAccount]);
 
   useEffect(() => {
     if (depositStatus === "success") {
@@ -323,35 +379,120 @@ function BankContent() {
             {/* Withdraw */}
             <div className="card-beef">
               <p className="section-label mb-4">WITHDRAW FUNDS</p>
-              <form onSubmit={handleWithdraw} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Amount (USD)</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-3 text-beef-gold font-bold">$</span>
+
+              {!hasBankAccount && !showBankForm && (
+                <div className="space-y-4">
+                  <p className="text-sm text-beef-text-muted">Add a bank account to withdraw funds.</p>
+                  <button
+                    onClick={() => setShowBankForm(true)}
+                    className="w-full btn-secondary"
+                  >
+                    Add Bank Account
+                  </button>
+                </div>
+              )}
+
+              {showBankForm && (
+                <form onSubmit={handleSaveBankAccount} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Account Holder Name</label>
                     <input
-                      type="number"
-                      min="5"
-                      max={balance ?? undefined}
-                      step="1"
+                      type="text"
                       required
-                      value={withdrawAmount}
-                      onChange={(e) => setWithdrawAmount(e.target.value)}
-                      className="w-full pl-8 pr-4 py-3 bg-beef-bg-light border border-beef-border rounded-lg focus:outline-none focus:border-beef-gold transition-colors"
-                      placeholder="50"
+                      value={accountHolderName}
+                      onChange={(e) => setAccountHolderName(e.target.value)}
+                      className="w-full px-4 py-3 bg-beef-bg-light border border-beef-border rounded-lg focus:outline-none focus:border-beef-gold transition-colors"
+                      placeholder="John Doe"
                     />
                   </div>
-                  <p className="text-xs text-beef-text-muted mt-1">
-                    Available: ${(balance ?? 0).toFixed(2)} · 2–3 business days
-                  </p>
-                </div>
-                <button
-                  type="submit"
-                  disabled={withdrawLoading || (balance ?? 0) <= 0}
-                  className="w-full btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {withdrawLoading ? "Requesting..." : "Request Withdrawal"}
-                </button>
-              </form>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Routing Number</label>
+                    <input
+                      type="text"
+                      required
+                      pattern="\d{9}"
+                      maxLength={9}
+                      value={routingNumber}
+                      onChange={(e) => setRoutingNumber(e.target.value.replace(/\D/g, ""))}
+                      className="w-full px-4 py-3 bg-beef-bg-light border border-beef-border rounded-lg focus:outline-none focus:border-beef-gold transition-colors"
+                      placeholder="110000000"
+                    />
+                    <p className="text-xs text-beef-text-muted mt-1">9 digits</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Account Number</label>
+                    <input
+                      type="text"
+                      required
+                      minLength={4}
+                      maxLength={17}
+                      value={accountNumber}
+                      onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ""))}
+                      className="w-full px-4 py-3 bg-beef-bg-light border border-beef-border rounded-lg focus:outline-none focus:border-beef-gold transition-colors"
+                      placeholder="000123456789"
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowBankForm(false)}
+                      className="flex-1 btn-secondary"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={bankAccountLoading}
+                      className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {bankAccountLoading ? "Saving..." : "Save"}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {hasBankAccount && !showBankForm && (
+                <form onSubmit={handleWithdraw} className="space-y-4">
+                  <div className="mb-4 p-3 bg-beef-bg-light rounded-lg">
+                    <p className="text-xs text-beef-text-muted mb-1">Bank Account</p>
+                    <p className="text-sm font-medium">••••{bankAccountLast4}</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowBankForm(true)}
+                      className="text-xs text-beef-gold hover:text-beef-gold-light mt-2"
+                    >
+                      Change Bank Account
+                    </button>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Amount (USD)</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-3 text-beef-gold font-bold">$</span>
+                      <input
+                        type="number"
+                        min="5"
+                        max={balance ?? undefined}
+                        step="1"
+                        required
+                        value={withdrawAmount}
+                        onChange={(e) => setWithdrawAmount(e.target.value)}
+                        className="w-full pl-8 pr-4 py-3 bg-beef-bg-light border border-beef-border rounded-lg focus:outline-none focus:border-beef-gold transition-colors"
+                        placeholder="50"
+                      />
+                    </div>
+                    <p className="text-xs text-beef-text-muted mt-1">
+                      Available: ${(balance ?? 0).toFixed(2)} · 2–3 business days
+                    </p>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={withdrawLoading || (balance ?? 0) <= 0}
+                    className="w-full btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {withdrawLoading ? "Processing..." : "Withdraw to Bank"}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
 
