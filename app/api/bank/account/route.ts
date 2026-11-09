@@ -6,6 +6,8 @@ import { stripe } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
 
+// Bank account management endpoint - Nov 9, 2026
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
