@@ -227,7 +227,9 @@ function BankContent() {
     setWithdrawLoading(false);
 
     if (!res.ok) {
-      setMessage({ type: "error", text: data.error });
+      const errorMsg = data.details ? `${data.error}: ${data.details}` : data.error;
+      setMessage({ type: "error", text: errorMsg });
+      console.error("Withdrawal error:", data);
       return;
     }
 
