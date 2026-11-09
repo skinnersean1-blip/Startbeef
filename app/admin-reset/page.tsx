@@ -5,6 +5,17 @@ import { useState } from "react";
 export default function AdminResetPage() {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const [userInfo, setUserInfo] = useState<any>(null);
+
+  const checkUser = async () => {
+    try {
+      const res = await fetch("/api/admin/check-user");
+      const data = await res.json();
+      setUserInfo(data);
+    } catch (err) {
+      setUserInfo({ error: "Failed to check user" });
+    }
+  };
 
   const resetPassword = async () => {
     setLoading(true);
@@ -42,6 +53,19 @@ export default function AdminResetPage() {
         <p className="text-beef-text-muted mb-6">
           Click the button below to reset your password to StartBeef2026!
         </p>
+
+        <button
+          onClick={checkUser}
+          className="w-full bg-beef-gold/20 border border-beef-gold text-beef-gold py-3 rounded-lg hover:bg-beef-gold/30 transition-colors mb-2"
+        >
+          Check If User Exists
+        </button>
+
+        {userInfo && (
+          <div className="mb-4 p-3 bg-beef-bg border border-beef-border rounded-lg text-sm text-left">
+            <pre className="whitespace-pre-wrap">{JSON.stringify(userInfo, null, 2)}</pre>
+          </div>
+        )}
 
         <button
           onClick={resetPassword}
