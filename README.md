@@ -196,15 +196,62 @@ DATABASE_URL="file:./prisma/dev.db"
 NEXTAUTH_SECRET="your-secret-key-change-in-production"
 NEXTAUTH_URL="http://localhost:3000"
 
-# Payment (add when ready)
-# STRIPE_SECRET_KEY=
-# STRIPE_PUBLISHABLE_KEY=
+# Payment (REQUIRED for deposits/withdrawals)
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
 
 # Thread Import APIs (add when ready)
 # TWITTER_API_KEY=
 # DISCORD_BOT_TOKEN=
 # REDDIT_CLIENT_ID=
 ```
+
+## 💳 Stripe Setup (Required for Production)
+
+### 1. Get Your Stripe API Keys
+
+**Test Mode (for development):**
+1. Go to https://dashboard.stripe.com/test/apikeys
+2. Copy your **Secret key** (starts with `sk_test_`)
+
+**Live Mode (for production):**
+1. Complete Stripe account verification
+2. Go to https://dashboard.stripe.com/apikeys
+3. Copy your **Secret key** (starts with `sk_live_`)
+
+### 2. Configure Webhook for Deposits
+
+Webhooks are **required** for deposit confirmations to credit user balances.
+
+**For Production:**
+1. Go to https://dashboard.stripe.com/webhooks
+2. Click **Add endpoint**
+3. Set endpoint URL: `https://www.startbeef.com/api/bank/webhook`
+4. Select event: `checkout.session.completed`
+5. Click **Add endpoint**
+6. Copy the **Signing secret** (starts with `whsec_`)
+
+### 3. Add to Vercel Environment Variables
+
+1. Go to your Vercel project → Settings → Environment Variables
+2. Add for **Production** environment:
+   - `STRIPE_SECRET_KEY` = your secret key
+   - `STRIPE_WEBHOOK_SECRET` = your webhook signing secret
+3. **Redeploy** the application
+
+### 4. Test Payment Flow
+
+**Test Deposit:**
+1. Go to `/bank` page
+2. Enter amount (min $5)
+3. Use test card: `4242 4242 4242 4242`
+4. Complete checkout
+5. Verify balance updates (processed by webhook)
+
+**Common Issues:**
+- **"Could not create checkout session"** → `STRIPE_SECRET_KEY` not set or invalid
+- **Balance didn't update** → Webhook not configured or `STRIPE_WEBHOOK_SECRET` incorrect
+- Check Vercel logs and Stripe Dashboard → Webhooks for errors
 
 ---
 

@@ -1,14 +1,11 @@
-// Check if email has admin access
+// Admin helper functions
+
+const ADMIN_EMAILS = [
+  "skinnersean1@gmail.com",
+  "sean@startbeef.com",
+];
+
 export function isAdmin(email: string | null | undefined): boolean {
   if (!email) return false;
-
-  const adminEmails = process.env.ADMIN_EMAIL || "";
-
-  // Support comma-separated list of admin emails
-  const adminList = adminEmails
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-
-  return adminList.includes(email.toLowerCase());
+  return ADMIN_EMAILS.includes(email.toLowerCase());
 }

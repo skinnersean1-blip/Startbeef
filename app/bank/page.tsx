@@ -54,6 +54,17 @@ function BankContent() {
   const [depositLoading, setDepositLoading] = useState(false);
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [showFeeConfirm, setShowFeeConfirm] = useState(false);
+  const [dontShowFeeAgain, setDontShowFeeAgain] = useState(false);
+
+  // Bank account state
+  const [hasBankAccount, setHasBankAccount] = useState(false);
+  const [bankAccountLast4, setBankAccountLast4] = useState("");
+  const [showBankForm, setShowBankForm] = useState(false);
+  const [routingNumber, setRoutingNumber] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [accountHolderName, setAccountHolderName] = useState("");
+  const [bankAccountLoading, setBankAccountLoading] = useState(false);
 
   const depositStatus = searchParams.get("deposit");
 
@@ -68,6 +79,52 @@ function BankContent() {
     setLoading(false);
   }, []);
 
+  const fetchBankAccount = useCallback(async () => {
+    const res = await fetch("/api/bank/account");
+    if (res.ok) {
+      const data = await res.json();
+      setHasBankAccount(data.hasBankAccount);
+      setBankAccountLast4(data.last4 || "");
+    }
+  }, []);
+
+  const handleSaveBankAccount = async (e: FormEvent) => {
+    e.preventDefault();
+    setMessage(null);
+    setBankAccountLoading(true);
+
+    try {
+      const res = await fetch("/api/bank/account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          routingNumber,
+          accountNumber,
+          accountHolderName,
+        }),
+      });
+
+      const data = await res.json();
+      setBankAccountLoading(false);
+
+      if (!res.ok) {
+        setMessage({ type: "error", text: data.error || "Failed to save bank account" });
+        return;
+      }
+
+      setMessage({ type: "success", text: "Bank account saved successfully!" });
+      setHasBankAccount(true);
+      setBankAccountLast4(data.last4);
+      setShowBankForm(false);
+      setRoutingNumber("");
+      setAccountNumber("");
+      setAccountHolderName("");
+    } catch {
+      setBankAccountLoading(false);
+      setMessage({ type: "error", text: "Failed to save bank account" });
+    }
+  };
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin");
@@ -75,8 +132,9 @@ function BankContent() {
     }
     if (status === "authenticated") {
       fetchBalance();
+      fetchBankAccount();
     }
-  }, [status, router, fetchBalance]);
+  }, [status, router, fetchBalance, fetchBankAccount]);
 
   useEffect(() => {
     if (depositStatus === "success") {
@@ -86,10 +144,44 @@ function BankContent() {
     }
   }, [depositStatus]);
 
+  // Calculate Stripe fees (2.9% + $0.30)
+  const calculateFees = (amount: number) => {
+    const STRIPE_PERCENTAGE = 0.029;
+    const STRIPE_FIXED = 0.30;
+    const totalCharge = (amount + STRIPE_FIXED) / (1 - STRIPE_PERCENTAGE);
+    const fee = totalCharge - amount;
+    return {
+      amount,
+      fee: Math.round(fee * 100) / 100,
+      total: Math.round(totalCharge * 100) / 100
+    };
+  };
+
   const handleDeposit = async (e: FormEvent) => {
     e.preventDefault();
     setMessage(null);
+
+    // Check if user has opted out of fee confirmation
+    const skipFeeConfirm = localStorage.getItem('skipDepositFeeConfirm') === 'true';
+
+    if (!skipFeeConfirm) {
+      // Show fee confirmation dialog
+      setShowFeeConfirm(true);
+      return;
+    }
+
+    // Proceed with deposit
+    await proceedWithDeposit();
+  };
+
+  const proceedWithDeposit = async () => {
+    setShowFeeConfirm(false);
     setDepositLoading(true);
+
+    // Save preference if checkbox was checked
+    if (dontShowFeeAgain) {
+      localStorage.setItem('skipDepositFeeConfirm', 'true');
+    }
 
     try {
       const res = await fetch("/api/bank/deposit", {
@@ -195,6 +287,62 @@ function BankContent() {
             </div>
           )}
 
+          {/* Fee Confirmation Dialog */}
+          {showFeeConfirm && depositAmount && (
+            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+              <div className="card-beef max-w-md w-full">
+                <h3 className="text-xl font-bold mb-4">Confirm Deposit</h3>
+                <div className="space-y-3 mb-6">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-beef-text-muted">Deposit Amount:</span>
+                    <span className="font-bold">${calculateFees(parseFloat(depositAmount)).amount.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-beef-text-muted">Processing Fee:</span>
+                    <span className="text-beef-orange">+${calculateFees(parseFloat(depositAmount)).fee.toFixed(2)}</span>
+                  </div>
+                  <div className="border-t border-beef-border pt-3 flex justify-between">
+                    <span className="font-bold">Total Charge:</span>
+                    <span className="font-bold text-beef-gold text-lg">${calculateFees(parseFloat(depositAmount)).total.toFixed(2)}</span>
+                  </div>
+                  <p className="text-xs text-beef-text-muted">
+                    This fee covers Stripe payment processing (2.9% + $0.30). You&apos;ll receive exactly ${parseFloat(depositAmount).toFixed(2)} in your BEEF account.
+                  </p>
+                </div>
+
+                <div className="mb-6">
+                  <label className="flex items-start gap-2 text-sm cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={dontShowFeeAgain}
+                      onChange={(e) => setDontShowFeeAgain(e.target.checked)}
+                      className="mt-1"
+                    />
+                    <span className="text-beef-text-muted">Don&apos;t show this message again</span>
+                  </label>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowFeeConfirm(false);
+                      setDontShowFeeAgain(false);
+                    }}
+                    className="flex-1 btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={proceedWithDeposit}
+                    className="flex-1 btn-primary"
+                  >
+                    Confirm & Pay
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
             {/* Deposit */}
             <div className="card-beef">
@@ -231,35 +379,120 @@ function BankContent() {
             {/* Withdraw */}
             <div className="card-beef">
               <p className="section-label mb-4">WITHDRAW FUNDS</p>
-              <form onSubmit={handleWithdraw} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Amount (USD)</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-3 text-beef-gold font-bold">$</span>
+
+              {!hasBankAccount && !showBankForm && (
+                <div className="space-y-4">
+                  <p className="text-sm text-beef-text-muted">Add a bank account to withdraw funds.</p>
+                  <button
+                    onClick={() => setShowBankForm(true)}
+                    className="w-full btn-secondary"
+                  >
+                    Add Bank Account
+                  </button>
+                </div>
+              )}
+
+              {showBankForm && (
+                <form onSubmit={handleSaveBankAccount} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Account Holder Name</label>
                     <input
-                      type="number"
-                      min="5"
-                      max={balance ?? undefined}
-                      step="1"
+                      type="text"
                       required
-                      value={withdrawAmount}
-                      onChange={(e) => setWithdrawAmount(e.target.value)}
-                      className="w-full pl-8 pr-4 py-3 bg-beef-bg-light border border-beef-border rounded-lg focus:outline-none focus:border-beef-gold transition-colors"
-                      placeholder="50"
+                      value={accountHolderName}
+                      onChange={(e) => setAccountHolderName(e.target.value)}
+                      className="w-full px-4 py-3 bg-beef-bg-light border border-beef-border rounded-lg focus:outline-none focus:border-beef-gold transition-colors"
+                      placeholder="John Doe"
                     />
                   </div>
-                  <p className="text-xs text-beef-text-muted mt-1">
-                    Available: ${(balance ?? 0).toFixed(2)} · 2–3 business days
-                  </p>
-                </div>
-                <button
-                  type="submit"
-                  disabled={withdrawLoading || (balance ?? 0) <= 0}
-                  className="w-full btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {withdrawLoading ? "Requesting..." : "Request Withdrawal"}
-                </button>
-              </form>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Routing Number</label>
+                    <input
+                      type="text"
+                      required
+                      pattern="\d{9}"
+                      maxLength={9}
+                      value={routingNumber}
+                      onChange={(e) => setRoutingNumber(e.target.value.replace(/\D/g, ""))}
+                      className="w-full px-4 py-3 bg-beef-bg-light border border-beef-border rounded-lg focus:outline-none focus:border-beef-gold transition-colors"
+                      placeholder="110000000"
+                    />
+                    <p className="text-xs text-beef-text-muted mt-1">9 digits</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Account Number</label>
+                    <input
+                      type="text"
+                      required
+                      minLength={4}
+                      maxLength={17}
+                      value={accountNumber}
+                      onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ""))}
+                      className="w-full px-4 py-3 bg-beef-bg-light border border-beef-border rounded-lg focus:outline-none focus:border-beef-gold transition-colors"
+                      placeholder="000123456789"
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowBankForm(false)}
+                      className="flex-1 btn-secondary"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={bankAccountLoading}
+                      className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {bankAccountLoading ? "Saving..." : "Save"}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {hasBankAccount && !showBankForm && (
+                <form onSubmit={handleWithdraw} className="space-y-4">
+                  <div className="mb-4 p-3 bg-beef-bg-light rounded-lg">
+                    <p className="text-xs text-beef-text-muted mb-1">Bank Account</p>
+                    <p className="text-sm font-medium">••••{bankAccountLast4}</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowBankForm(true)}
+                      className="text-xs text-beef-gold hover:text-beef-gold-light mt-2"
+                    >
+                      Change Bank Account
+                    </button>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Amount (USD)</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-3 text-beef-gold font-bold">$</span>
+                      <input
+                        type="number"
+                        min="5"
+                        max={balance ?? undefined}
+                        step="1"
+                        required
+                        value={withdrawAmount}
+                        onChange={(e) => setWithdrawAmount(e.target.value)}
+                        className="w-full pl-8 pr-4 py-3 bg-beef-bg-light border border-beef-border rounded-lg focus:outline-none focus:border-beef-gold transition-colors"
+                        placeholder="50"
+                      />
+                    </div>
+                    <p className="text-xs text-beef-text-muted mt-1">
+                      Available: ${(balance ?? 0).toFixed(2)} · 2–3 business days
+                    </p>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={withdrawLoading || (balance ?? 0) <= 0}
+                    className="w-full btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {withdrawLoading ? "Processing..." : "Withdraw to Bank"}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
 
