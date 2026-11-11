@@ -23,8 +23,8 @@ export async function POST(req: NextRequest) {
     where: { id: session.user.id },
     select: {
       bankBalance: true,
-      stripeCustomerId: true,
-      stripeExternalAccountId: true,
+      stripeConnectAccountId: true,
+      stripeConnectOnboarded: true,
       email: true,
     },
   });
@@ -33,9 +33,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  if (!user.stripeCustomerId || !user.stripeExternalAccountId) {
+  if (!user.stripeConnectAccountId || !user.stripeConnectOnboarded) {
     return NextResponse.json({
-      error: "No bank account on file. Please add a bank account first."
+      error: "Please connect your Stripe account first to enable withdrawals."
     }, { status: 400 });
   }
 
@@ -44,11 +44,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Create Stripe payout directly from platform account to user's bank
-    const payout = await stripe.payouts.create({
+    // Create Stripe transfer to connected account
+    const transfer = await stripe.transfers.create({
       amount: Math.round(dollars * 100), // Convert to cents
       currency: "usd",
-      destination: user.stripeExternalAccountId!,
+      destination: user.stripeConnectAccountId!,
+      description: `Withdrawal for ${user.email || session.user.id}`,
       metadata: {
         userId: session.user.id,
         email: user.email || "",
@@ -68,14 +69,14 @@ export async function POST(req: NextRequest) {
           amount: dollars,
           status: "COMPLETED",
           paymentProvider: "stripe",
-          paymentId: payout.id,
+          paymentId: transfer.id,
         },
       }),
     ]);
 
     return NextResponse.json({
       success: true,
-      message: "Withdrawal initiated! Funds will arrive in 2–3 business days."
+      message: "Withdrawal completed! Funds transferred to your Stripe account. You can withdraw to your bank from your Stripe dashboard."
     });
   } catch (err) {
     console.error("Withdrawal processing error:", err);

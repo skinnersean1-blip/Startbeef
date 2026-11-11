@@ -57,7 +57,7 @@ function BankContent() {
   const [showFeeConfirm, setShowFeeConfirm] = useState(false);
   const [dontShowFeeAgain, setDontShowFeeAgain] = useState(false);
 
-  // Bank account state
+  // Bank account state (deprecated - using Stripe Connect now)
   const [hasBankAccount, setHasBankAccount] = useState(false);
   const [bankAccountLast4, setBankAccountLast4] = useState("");
   const [showBankForm, setShowBankForm] = useState(false);
@@ -65,6 +65,10 @@ function BankContent() {
   const [accountNumber, setAccountNumber] = useState("");
   const [accountHolderName, setAccountHolderName] = useState("");
   const [bankAccountLoading, setBankAccountLoading] = useState(false);
+
+  // Stripe Connect state
+  const [stripeConnected, setStripeConnected] = useState(false);
+  const [stripeConnecting, setStripeConnecting] = useState(false);
 
   const depositStatus = searchParams.get("deposit");
 
@@ -85,6 +89,14 @@ function BankContent() {
       const data = await res.json();
       setHasBankAccount(data.hasBankAccount);
       setBankAccountLast4(data.last4 || "");
+    }
+  }, []);
+
+  const fetchStripeConnect = useCallback(async () => {
+    const res = await fetch("/api/stripe/connect/status");
+    if (res.ok) {
+      const data = await res.json();
+      setStripeConnected(data.connected);
     }
   }, []);
 
@@ -135,8 +147,9 @@ function BankContent() {
     if (status === "authenticated") {
       fetchBalance();
       fetchBankAccount();
+      fetchStripeConnect();
     }
-  }, [status, router, fetchBalance, fetchBankAccount]);
+  }, [status, router, fetchBalance, fetchBankAccount, fetchStripeConnect]);
 
   useEffect(() => {
     if (depositStatus === "success") {
@@ -144,7 +157,18 @@ function BankContent() {
     } else if (depositStatus === "cancelled") {
       setMessage({ type: "error", text: "Deposit cancelled." });
     }
-  }, [depositStatus]);
+
+    // Handle Stripe Connect callback
+    const connectSuccess = searchParams.get("connect_success");
+    const connectError = searchParams.get("connect_error");
+
+    if (connectSuccess) {
+      setMessage({ type: "success", text: "Stripe account connected successfully! You can now withdraw funds." });
+      setStripeConnected(true);
+    } else if (connectError) {
+      setMessage({ type: "error", text: `Stripe connection failed: ${connectError}` });
+    }
+  }, [depositStatus, searchParams]);
 
   // Calculate Stripe fees (2.9% + $0.30)
   const calculateFees = (amount: number) => {
@@ -384,15 +408,20 @@ function BankContent() {
             <div className="card-beef">
               <p className="section-label mb-4">WITHDRAW FUNDS</p>
 
-              {!hasBankAccount && !showBankForm && (
+              {!stripeConnected && (
                 <div className="space-y-4">
-                  <p className="text-sm text-beef-text-muted">Add a bank account to withdraw funds.</p>
-                  <button
-                    onClick={() => setShowBankForm(true)}
-                    className="w-full btn-secondary"
+                  <p className="text-sm text-beef-text-muted">
+                    Connect your Stripe account to enable instant withdrawals to your bank.
+                  </p>
+                  <a
+                    href="/api/stripe/connect/authorize"
+                    className="block w-full btn-primary text-center"
                   >
-                    Add Bank Account
-                  </button>
+                    Connect Stripe Account
+                  </a>
+                  <p className="text-xs text-beef-text-muted">
+                    You'll be redirected to Stripe to securely connect your account.
+                  </p>
                 </div>
               )}
 
@@ -455,18 +484,14 @@ function BankContent() {
                 </form>
               )}
 
-              {hasBankAccount && !showBankForm && (
+              {stripeConnected && (
                 <form onSubmit={handleWithdraw} className="space-y-4">
                   <div className="mb-4 p-3 bg-beef-bg-light rounded-lg">
-                    <p className="text-xs text-beef-text-muted mb-1">Bank Account</p>
-                    <p className="text-sm font-medium">••••{bankAccountLast4}</p>
-                    <button
-                      type="button"
-                      onClick={() => setShowBankForm(true)}
-                      className="text-xs text-beef-gold hover:text-beef-gold-light mt-2"
-                    >
-                      Change Bank Account
-                    </button>
+                    <p className="text-xs text-beef-text-muted mb-1">Stripe Account</p>
+                    <p className="text-sm font-medium text-green-500">✓ Connected</p>
+                    <p className="text-xs text-beef-text-muted mt-1">
+                      Withdrawals go to your Stripe account, then to your bank.
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">Amount (USD)</label>
