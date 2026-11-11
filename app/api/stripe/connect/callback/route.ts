@@ -1,62 +1,50 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-// Handle Stripe Connect OAuth callback
+// Handle return from Stripe Connect Account Links onboarding
 export async function GET(req: NextRequest) {
-  const searchParams = req.nextUrl.searchParams;
-  const code = searchParams.get("code");
-  const state = searchParams.get("state");
-  const error = searchParams.get("error");
-  const errorDescription = searchParams.get("error_description");
-
-  // Handle OAuth errors
-  if (error) {
-    const redirectUrl = new URL("/bank", req.url);
-    redirectUrl.searchParams.set("connect_error", errorDescription || error);
-    return NextResponse.redirect(redirectUrl);
-  }
-
-  if (!code || !state) {
-    return NextResponse.redirect(
-      new URL("/bank?connect_error=Missing code or state", req.url)
-    );
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.redirect(new URL("/auth/signin", req.url));
   }
 
   try {
-    // Verify state and get user ID
-    const stateData = JSON.parse(Buffer.from(state, "base64").toString());
-    const userId = stateData.userId;
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { stripeConnectAccountId: true },
+    });
 
-    if (!userId) {
+    if (!user?.stripeConnectAccountId) {
       return NextResponse.redirect(
-        new URL("/bank?connect_error=Invalid state", req.url)
+        new URL("/bank?connect_error=No connected account found", req.url)
       );
     }
 
-    // Exchange authorization code for access token
-    const response = await stripe.oauth.token({
-      grant_type: "authorization_code",
-      code,
-    });
+    // Check if account is fully onboarded
+    const account = await stripe.accounts.retrieve(user.stripeConnectAccountId);
 
-    const connectedAccountId = response.stripe_user_id;
+    // Check if charges are enabled (means onboarding is complete)
+    if (account.charges_enabled && account.payouts_enabled) {
+      // Mark as onboarded
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: { stripeConnectOnboarded: true },
+      });
 
-    // Save connected account ID to user
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        stripeConnectAccountId: connectedAccountId,
-        stripeConnectOnboarded: true,
-      },
-    });
-
-    // Redirect back to bank page with success
-    return NextResponse.redirect(
-      new URL("/bank?connect_success=true", req.url)
-    );
+      return NextResponse.redirect(
+        new URL("/bank?connect_success=true", req.url)
+      );
+    } else {
+      // Onboarding not complete - redirect back to onboarding
+      return NextResponse.redirect(
+        new URL("/bank?connect_error=Please complete Stripe onboarding", req.url)
+      );
+    }
   } catch (err) {
     console.error("Stripe Connect callback error:", err);
     return NextResponse.redirect(
