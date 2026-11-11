@@ -27,6 +27,10 @@ model User {
   stripeExternalAccountId  String?
   bankAccountLast4         String?
 
+  // Stripe Connect - for user withdrawals
+  stripeConnectAccountId   String?  @unique
+  stripeConnectOnboarded   Boolean  @default(false)
+
   isAnonymous        Boolean   @default(false)
   anonHandle         String?   @unique
   dateOfBirth        DateTime?
