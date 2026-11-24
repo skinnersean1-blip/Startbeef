@@ -53,7 +53,6 @@ async function getLeaderboard() {
     return topUsers;
   } catch {
     return [];
->>>>>>> claude/start-beef-project-7myJG
   }
 }
 
