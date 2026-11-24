@@ -17,11 +17,6 @@ export function HeroCTA() {
           </button>
         </Link>
       )}
-      <a href="#feed">
-        <button className="btn-secondary text-sm px-8 py-4">
-          WATCH LIVE
-        </button>
-      </a>
     </div>
   );
 }
