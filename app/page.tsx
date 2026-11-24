@@ -325,7 +325,7 @@ export default async function Home({
                   {completedBeefs.length > 0 && (
                     <div>
                       <div className="flex items-center gap-4 mb-4">
-                        <p className="section-label text-beef-text-muted">HALL OF FAME</p>
+                        <p className="section-label text-beef-text-muted">SETTLED BEEFS</p>
                         <div className="flex-1 border-t border-beef-border/20" />
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 opacity-75">
