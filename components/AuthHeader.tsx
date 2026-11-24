@@ -71,7 +71,7 @@ export function AuthHeader() {
         </div>
 
         <BankBadge />
-        {session.user.isAdmin && (
+        {(session.user as any).isAdmin && (
           <Link href="/admin">
             <button className="bg-white text-black text-xs font-bold px-4 py-2 rounded-lg border-2 border-gray-900 hover:bg-gray-100 transition-colors">
               Admin
