@@ -34,6 +34,26 @@ async function getStats() {
   }
 }
 
+async function getLeaderboard() {
+  try {
+    const topUsers = await prisma.user.findMany({
+      where: { wins: { gt: 0 } },
+      orderBy: { wins: "desc" },
+      take: 5,
+      select: {
+        id: true,
+        handle: true,
+        username: true,
+        wins: true,
+        losses: true,
+      },
+    });
+    return topUsers;
+  } catch {
+    return [];
+  }
+}
+
 async function getFeed(category: string, sort: string) {
   const statusFilter =
     sort === "ending"
@@ -112,10 +132,11 @@ export default async function Home({
   const category = cat || "ALL";
   const sortKey  = sort || "hot";
 
-  const [stats, feed, completedBeefs] = await Promise.all([
+  const [stats, feed, completedBeefs, leaderboard] = await Promise.all([
     getStats(),
     getFeed(category, sortKey),
     getCompletedBeefs(category),
+    getLeaderboard(),
   ]);
 
   return (
@@ -174,8 +195,22 @@ export default async function Home({
             </div>
           </Link>
           <div className="card-beef py-5">
-            <p className="section-label mb-2">HIGHEST VOLUME</p>
-            <p className="text-3xl font-bold">{stats.spectators.toLocaleString()}</p>
+            <p className="section-label mb-3">LEADER BOARD</p>
+            {leaderboard.length > 0 ? (
+              <div className="space-y-2">
+                {leaderboard.map((user, index) => (
+                  <div key={user.id} className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-beef-gold font-bold w-5">#{index + 1}</span>
+                      <span className="text-beef-text">@{user.handle || user.username}</span>
+                    </div>
+                    <span className="text-beef-text-muted">{user.wins}W-{user.losses}L</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-beef-text-muted">No wins yet</p>
+            )}
           </div>
           <div className="card-beef py-5">
             <p className="section-label mb-2">JUDGED IN 24H</p>
