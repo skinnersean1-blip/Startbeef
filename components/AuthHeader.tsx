@@ -4,7 +4,6 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { BankBadge } from "./BankBadge";
-import { NotificationToggle } from "./NotificationToggle";
 
 export function AuthHeader() {
   const { data: session, status } = useSession();
@@ -71,7 +70,6 @@ export function AuthHeader() {
           )}
         </div>
 
-        <NotificationToggle />
         <BankBadge />
         {session.user.isAdmin && (
           <Link href="/admin">
