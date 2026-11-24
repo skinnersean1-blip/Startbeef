@@ -27,12 +27,33 @@ async function getStats() {
     return {
       livePot: livePotResult._sum.totalPot ?? 0,
       openCount,
+      completedCount,
       spectators: spectatorResult._sum.viewCount ?? 0,
       judgedRate,
-      completedCount,
     };
   } catch {
-    return { livePot: 0, openCount: 0, spectators: 0, judgedRate: 100, completedCount: 0 };
+    return { livePot: 0, openCount: 0, completedCount: 0, spectators: 0, judgedRate: 100 };
+  }
+}
+
+async function getLeaderboard() {
+  try {
+    const topUsers = await prisma.user.findMany({
+      where: { wins: { gt: 0 } },
+      orderBy: { wins: "desc" },
+      take: 5,
+      select: {
+        id: true,
+        handle: true,
+        username: true,
+        wins: true,
+        losses: true,
+      },
+    });
+    return topUsers;
+  } catch {
+    return [];
+>>>>>>> claude/start-beef-project-7myJG
   }
 }
 
@@ -114,10 +135,11 @@ export default async function Home({
   const category = cat || "ALL";
   const sortKey  = sort || "hot";
 
-  const [stats, feed, completedBeefs] = await Promise.all([
+  const [stats, feed, completedBeefs, leaderboard] = await Promise.all([
     getStats(),
     getFeed(category, sortKey),
     getCompletedBeefs(category),
+    getLeaderboard(),
   ]);
 
   return (
@@ -165,7 +187,7 @@ export default async function Home({
       <section className="container-beef py-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div className="card-beef py-5">
-            <p className="section-label mb-2">TONIGHT&apos;S LIVE POT</p>
+            <p className="section-label mb-2">LIVE POT</p>
             <p className="text-3xl font-bold text-beef-gold">
               ${stats.livePot.toLocaleString()}
             </p>
@@ -177,15 +199,29 @@ export default async function Home({
             </div>
           </Link>
           <div className="card-beef py-5">
-            <p className="section-label mb-2">HIGHEST VOLUME</p>
-            <p className="text-3xl font-bold">{stats.spectators.toLocaleString()}</p>
+            <p className="section-label mb-3">LEADER BOARD</p>
+            {leaderboard.length > 0 ? (
+              <div className="space-y-2">
+                {leaderboard.map((user, index) => (
+                  <div key={user.id} className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-beef-gold font-bold w-5">#{index + 1}</span>
+                      <span className="text-beef-text">@{user.handle || user.username}</span>
+                    </div>
+                    <span className="text-beef-text-muted">{user.wins}W-{user.losses}L</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-beef-text-muted">No wins yet</p>
+            )}
           </div>
-          <Link href="/settled">
-            <div className="card-beef py-5 cursor-pointer hover:border-beef-gold transition-colors">
-              <p className="section-label mb-2">SETTLED BEEFS</p>
-              <p className="text-3xl font-bold">{stats.completedCount.toLocaleString()}</p>
+          <a href="#settled">
+            <div className="card-beef py-5 hover:border-beef-gold/50 transition-colors cursor-pointer">
+              <p className="section-label mb-2">SETTLED CHALLENGES</p>
+              <p className="text-3xl font-bold">{stats.completedCount}</p>
             </div>
-          </Link>
+          </a>
         </div>
       </section>
 
@@ -328,14 +364,8 @@ export default async function Home({
 
                   {/* Completed Beefs */}
                   {completedBeefs.length > 0 && (
-                    <div>
-                      <div className="flex items-center gap-4 mb-4">
-                        <p className="section-label text-beef-text-muted">HALL OF FAME</p>
-                        <div className="flex-1 border-t border-beef-border/20" />
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 opacity-75">
-                        {completedBeefs.map((beef) => <BeefTile key={beef.id} beef={beef} />)}
-                      </div>
+                    <div id="settled" className="grid grid-cols-1 sm:grid-cols-2 gap-4 opacity-75">
+                      {completedBeefs.map((beef) => <BeefTile key={beef.id} beef={beef} />)}
                     </div>
                   )}
                 </div>
