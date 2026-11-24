@@ -26,11 +26,12 @@ async function getStats() {
     return {
       livePot: livePotResult._sum.totalPot ?? 0,
       openCount,
+      completedCount,
       spectators: spectatorResult._sum.viewCount ?? 0,
       judgedRate,
     };
   } catch {
-    return { livePot: 0, openCount: 0, spectators: 0, judgedRate: 100 };
+    return { livePot: 0, openCount: 0, completedCount: 0, spectators: 0, judgedRate: 100 };
   }
 }
 
@@ -183,7 +184,7 @@ export default async function Home({
       <section className="container-beef py-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div className="card-beef py-5">
-            <p className="section-label mb-2">TONIGHT&apos;S LIVE POT</p>
+            <p className="section-label mb-2">LIVE POT</p>
             <p className="text-3xl font-bold text-beef-gold">
               ${stats.livePot.toLocaleString()}
             </p>
@@ -212,10 +213,12 @@ export default async function Home({
               <p className="text-sm text-beef-text-muted">No wins yet</p>
             )}
           </div>
-          <div className="card-beef py-5">
-            <p className="section-label mb-2">JUDGED IN 24H</p>
-            <p className="text-3xl font-bold">{stats.judgedRate}%</p>
-          </div>
+          <a href="#settled">
+            <div className="card-beef py-5 hover:border-beef-gold/50 transition-colors cursor-pointer">
+              <p className="section-label mb-2">SETTLED CHALLENGES</p>
+              <p className="text-3xl font-bold">{stats.completedCount}</p>
+            </div>
+          </a>
         </div>
       </section>
 
@@ -358,7 +361,7 @@ export default async function Home({
 
                   {/* Completed Beefs */}
                   {completedBeefs.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 opacity-75">
+                    <div id="settled" className="grid grid-cols-1 sm:grid-cols-2 gap-4 opacity-75">
                       {completedBeefs.map((beef) => <BeefTile key={beef.id} beef={beef} />)}
                     </div>
                   )}
