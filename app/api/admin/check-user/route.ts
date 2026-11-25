@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { isAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-// Check if user exists
+// Check if user exists - ADMIN ONLY
 export async function GET(req: NextRequest) {
+  // SECURITY: Admin auth required
+  const session = await getServerSession(authOptions);
+  if (!isAdmin(session?.user?.email)) {
+    return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 });
+  }
+
   try {
     const email = "sean@startbeef.com";
 
