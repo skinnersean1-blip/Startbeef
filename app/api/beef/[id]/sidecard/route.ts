@@ -83,12 +83,30 @@ export async function POST(
 
     // Allow multiple bets - users can shore up or hedge their positions
 
+    // SECURITY: Check user has sufficient balance
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { bankBalance: true },
+    });
+
+    if (!user || user.bankBalance < stake) {
+      return NextResponse.json(
+        { error: `Insufficient balance. You have $${user?.bankBalance.toFixed(2) || 0}, need $${stake}` },
+        { status: 400 }
+      );
+    }
+
     // Calculate commission (1%)
     const commission = stake * BEEF_COMMISSION_RATE;
     const netStake = stake - commission;
 
-    // Create sidecard and transaction records
-    const [sidecard, transaction, commissionTx] = await prisma.$transaction([
+    // Create sidecard and transaction records, deduct balance
+    const [, sidecard, transaction, commissionTx] = await prisma.$transaction([
+      // Deduct stake from user's balance
+      prisma.user.update({
+        where: { id: session.user.id },
+        data: { bankBalance: { decrement: stake } },
+      }),
       // Create the sidecard
       prisma.sidecard.create({
         data: {

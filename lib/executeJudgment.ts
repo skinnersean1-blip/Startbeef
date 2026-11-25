@@ -76,6 +76,60 @@ export async function executeJudgment(beefId: string): Promise<void> {
     if (loserId) {
       await tx.user.update({ where: { id: loserId }, data: { losses: { increment: 1 } } });
     }
+
+    // SECURITY FIX: Pay out sidecards to winning bettors
+    const sidecards = await tx.sidecard.findMany({
+      where: { beefId, isPaid: false },
+      select: {
+        id: true,
+        userId: true,
+        predictedWinnerId: true,
+        stake: true,
+      },
+    });
+
+    if (sidecards.length > 0 && winnerId) {
+      const winningSidecards = sidecards.filter(s => s.predictedWinnerId === winnerId);
+      const losingSidecards = sidecards.filter(s => s.predictedWinnerId === loserId);
+
+      const totalWinningStake = winningSidecards.reduce((sum, s) => sum + s.stake, 0);
+      const totalLosingStake = losingSidecards.reduce((sum, s) => sum + s.stake, 0);
+
+      // Pay each winner their stake back + proportional share of losing pool
+      for (const sidecard of winningSidecards) {
+        const payout = totalLosingStake > 0
+          ? sidecard.stake + (sidecard.stake / totalWinningStake) * totalLosingStake
+          : sidecard.stake; // Refund original stake if no losing bets
+
+        await tx.user.update({
+          where: { id: sidecard.userId },
+          data: { bankBalance: { increment: payout } },
+        });
+
+        await tx.sidecard.update({
+          where: { id: sidecard.id },
+          data: { payout, isPaid: true },
+        });
+
+        await tx.transaction.create({
+          data: {
+            userId: sidecard.userId,
+            type: "SIDECARD_PAYOUT",
+            amount: payout,
+            status: "COMPLETED",
+            relatedBeefId: beefId,
+          },
+        });
+      }
+
+      // Mark losing sidecards as paid (payout = 0)
+      for (const sidecard of losingSidecards) {
+        await tx.sidecard.update({
+          where: { id: sidecard.id },
+          data: { payout: 0, isPaid: true },
+        });
+      }
+    }
   });
 
   const challengerWon = result.winner === "CHALLENGER";
