@@ -61,6 +61,14 @@ model User {
   pushSubscriptions  PushSubscription[]
   notifications      Notification[]
 
+  // Invitation system - Private club membership
+  membershipPaid     Boolean      @default(false)
+  invitedBy          String?
+  inviter            User?        @relation("UserInviter", fields: [invitedBy], references: [id], onDelete: SetNull)
+  inviteesSent       User[]       @relation("UserInviter")
+  sentInvitations    Invitation[] @relation("InviterInvitations")
+  usedInvitation     Invitation?  @relation("InviteeInvitation")
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -280,4 +288,22 @@ model Notification {
   sent          Boolean   @default(false)
 
   createdAt     DateTime  @default(now())
+}
+
+model Invitation {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  
+  inviterId   String
+  inviter     User      @relation("InviterInvitations", fields: [inviterId], references: [id], onDelete: Cascade)
+  
+  inviteeId   String?   @unique
+  invitee     User?     @relation("InviteeInvitation", fields: [inviteeId], references: [id], onDelete: SetNull)
+  
+  status      String    @default("PENDING") // PENDING, ACCEPTED, EXPIRED
+  expiresAt   DateTime
+  usedAt      DateTime?
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
