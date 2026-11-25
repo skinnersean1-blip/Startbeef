@@ -285,7 +285,11 @@ export default function SignUpPage() {
                 <Link href="/terms" target="_blank" className="text-beef-gold underline hover:text-beef-gold/80">
                   Terms of Service
                 </Link>
-                . I understand that staked debates are final and subject to AI judgment.
+                {" "}and{" "}
+                <Link href="/privacy" target="_blank" className="text-beef-gold underline hover:text-beef-gold/80">
+                  Privacy Policy
+                </Link>
+                . I understand that this is a skill-based debate platform and all staked debates are final and subject to AI judgment.
               </span>
             </label>
 
