@@ -7,12 +7,9 @@ import Link from "next/link";
 import { BackButton } from "@/components/BackButton";
 import { Turnstile } from "@marsidev/react-turnstile";
 
-type Path = "FIGHTER" | "GHOST" | null;
-
 function SignUpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [path, setPath] = useState<Path>(null);
   const [formData, setFormData] = useState({
     email: "",
     username: "",
@@ -98,16 +95,14 @@ function SignUpForm() {
 
     const body: Record<string, unknown> = {
       email:          formData.email,
+      username:       formData.username,
+      handle:         formData.handle,
       password:       formData.password,
       dateOfBirth:    formData.dateOfBirth,
-      isAnonymous:    path === "GHOST",
+      isAnonymous:    false, // All users have handles, choose anonymity per-beef
       turnstileToken,
       invitationCode: invitationCode.toUpperCase().trim(),
     };
-    if (path === "FIGHTER") {
-      body.username = formData.username;
-      body.handle   = formData.handle;
-    }
 
     const res = await fetch("/api/auth/register", {
       method:  "POST",
@@ -138,89 +133,20 @@ function SignUpForm() {
     router.refresh();
   };
 
-  // ── Path selection ──────────────────────────────────────────────────────
-  if (!path) {
-    return (
-      <div className="min-h-screen flex items-center justify-center py-12 px-4">
-        <div className="max-w-2xl w-full">
-          <div className="mb-6"><BackButton /></div>
-          <div className="text-center mb-10">
-            <h1 className="text-5xl font-bold mb-2">BEEF</h1>
-            <p className="section-label">CHOOSE YOUR IDENTITY</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <button
-              onClick={() => setPath("FIGHTER")}
-              className="card-beef border-2 border-beef-border hover:border-beef-gold text-left transition-all duration-200 group p-8"
-            >
-              <p className="text-4xl mb-3">⚔</p>
-              <p className="text-2xl font-bold mb-3 group-hover:text-beef-gold transition-colors">FIGHTER</p>
-              <p className="text-beef-text-muted text-sm leading-relaxed mb-5">
-                Your name on the line. Your record on display. Win publicly — or lose publicly.
-              </p>
-              <ul className="space-y-1.5 text-xs text-beef-text-muted">
-                <li>✓ Public @handle</li>
-                <li>✓ W/L record visible to all</li>
-                <li>✓ Build a reputation</li>
-                <li>✓ Can go anonymous per-beef</li>
-              </ul>
-            </button>
-
-            <button
-              onClick={() => setPath("GHOST")}
-              className="card-beef border-2 border-beef-border hover:border-beef-orange text-left transition-all duration-200 group p-8"
-            >
-              <p className="text-4xl mb-3">👻</p>
-              <p className="text-2xl font-bold mb-3 group-hover:text-beef-orange transition-colors">GHOST</p>
-              <p className="text-beef-text-muted text-sm leading-relaxed mb-5">
-                No identity. No history. Pure argument. A system-assigned codename is all anyone sees.
-              </p>
-              <ul className="space-y-1.5 text-xs text-beef-text-muted">
-                <li>✓ System-assigned codename</li>
-                <li>✓ No public profile</li>
-                <li>✓ Win on merit alone</li>
-                <li>✓ Stats visible only to you</li>
-              </ul>
-            </button>
-          </div>
-
-          <div className="mt-8 text-center">
-            <p className="text-beef-text-muted text-sm">
-              Already have an account?{" "}
-              <Link href="/auth/signin" className="text-beef-gold hover:text-beef-gold-light transition-colors">
-                Sign in
-              </Link>
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // ── Registration form ───────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold mb-2">BEEF</h1>
-          <p className="section-label">
-            {path === "FIGHTER" ? "⚔ FIGHTER REGISTRATION" : "👻 GHOST REGISTRATION"}
+          <p className="section-label">CREATE YOUR ACCOUNT</p>
+          <p className="text-xs text-beef-text-muted mt-2">
+            Choose anonymity per-debate after signup
           </p>
         </div>
 
         <div className="card-beef">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold">
-              {path === "FIGHTER" ? "Create your public identity" : "Stay anonymous"}
-            </h2>
-            <button
-              onClick={() => setPath(null)}
-              className="text-xs text-beef-text-muted hover:text-beef-gold transition-colors"
-            >
-              ← Change
-            </button>
-          </div>
+          <h2 className="text-xl font-bold mb-6">Join StartBeef</h2>
 
           {error && (
             <div className="bg-red-900/20 border border-red-500 text-red-500 px-4 py-3 rounded-lg mb-6 text-sm">
@@ -277,44 +203,37 @@ function SignUpForm() {
               </p>
             </div>
 
-            {path === "FIGHTER" && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Username</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.username}
-                    onChange={(e) => set("username", e.target.value)}
-                    className="w-full px-4 py-3 bg-beef-bg-light border border-beef-border rounded-lg focus:outline-none focus:border-beef-gold transition-colors"
-                    placeholder="username"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Handle <span className="text-beef-text-muted text-xs">(Your @handle)</span>
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-3 text-beef-gold">@</span>
-                    <input
-                      type="text"
-                      required
-                      value={formData.handle}
-                      onChange={(e) => set("handle", e.target.value)}
-                      className="w-full pl-8 pr-4 py-3 bg-beef-bg-light border border-beef-border rounded-lg focus:outline-none focus:border-beef-gold transition-colors"
-                      placeholder="yourhandle"
-                    />
-                  </div>
-                </div>
-              </>
-            )}
+            <div>
+              <label className="block text-sm font-medium mb-2">Username</label>
+              <input
+                type="text"
+                required
+                value={formData.username}
+                onChange={(e) => set("username", e.target.value)}
+                className="w-full px-4 py-3 bg-beef-bg-light border border-beef-border rounded-lg focus:outline-none focus:border-beef-gold transition-colors"
+                placeholder="username"
+              />
+            </div>
 
-            {path === "GHOST" && (
-              <div className="bg-beef-bg-light border border-beef-border/50 rounded-lg px-4 py-3 text-sm text-beef-text-muted">
-                A unique codename will be assigned — e.g.{" "}
-                <span className="text-beef-gold font-bold">IRON WOLF #4471</span>
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Handle <span className="text-beef-text-muted text-xs">(Your @handle)</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-3 text-beef-gold">@</span>
+                <input
+                  type="text"
+                  required
+                  value={formData.handle}
+                  onChange={(e) => set("handle", e.target.value)}
+                  className="w-full pl-8 pr-4 py-3 bg-beef-bg-light border border-beef-border rounded-lg focus:outline-none focus:border-beef-gold transition-colors"
+                  placeholder="yourhandle"
+                />
               </div>
-            )}
+              <p className="text-xs text-beef-text-muted mt-2">
+                You can choose to post anonymously on individual debates
+              </p>
+            </div>
 
             <div>
               <label className="block text-sm font-medium mb-2">
@@ -403,11 +322,7 @@ function SignUpForm() {
               disabled={loading || !agreedToTerms}
               className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading
-                ? "Creating Account..."
-                : path === "FIGHTER"
-                ? "Sit Ringside"
-                : "Go Ghost"}
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
 
