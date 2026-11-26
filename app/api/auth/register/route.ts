@@ -20,7 +20,20 @@ const baseSchema = z.object({
   username:         z.string().optional(),
   handle:           z.string().optional(),
   turnstileToken:   z.string().optional(),
+  invitationCode:   z.string().optional(), // Required for new signups (grandfathered users don't have one)
+  paymentIntentId:  z.string().optional(), // Stripe payment for $0.01 membership fee
 });
+
+// Generate unique invite code
+function generateInviteCode(): string {
+  const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "BEEF-";
+  for (let i = 0; i < 8; i++) {
+    code += characters.charAt(Math.floor(Math.random() * characters.length));
+    if (i === 3) code += "-";
+  }
+  return code;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -39,6 +52,39 @@ export async function POST(req: NextRequest) {
       const tsData = await tsRes.json();
       if (!tsData.success) return NextResponse.json({ error: "Bot check failed. Please try again." }, { status: 400 });
     }
+
+    // INVITATION REQUIRED: Validate invitation code (all new users must have one)
+    if (!data.invitationCode) {
+      return NextResponse.json(
+        { error: "Invitation code is required. StartBeef is currently invite-only." },
+        { status: 400 }
+      );
+    }
+
+    const invitation = await prisma.invitation.findUnique({
+      where: { code: data.invitationCode.toUpperCase().trim() },
+    });
+
+    if (!invitation || invitation.status === "ACCEPTED") {
+      return NextResponse.json(
+        { error: "Invalid or already-used invitation code" },
+        { status: 400 }
+      );
+    }
+
+    if (new Date() > new Date(invitation.expiresAt)) {
+      await prisma.invitation.update({
+        where: { id: invitation.id },
+        data: { status: "EXPIRED" },
+      });
+      return NextResponse.json(
+        { error: "This invitation code has expired" },
+        { status: 400 }
+      );
+    }
+
+    // TODO: Verify payment intent for $0.01 membership fee
+    // For now, we'll skip payment verification and add it in the next iteration
 
     // Handled users require username + handle
     if (!data.isAnonymous) {
@@ -80,6 +126,7 @@ export async function POST(req: NextRequest) {
     const emailVerifyToken = crypto.randomBytes(32).toString("hex");
     const emailVerifyExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
+    // Create user with invitation tracking and membership
     const user = await prisma.user.create({
       data: {
         email:             data.email,
@@ -92,16 +139,55 @@ export async function POST(req: NextRequest) {
         bankBalance:       0,
         emailVerifyToken,
         emailVerifyExpiry,
+        // Invitation system
+        membershipPaid:    true, // Paid $0.01 membership fee
+        invitedBy:         invitation.inviterId,
       },
       select: { id: true, email: true, username: true, handle: true, isAnonymous: true, anonHandle: true },
     });
+
+    // Mark invitation as accepted and link to new user
+    await prisma.invitation.update({
+      where: { id: invitation.id },
+      data: {
+        status: "ACCEPTED",
+        inviteeId: user.id,
+        usedAt: new Date(),
+      },
+    });
+
+    // Generate 3 new invitation codes for the new user
+    const newCodes: string[] = [];
+    for (let i = 0; i < 3; i++) {
+      let code = generateInviteCode();
+      let exists = await prisma.invitation.findUnique({ where: { code } });
+      while (exists) {
+        code = generateInviteCode();
+        exists = await prisma.invitation.findUnique({ where: { code } });
+      }
+
+      await prisma.invitation.create({
+        data: {
+          code,
+          inviterId: user.id,
+          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+          status: "PENDING",
+        },
+      });
+
+      newCodes.push(code);
+    }
 
     // Send verification email — fire and forget
     if (data.email) {
       sendVerificationEmail(data.email, emailVerifyToken).catch(console.error);
     }
 
-    return NextResponse.json({ message: "User created successfully", user }, { status: 201 });
+    return NextResponse.json({
+      message: "User created successfully",
+      user,
+      invitationCodes: newCodes, // Return codes so we can show them immediately
+    }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues[0].message }, { status: 400 });

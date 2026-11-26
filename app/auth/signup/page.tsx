@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useRef, useEffect, type FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { BackButton } from "@/components/BackButton";
@@ -11,6 +11,7 @@ type Path = "FIGHTER" | "GHOST" | null;
 
 export default function SignUpPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [path, setPath] = useState<Path>(null);
   const [formData, setFormData] = useState({
     email: "",
@@ -20,10 +21,47 @@ export default function SignUpPage() {
     confirmPassword: "",
     dateOfBirth: "",
   });
+  const [invitationCode, setInvitationCode] = useState("");
+  const [inviteValidated, setInviteValidated] = useState(false);
+  const [invitedBy, setInvitedBy] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+
+  // Check for invite code in URL on mount
+  useEffect(() => {
+    const code = searchParams.get("invite");
+    if (code) {
+      setInvitationCode(code);
+      validateInviteCode(code);
+    }
+  }, [searchParams]);
+
+  const validateInviteCode = async (code: string) => {
+    if (!code) return;
+
+    try {
+      const res = await fetch("/api/invitations/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+
+      const data = await res.json();
+      if (data.valid) {
+        setInviteValidated(true);
+        setInvitedBy(data.invitedBy);
+        setError("");
+      } else {
+        setInviteValidated(false);
+        setError(data.error || "Invalid invitation code");
+      }
+    } catch (err) {
+      setInviteValidated(false);
+      setError("Failed to validate invitation code");
+    }
+  };
 
   const set = (k: keyof typeof formData, v: string) =>
     setFormData((prev) => ({ ...prev, [k]: v }));
@@ -32,12 +70,31 @@ export default function SignUpPage() {
     e.preventDefault();
     setError("");
 
+    // Validate invitation code
+    if (!invitationCode) {
+      setError("Invitation code is required. StartBeef is currently invite-only.");
+      return;
+    }
+
+    if (!inviteValidated) {
+      setError("Please enter a valid invitation code");
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords don't match");
       return;
     }
 
+    if (!agreedToTerms) {
+      setError("You must agree to the Terms of Service and Privacy Policy");
+      return;
+    }
+
     setLoading(true);
+
+    // TODO: Add Stripe $0.01 payment flow here
+    // For now, proceeding without payment - will add in next iteration
 
     const body: Record<string, unknown> = {
       email:          formData.email,
@@ -45,6 +102,7 @@ export default function SignUpPage() {
       dateOfBirth:    formData.dateOfBirth,
       isAnonymous:    path === "GHOST",
       turnstileToken,
+      invitationCode: invitationCode.toUpperCase().trim(),
     };
     if (path === "FIGHTER") {
       body.username = formData.username;
@@ -171,6 +229,53 @@ export default function SignUpPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+
+            {/* Invitation Code - REQUIRED */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Invitation Code <span className="text-beef-orange">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={invitationCode}
+                onChange={(e) => {
+                  const code = e.target.value.toUpperCase();
+                  setInvitationCode(code);
+                  if (code.length >= 13) {
+                    validateInviteCode(code);
+                  } else {
+                    setInviteValidated(false);
+                    setInvitedBy("");
+                  }
+                }}
+                className={`w-full px-4 py-3 bg-beef-bg-light border rounded-lg focus:outline-none transition-colors font-mono ${
+                  inviteValidated
+                    ? "border-green-500 focus:border-green-500"
+                    : invitationCode.length > 0
+                    ? "border-red-500 focus:border-red-500"
+                    : "border-beef-border focus:border-beef-gold"
+                }`}
+                placeholder="BEEF-XXXX-XXXX"
+                maxLength={13}
+              />
+              {inviteValidated && invitedBy && (
+                <p className="text-xs text-green-400 mt-2">
+                  ✓ Valid! Invited by <span className="font-bold">{invitedBy}</span>
+                </p>
+              )}
+              {!inviteValidated && invitationCode.length >= 13 && (
+                <p className="text-xs text-red-400 mt-2">
+                  Invalid or expired invitation code
+                </p>
+              )}
+              <p className="text-xs text-beef-text-muted mt-2">
+                StartBeef is currently invite-only. Don't have a code?{" "}
+                <a href="mailto:hello@startbeef.com" className="text-beef-gold hover:underline">
+                  Contact us
+                </a>
+              </p>
+            </div>
 
             {path === "FIGHTER" && (
               <>
