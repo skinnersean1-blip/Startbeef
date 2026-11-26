@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { isAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
-import { sendEmail } from "@/lib/email";
+import { sendFoundingMemberEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -90,30 +90,7 @@ export async function POST(req: NextRequest) {
         // Send founding member email
         const displayName = user.handle || user.username;
         try {
-          await sendEmail(
-            user.email,
-            "You're a StartBeef Founding Member! 🥩",
-            `Hi ${displayName},
-
-You've been grandfathered in as a Founding Member of StartBeef!
-
-As we transition to a private, invite-only debate club, you now have:
-
-✓ Founding Member status (no membership fee)
-✓ 3 exclusive invitation codes
-✓ Early access to invite friends
-
-Log in to view your invitation codes:
-https://startbeef.com/dashboard
-
-Share them with friends who would thrive in serious debate!
-
-Best,
-The StartBeef Team
-
----
-This is a one-time notification. You can manage your preferences at startbeef.com/settings.`
-          );
+          await sendFoundingMemberEmail(user.email, displayName, codes);
         } catch (emailError) {
           console.error(`Failed to send email to ${user.email}:`, emailError);
           // Continue processing other users even if email fails

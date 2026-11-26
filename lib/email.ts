@@ -113,6 +113,32 @@ export async function sendAdminNewBeefEmail(beefId: string, claim: string, chall
   });
 }
 
+export async function sendFoundingMemberEmail(to: string, displayName: string, inviteCodes: string[]) {
+  const url = `${BASE_URL}/dashboard`;
+  await getResend().emails.send({
+    from: FROM,
+    to,
+    subject: "You're a StartBeef Founding Member! 🥩",
+    html: emailShell(
+      "FOUNDING MEMBER STATUS",
+      `<p>Hi <strong>${displayName}</strong>,</p>
+       <p>You've been grandfathered in as a <strong>Founding Member</strong> of StartBeef!</p>
+       <p>As we transition to a private, invite-only debate club, you now have:</p>
+       <ul style="color:#F5F1ED;margin:16px 0;padding-left:20px;">
+         <li>Founding Member status (no membership fee)</li>
+         <li>3 exclusive invitation codes</li>
+         <li>Early access to invite friends</li>
+       </ul>
+       <p style="background:#2E231A;border:1px solid #3A2F28;padding:16px;margin:24px 0;font-family:monospace;font-size:14px;color:#D4A574;">
+         <strong>Your Invitation Codes:</strong><br/>
+         ${inviteCodes.map(code => `<span style="display:block;margin-top:8px;">${code}</span>`).join('')}
+       </p>
+       ${bigButton(url, "VIEW DASHBOARD")}
+       <p style="color:#A89885;font-size:12px;">Share these codes with friends who would thrive in serious debate!</p>`
+    ),
+  });
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function truncate(s: string, n: number) {
