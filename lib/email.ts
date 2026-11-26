@@ -113,19 +113,18 @@ export async function sendAdminNewBeefEmail(beefId: string, claim: string, chall
   });
 }
 
-export async function sendFoundingMemberEmail(to: string, displayName: string, inviteCodes: string[]) {
+export async function sendGrandfatheredUserEmail(to: string, displayName: string, inviteCodes: string[]) {
   const url = `${BASE_URL}/dashboard`;
   await getResend().emails.send({
     from: FROM,
     to,
-    subject: "You're a StartBeef Founding Member! 🥩",
+    subject: "Your StartBeef Account Has Been Updated 🥩",
     html: emailShell(
-      "FOUNDING MEMBER STATUS",
+      "ACCOUNT UPDATE",
       `<p>Hi <strong>${displayName}</strong>,</p>
-       <p>You've been grandfathered in as a <strong>Founding Member</strong> of StartBeef!</p>
-       <p>As we transition to a private, invite-only debate club, you now have:</p>
+       <p>As we transition to a private, invite-only debate club, your existing account has been updated:</p>
        <ul style="color:#F5F1ED;margin:16px 0;padding-left:20px;">
-         <li>Founding Member status (no membership fee)</li>
+         <li>Free membership (no membership fee required)</li>
          <li>3 exclusive invitation codes</li>
          <li>Early access to invite friends</li>
        </ul>

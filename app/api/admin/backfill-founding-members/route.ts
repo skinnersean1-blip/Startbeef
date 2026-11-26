@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { isAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
-import { sendFoundingMemberEmail } from "@/lib/email";
+import { sendGrandfatheredUserEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,7 @@ function generateInviteCode(): string {
   return code;
 }
 
-// Backfill founding members - ADMIN ONLY
+// Backfill grandfathered users (original 7) - ADMIN ONLY
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id || !isAdmin(session.user.email)) {
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     const emails: string[] = [];
 
     for (const user of realUsers) {
-      // 1. Mark as founding member (membership paid)
+      // 1. Grant free membership (no special title/designation)
       await prisma.user.update({
         where: { id: user.id },
         data: { membershipPaid: true },
@@ -87,10 +87,10 @@ export async function POST(req: NextRequest) {
       if (user.email) {
         emails.push(user.email);
 
-        // Send founding member email
+        // Send grandfathered user notification email
         const displayName = user.handle || user.username;
         try {
-          await sendFoundingMemberEmail(user.email, displayName, codes);
+          await sendGrandfatheredUserEmail(user.email, displayName, codes);
         } catch (emailError) {
           console.error(`Failed to send email to ${user.email}:`, emailError);
           // Continue processing other users even if email fails
@@ -103,13 +103,13 @@ export async function POST(req: NextRequest) {
       processed: realUsers.length,
       results,
       emailsSent: emails,
-      message: `Backfilled ${realUsers.length} founding members and sent ${emails.length} notification emails.`,
+      message: `Grandfathered ${realUsers.length} existing users and sent ${emails.length} notification emails.`,
     });
   } catch (error) {
     console.error("Backfill error:", error);
     return NextResponse.json(
       {
-        error: "Failed to backfill founding members",
+        error: "Failed to backfill grandfathered users",
         details: error instanceof Error ? error.message : undefined,
       },
       { status: 500 }
