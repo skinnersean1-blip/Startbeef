@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, type FormEvent } from "react";
+import { useState, useRef, useEffect, type FormEvent, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
@@ -9,7 +9,7 @@ import { Turnstile } from "@marsidev/react-turnstile";
 
 type Path = "FIGHTER" | "GHOST" | null;
 
-export default function SignUpPage() {
+function SignUpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [path, setPath] = useState<Path>(null);
@@ -422,5 +422,20 @@ export default function SignUpPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-5xl font-bold mb-2">BEEF</div>
+          <div className="text-beef-text-muted">Loading...</div>
+        </div>
+      </div>
+    }>
+      <SignUpForm />
+    </Suspense>
   );
 }
