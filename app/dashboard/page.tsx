@@ -31,16 +31,32 @@ type Stats = {
   bankBalance: number;
 };
 
+type Invitation = {
+  id: string;
+  code: string;
+  status: string;
+  createdAt: string;
+  expiresAt: string;
+  usedAt: string | null;
+  invitee: {
+    username: string;
+    handle: string | null;
+    joinedAt: string;
+  } | null;
+};
+
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"beefs" | "forum" | "wallet">("beefs");
+  const [activeTab, setActiveTab] = useState<"beefs" | "forum" | "wallet" | "invitations">("beefs");
   const [openBeefs, setOpenBeefs] = useState<Beef[]>([]);
   const [liveBeefs, setLiveBeefs] = useState<Beef[]>([]);
   const [completedBeefs, setCompletedBeefs] = useState<Beef[]>([]);
   const [forumThreads, setForumThreads] = useState<ForumThread[]>([]);
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [stats, setStats] = useState<Stats>({ wins: 0, losses: 0, totalEarnings: 0, bankBalance: 0 });
   const [loading, setLoading] = useState(true);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -55,10 +71,11 @@ export default function DashboardPage() {
 
   const loadDashboardData = async () => {
     try {
-      const [beefsRes, forumRes, statsRes] = await Promise.all([
+      const [beefsRes, forumRes, statsRes, invitationsRes] = await Promise.all([
         fetch("/api/user/my-beefs"),
         fetch("/api/user/my-forum-posts"),
         fetch("/api/user/stats"),
+        fetch("/api/invitations/list"),
       ]);
 
       if (beefsRes.ok) {
@@ -76,6 +93,11 @@ export default function DashboardPage() {
       if (statsRes.ok) {
         const data = await statsRes.json();
         setStats(data);
+      }
+
+      if (invitationsRes.ok) {
+        const data = await invitationsRes.json();
+        setInvitations(data.invitations || []);
       }
     } catch (err) {
       console.error("Failed to load dashboard:", err);
@@ -181,6 +203,16 @@ export default function DashboardPage() {
               }`}
             >
               FORUM POSTS ({forumThreads.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("invitations")}
+              className={`px-4 py-2 rounded-t-lg font-bold text-sm transition-colors ${
+                activeTab === "invitations"
+                  ? "bg-beef-bg-card border-t border-x border-beef-gold text-beef-gold"
+                  : "text-beef-text-muted hover:text-beef-text"
+              }`}
+            >
+              INVITATIONS ({invitations.length})
             </button>
             <button
               onClick={() => setActiveTab("wallet")}
@@ -300,6 +332,85 @@ export default function DashboardPage() {
                 <div className="card-beef text-center py-20">
                   <p className="text-2xl font-bold mb-4">No forum posts yet</p>
                   <p className="text-beef-text-muted">Share your thoughts on the message board</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "invitations" && (
+            <div>
+              <div className="card-beef mb-6">
+                <h3 className="text-xl font-bold mb-4">YOUR INVITATION CODES</h3>
+                <p className="text-beef-text-muted mb-6">
+                  Share these exclusive codes with friends who would thrive in serious debate. Each code can be used once.
+                </p>
+                <div className="grid gap-4">
+                  {invitations.map((inv) => (
+                    <div
+                      key={inv.id}
+                      className={`border rounded-lg p-4 transition-colors ${
+                        inv.status === "ACCEPTED"
+                          ? "border-beef-border bg-beef-bg"
+                          : inv.status === "EXPIRED"
+                          ? "border-beef-border/50 bg-beef-bg/50 opacity-60"
+                          : "border-beef-gold bg-beef-bg-card"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="font-mono text-lg font-bold text-beef-gold">
+                          {inv.code}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {inv.status === "PENDING" && (
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(
+                                  `${window.location.origin}/auth/signup?invite=${inv.code}`
+                                );
+                                setCopiedCode(inv.code);
+                                setTimeout(() => setCopiedCode(null), 2000);
+                              }}
+                              className="btn-secondary text-xs px-3 py-1"
+                            >
+                              {copiedCode === inv.code ? "✓ COPIED!" : "📋 COPY LINK"}
+                            </button>
+                          )}
+                          <span
+                            className={`px-3 py-1 rounded text-xs font-bold ${
+                              inv.status === "ACCEPTED"
+                                ? "bg-green-900/30 text-green-400"
+                                : inv.status === "EXPIRED"
+                                ? "bg-gray-900/30 text-gray-400"
+                                : "bg-beef-gold/20 text-beef-gold"
+                            }`}
+                          >
+                            {inv.status}
+                          </span>
+                        </div>
+                      </div>
+                      {inv.invitee && (
+                        <div className="text-sm text-beef-text-muted">
+                          Used by <span className="font-bold text-beef-text">
+                            {inv.invitee.handle || inv.invitee.username}
+                          </span> on {new Date(inv.invitee.joinedAt).toLocaleDateString()}
+                        </div>
+                      )}
+                      {inv.status === "PENDING" && (
+                        <div className="text-xs text-beef-text-muted mt-2">
+                          Expires {new Date(inv.expiresAt).toLocaleDateString()}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {invitations.filter((i) => i.status === "PENDING").length === 0 && (
+                <div className="card-beef text-center py-12 bg-beef-bg-card border-beef-gold">
+                  <p className="text-xl font-bold mb-2">🎉 All Invites Used!</p>
+                  <p className="text-beef-text-muted">
+                    You've used all your invitation codes. Great work spreading the word!
+                  </p>
                 </div>
               )}
             </div>
