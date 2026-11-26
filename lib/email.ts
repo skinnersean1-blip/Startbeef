@@ -138,6 +138,28 @@ export async function sendGrandfatheredUserEmail(to: string, displayName: string
   });
 }
 
+export async function sendWelcomeWithInvitesEmail(to: string, displayName: string, inviteCodes: string[]) {
+  const url = `${BASE_URL}/dashboard`;
+  await getResend().emails.send({
+    from: FROM,
+    to,
+    subject: "Welcome to StartBeef! Here are your invitation codes 🥩",
+    html: emailShell(
+      "WELCOME TO STARTBEEF",
+      `<p>Hi <strong>${displayName}</strong>,</p>
+       <p>Welcome to StartBeef — where serious debate meets stakes. Your account is ready!</p>
+       <p>As a member, you have <strong>3 exclusive invitation codes</strong> to share with friends:</p>
+       <p style="background:#2E231A;border:1px solid #3A2F28;padding:16px;margin:24px 0;font-family:monospace;font-size:14px;color:#D4A574;">
+         <strong>Your Invitation Codes:</strong><br/>
+         ${inviteCodes.map(code => `<span style="display:block;margin-top:8px;">${code}</span>`).join('')}
+       </p>
+       ${bigButton(url, "GO TO DASHBOARD")}
+       <p style="color:#A89885;font-size:12px;">Share these codes with friends who would thrive in serious intellectual debate!</p>
+       <p style="color:#A89885;font-size:12px;margin-top:20px;">Next steps: Verify your email, add funds, and start your first debate.</p>`
+    ),
+  });
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function truncate(s: string, n: number) {

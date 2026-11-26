@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { generateCodename } from "@/lib/codename";
-import { sendVerificationEmail } from "@/lib/email";
+import { sendVerificationEmail, sendWelcomeWithInvitesEmail } from "@/lib/email";
 import { z } from "zod";
 import crypto from "crypto";
 
@@ -181,6 +181,10 @@ export async function POST(req: NextRequest) {
     // Send verification email — fire and forget
     if (data.email) {
       sendVerificationEmail(data.email, emailVerifyToken).catch(console.error);
+
+      // Send welcome email with invitation codes
+      const displayName = user.handle || user.username;
+      sendWelcomeWithInvitesEmail(data.email, displayName, newCodes).catch(console.error);
     }
 
     return NextResponse.json({
