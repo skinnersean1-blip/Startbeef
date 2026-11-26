@@ -89,6 +89,37 @@ const STATUS_COLOR: Record<string, string> = {
 // ── Tab components ────────────────────────────────────────────────────────────
 
 function OverviewTab({ stats }: { stats: Stats | null }) {
+  const [backfillLoading, setBackfillLoading] = useState(false);
+  const [backfillResult, setBackfillResult] = useState<string | null>(null);
+
+  async function triggerBackfill() {
+    if (!confirm("This will grandfather the original 7 users with free membership and 3 invite codes each. Continue?")) {
+      return;
+    }
+
+    setBackfillLoading(true);
+    setBackfillResult(null);
+
+    try {
+      const res = await fetch("/api/admin/backfill-founding-members", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setBackfillResult(`✅ Success! Processed ${data.processed} users and sent ${data.emailsSent.length} emails.`);
+      } else {
+        setBackfillResult(`❌ Error: ${data.error}`);
+      }
+    } catch (error) {
+      setBackfillResult(`❌ Failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+    } finally {
+      setBackfillLoading(false);
+    }
+  }
+
   if (!stats) return <Spinner />;
   const tiles = [
     { label: "TOTAL USERS",       value: stats.totalUsers.toLocaleString(),        sub: `+${stats.newUsersThisWeek} this week` },
@@ -98,14 +129,40 @@ function OverviewTab({ stats }: { stats: Stats | null }) {
     { label: "JUDGED IN 24H",     value: `${stats.judgedRate}%`,                   sub: "Completion rate" },
   ];
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      {tiles.map((t) => (
-        <div key={t.label} className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-          <p className="text-xs font-bold tracking-widest text-gray-400 mb-2">{t.label}</p>
-          <p className="text-3xl font-bold text-orange-500">{t.value}</p>
-          <p className="text-xs text-gray-400 mt-1">{t.sub}</p>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {tiles.map((t) => (
+          <div key={t.label} className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+            <p className="text-xs font-bold tracking-widest text-gray-400 mb-2">{t.label}</p>
+            <p className="text-3xl font-bold text-orange-500">{t.value}</p>
+            <p className="text-xs text-gray-400 mt-1">{t.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Admin Actions */}
+      <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-6">
+        <p className="text-xs font-bold tracking-widest text-orange-600 mb-3">ADMIN ACTIONS</p>
+        <div className="space-y-3">
+          <div>
+            <button
+              onClick={triggerBackfill}
+              disabled={backfillLoading}
+              className="bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+            >
+              {backfillLoading ? "Processing..." : "🎁 Grandfather Original Users"}
+            </button>
+            <p className="text-xs text-gray-600 mt-2">
+              Grant free membership + 3 invite codes to original 7 users
+            </p>
+            {backfillResult && (
+              <p className={`text-sm mt-2 font-medium ${backfillResult.startsWith("✅") ? "text-green-600" : "text-red-600"}`}>
+                {backfillResult}
+              </p>
+            )}
+          </div>
         </div>
-      ))}
+      </div>
     </div>
   );
 }
