@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 // Delete old pending withdrawals that were never real Stripe payouts - ADMIN ONLY
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!isAdmin(session?.user?.email)) {
+  if (!session?.user?.id || !isAdmin(session.user.email)) {
     return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 });
   }
 
