@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 import { createClient } from "@libsql/client";
 import { PrismaClient } from "@prisma/client";
-import { PrismaLibSQL } from "@prisma/adapter-libsql";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { readFileSync } from "fs";
 import { join } from "path";
 
