@@ -111,10 +111,15 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("Backfill error:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error("Error details:", { errorMessage, errorStack });
+
     return NextResponse.json(
       {
         error: "Failed to backfill grandfathered users",
-        details: error instanceof Error ? error.message : undefined,
+        details: errorMessage,
+        stack: errorStack,
       },
       { status: 500 }
     );
