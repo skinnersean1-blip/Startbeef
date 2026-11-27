@@ -87,13 +87,17 @@ export async function POST(req: NextRequest) {
       if (user.email) {
         emails.push(user.email);
 
-        // Send grandfathered user notification email
-        const displayName = user.handle || user.username;
-        try {
-          await sendGrandfatheredUserEmail(user.email, displayName, codes);
-        } catch (emailError) {
-          console.error(`Failed to send email to ${user.email}:`, emailError);
-          // Continue processing other users even if email fails
+        // Send grandfathered user notification email (skip if Resend not configured)
+        if (process.env.RESEND_API_KEY) {
+          const displayName = user.handle || user.username;
+          try {
+            await sendGrandfatheredUserEmail(user.email, displayName, codes);
+          } catch (emailError) {
+            console.error(`Failed to send email to ${user.email}:`, emailError);
+            // Continue processing other users even if email fails
+          }
+        } else {
+          console.log(`Skipping email to ${user.email} - RESEND_API_KEY not configured`);
         }
       }
     }
