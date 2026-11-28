@@ -47,12 +47,27 @@ export function PredictionMarket({
     fetchStats();
   }, [beefId]);
 
+  // Poll for real-time updates while beef is LIVE
+  useEffect(() => {
+    if (status !== "LIVE") return;
+
+    // Poll every 5 seconds for market updates
+    const interval = setInterval(() => {
+      fetchStats();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [status, beefId]);
+
   const fetchStats = async () => {
     try {
       const res = await fetch(`/api/beef/${beefId}/sidecard`);
       if (res.ok) {
         const data = await res.json();
+        console.log("Market stats:", data); // Debug log
         setStats(data);
+      } else {
+        console.error("Failed to fetch stats:", await res.text());
       }
     } catch (err) {
       console.error("Failed to fetch stats:", err);
@@ -94,9 +109,12 @@ export function PredictionMarket({
       // Success - refresh stats and close
       await fetchStats();
       setSelectedSide(null);
+      setBetAmount("10"); // Reset to default
+      setPlacing(false);
       router.refresh();
     } catch (err) {
       setError("Something went wrong");
+    } finally {
       setPlacing(false);
     }
   };
@@ -125,7 +143,9 @@ export function PredictionMarket({
         </div>
         <div className="text-right">
           <p className="text-xs text-muted">TOTAL POOL</p>
-          <p className="text-2xl font-bold text-beef-gold">${stats?.totalPool.toFixed(2) || "0.00"}</p>
+          <p className="text-2xl font-bold text-beef-gold">
+            ${stats?.totalPool?.toFixed(2) ?? "0.00"}
+          </p>
         </div>
       </div>
 
@@ -133,14 +153,18 @@ export function PredictionMarket({
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="card-beef bg-beef-bg-light border-beef-gold/20 text-center">
           <p className="text-xs text-muted mb-2">@{challengerHandle}</p>
-          <p className="text-4xl font-bold text-beef-gold mb-1">{stats?.challengerOdds}%</p>
-          <p className="text-xs text-muted">${stats?.challengerPool.toFixed(2)} • {stats?.challengerBetCount} bets</p>
+          <p className="text-4xl font-bold text-beef-gold mb-1">{stats?.challengerOdds ?? 50}%</p>
+          <p className="text-xs text-muted">
+            ${stats?.challengerPool?.toFixed(2) ?? "0.00"} • {stats?.challengerBetCount ?? 0} bets
+          </p>
         </div>
 
         <div className="card-beef bg-beef-bg-light border-beef-gold/20 text-center">
           <p className="text-xs text-muted mb-2">@{responderHandle}</p>
-          <p className="text-4xl font-bold text-beef-gold mb-1">{stats?.responderOdds}%</p>
-          <p className="text-xs text-muted">${stats?.responderPool.toFixed(2)} • {stats?.responderBetCount} bets</p>
+          <p className="text-4xl font-bold text-beef-gold mb-1">{stats?.responderOdds ?? 50}%</p>
+          <p className="text-xs text-muted">
+            ${stats?.responderPool?.toFixed(2) ?? "0.00"} • {stats?.responderBetCount ?? 0} bets
+          </p>
         </div>
       </div>
 
