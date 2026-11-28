@@ -3,10 +3,11 @@
 import { useRouter, useSearchParams } from "next/navigation";
 
 const CATEGORIES = [
-  { key: "ALL", label: "TRENDING" },
+  { key: "ALL", label: "ALL" },
+  { key: "CURRENT EVENTS", label: "CURRENT EVENTS" },
   { key: "POLITICS", label: "POLITICS" },
-  { key: "CULTURE", label: "CULTURE" },
   { key: "SPORTS", label: "SPORTS" },
+  { key: "CULTURE", label: "CULTURE" },
   { key: "TECH", label: "TECH" },
   { key: "CALLOUTS", label: "CALLOUTS" },
 ];
@@ -33,12 +34,50 @@ const SORTS = [
 export function BrowseBar() {
   const router = useRouter();
   const params = useSearchParams();
-  const category = params.get("cat") || "ALL";
+  const catParam = params.get("cat") || "ALL";
   const sort = params.get("sort") || "hot";
 
-  const update = (key: string, value: string) => {
+  // Parse selected categories (comma-separated)
+  const selectedCategories = catParam === "ALL" ? ["ALL"] : catParam.split(",").filter(Boolean);
+
+  const toggleCategory = (cat: string) => {
     const p = new URLSearchParams(params.toString());
-    p.set(key, value);
+
+    // If clicking "ALL", clear everything and set to ALL
+    if (cat === "ALL") {
+      p.set("cat", "ALL");
+      router.push(`/?${p.toString()}`);
+      return;
+    }
+
+    // If currently on ALL, start fresh with this category
+    if (selectedCategories.includes("ALL")) {
+      p.set("cat", cat);
+      router.push(`/?${p.toString()}`);
+      return;
+    }
+
+    // Toggle the category
+    let newCategories = [...selectedCategories];
+    if (newCategories.includes(cat)) {
+      // Deselect
+      newCategories = newCategories.filter(c => c !== cat);
+      // If nothing left, go back to ALL
+      if (newCategories.length === 0) {
+        newCategories = ["ALL"];
+      }
+    } else {
+      // Add to selection
+      newCategories.push(cat);
+    }
+
+    p.set("cat", newCategories.join(","));
+    router.push(`/?${p.toString()}`);
+  };
+
+  const updateSort = (value: string) => {
+    const p = new URLSearchParams(params.toString());
+    p.set("sort", value);
     router.push(`/?${p.toString()}`);
   };
 
@@ -49,24 +88,27 @@ export function BrowseBar() {
         {/* Categories — horizontally scrollable on mobile */}
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
           <span className="section-label shrink-0">BROWSE</span>
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.key}
-              onClick={() => update("cat", cat.key)}
-              className={`text-xs font-bold tracking-widest px-3 py-1.5 rounded-full border transition-all duration-150 shrink-0 ${
-                category === cat.key
-                  ? "border-beef-gold bg-beef-gold/10 text-beef-gold"
-                  : "border-beef-border text-beef-text-muted hover:border-beef-gold/50 hover:text-beef-text"
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
+          {CATEGORIES.map((cat) => {
+            const isSelected = selectedCategories.includes(cat.key);
+            return (
+              <button
+                key={cat.key}
+                onClick={() => toggleCategory(cat.key)}
+                className={`text-xs font-bold tracking-widest px-3 py-1.5 rounded-full border transition-all duration-150 shrink-0 ${
+                  isSelected
+                    ? "border-beef-gold bg-beef-gold/10 text-beef-gold"
+                    : "border-beef-border text-beef-text-muted hover:border-beef-gold/50 hover:text-beef-text"
+                }`}
+              >
+                {cat.label}
+              </button>
+            );
+          })}
           <span className="section-label shrink-0 ml-2">SORT</span>
           {SORTS.map((s) => (
             <button
               key={s.key}
-              onClick={() => update("sort", s.key)}
+              onClick={() => updateSort(s.key)}
               className={`text-xs font-bold tracking-widest px-3 py-1.5 rounded-full border transition-all duration-150 shrink-0 ${
                 sort === s.key
                   ? "border-beef-gold bg-beef-gold/10 text-beef-gold"

@@ -1,9 +1,13 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-const CATEGORIES = ["POLITICS", "CULTURE", "SPORTS", "TECH", "CALLOUTS"] as const;
+const CATEGORIES = ["CURRENT EVENTS", "POLITICS", "CULTURE", "SPORTS", "TECH", "CALLOUTS", "CUSTOM"] as const;
 type Category = typeof CATEGORIES[number];
 
+// AI should never select CUSTOM - it's for admin manual override only
+const AI_CATEGORIES = ["CURRENT EVENTS", "POLITICS", "CULTURE", "SPORTS", "TECH", "CALLOUTS"] as const;
+type AICategory = typeof AI_CATEGORIES[number];
 const CATEGORY_DEFINITIONS = `
+- CURRENT EVENTS: breaking news, trending topics, recent events, timely issues that don't neatly fit other categories
 - POLITICS: government, elections, politicians, policy, political parties, law, geopolitics, war, diplomacy, public officials (presidents, senators, ministers, VPs, etc.)
 - CULTURE: entertainment, music, film, art, social trends, celebrities, media, religion, lifestyle, philosophy
 - SPORTS: athletics, teams, players, leagues, tournaments, coaches, sporting events, championships
@@ -28,6 +32,7 @@ ${CATEGORY_DEFINITIONS}
 Examples:
 - "The Chiefs will win the Super Bowl" → ["SPORTS"]
 - "LeBron is washed up" → ["SPORTS"]
+- "Colin Kaepernick was right to kneel during the anthem" → ["SPORTS", "POLITICS"]
 - "JD Vance is a menace to society" → ["POLITICS", "CALLOUTS"]
 - "Trump's policies will destroy America" → ["POLITICS"]
 - "Pineapple belongs on pizza" → ["CULTURE"]
@@ -35,15 +40,19 @@ Examples:
 - "AI will replace all jobs by 2030" → ["TECH"]
 - "Elon Musk is ruining Twitter" → ["TECH", "CALLOUTS"]
 - "@john123 doesn't know what he's talking about" → ["CALLOUTS"]
+- "The Olympics opening ceremony was woke propaganda" → ["SPORTS", "POLITICS", "CULTURE"]
+- "Breaking: Russia invades Ukraine" → ["CURRENT EVENTS", "POLITICS"]
 
 Rules:
-- Sports teams, players, leagues, championships → ALWAYS SPORTS
-- Politicians, government officials, policy → ALWAYS POLITICS
+- Sports teams, players, leagues, championships → ALWAYS include SPORTS
+- Politicians, government officials, policy → ALWAYS include POLITICS
 - Direct attacks on named people → add CALLOUTS
-- Can assign multiple categories when truly relevant
+- Assign MULTIPLE categories when truly relevant (e.g., political sports topics get both)
+- Cross-topic subjects should get ALL relevant categories
+- Current breaking news → add CURRENT EVENTS
 - Be specific: don't default to POLITICS unless it's actually political
 
-Respond with ONLY a JSON array: ${CATEGORIES.join(", ")}
+Respond with ONLY a JSON array from these options: ${AI_CATEGORIES.join(", ")}
 No explanation. No markdown. Just the array.`,
       messages: [{ role: "user", content: claim }],
     });
@@ -55,7 +64,7 @@ No explanation. No markdown. Just the array.`,
     if (
       Array.isArray(parsed) &&
       parsed.length > 0 &&
-      parsed.every((c): c is Category => CATEGORIES.includes(c as Category))
+      parsed.every((c): c is AICategory => AI_CATEGORIES.includes(c as AICategory))
     ) {
       return parsed;
     }

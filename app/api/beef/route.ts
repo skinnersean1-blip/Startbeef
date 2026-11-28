@@ -20,8 +20,14 @@ export async function GET(req: NextRequest) {
   const category = searchParams.get("category");
   const sort = searchParams.get("sort") || "new";
 
-  const where = category && category !== "ALL"
-    ? { categories: { contains: category }, status: "OPEN" }
+  // Handle multiple categories (comma-separated)
+  const categories = category && category !== "ALL" ? category.split(",").filter(Boolean) : [];
+
+  const where = categories.length > 0
+    ? {
+        status: "OPEN",
+        OR: categories.map(cat => ({ categories: { contains: cat } }))
+      }
     : { status: "OPEN" };
 
   const orderBy =

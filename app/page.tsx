@@ -63,8 +63,17 @@ async function getFeed(category: string, sort: string) {
       ? { status: "OPEN" }
       : { status: { in: ["OPEN", "LIVE"] } };
 
-  const categoryFilter =
-    category !== "ALL" ? { categories: { contains: category } } : {};
+  // Handle multiple categories (comma-separated)
+  const categories = category === "ALL" ? [] : category.split(",").filter(Boolean);
+
+  // Build category filter - beef must match ANY of the selected categories
+  const categoryFilter = categories.length > 0
+    ? {
+        OR: categories.map(cat => ({
+          categories: { contains: cat }
+        }))
+      }
+    : {};
 
   const orderBy =
     sort === "hot"     ? { totalPot: "desc" as const } :
@@ -89,8 +98,17 @@ async function getFeed(category: string, sort: string) {
 }
 
 async function getCompletedBeefs(category: string) {
-  const categoryFilter =
-    category !== "ALL" ? { categories: { contains: category } } : {};
+  // Handle multiple categories (comma-separated)
+  const categories = category === "ALL" ? [] : category.split(",").filter(Boolean);
+
+  // Build category filter - beef must match ANY of the selected categories
+  const categoryFilter = categories.length > 0
+    ? {
+        OR: categories.map(cat => ({
+          categories: { contains: cat }
+        }))
+      }
+    : {};
 
   try {
     return await prisma.beef.findMany({
