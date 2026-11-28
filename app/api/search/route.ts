@@ -13,7 +13,12 @@ export async function GET(req: NextRequest) {
 
   const [beefs, threads, users] = await Promise.all([
     prisma.beef.findMany({
-      where: { claim: { contains: q } },
+      where: {
+        OR: [
+          { claim: { contains: q } },
+          { categories: { contains: q } }, // Search in categories too
+        ]
+      },
       take: 12,
       orderBy: { createdAt: "desc" },
       include: {
