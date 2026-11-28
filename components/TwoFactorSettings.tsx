@@ -209,8 +209,14 @@ export function TwoFactorSettings() {
               </p>
 
               {qrCode && (
-                <div className="bg-white p-4 rounded-lg inline-block">
-                  <img src={qrCode} alt="2FA QR Code" width={200} height={200} />
+                <div className="bg-white p-6 rounded-lg inline-block mb-4">
+                  <img
+                    src={qrCode}
+                    alt="2FA QR Code"
+                    width={300}
+                    height={300}
+                    className="block"
+                  />
                 </div>
               )}
 

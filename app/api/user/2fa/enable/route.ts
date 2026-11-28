@@ -54,7 +54,8 @@ export async function POST(req: NextRequest) {
       secret: user.twoFactorSecret,
       encoding: "base32",
       token: token.replace(/\s/g, ""),
-      window: 2,
+      window: 2, // Allow 2 time steps before/after for clock skew
+      algorithm: "sha1", // Match the algorithm used in setup
     });
 
     if (!verified) {

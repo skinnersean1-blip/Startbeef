@@ -28,14 +28,16 @@ export async function POST() {
       );
     }
 
-    // Generate secret
+    // Generate secret with proper encoding and algorithm
     const secret = speakeasy.generateSecret({
-      name: `BEEF (${user.username})`,
-      issuer: "BEEF",
-      length: 32,
+      name: `Beef:${user.username}`,
+      issuer: "Beef",
+      length: 20, // Standard length for TOTP (Google Authenticator uses 20)
+      encoding: "base32",
+      algorithm: "sha1", // Google Authenticator prefers SHA1
     });
 
-    // Generate QR code
+    // Generate QR code with error correction
     if (!secret.otpauth_url) {
       return NextResponse.json(
         { error: "Failed to generate OTP URL" },
@@ -43,7 +45,13 @@ export async function POST() {
       );
     }
 
-    const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url);
+    // Generate QR code with medium error correction for better scanning
+    const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url, {
+      errorCorrectionLevel: "M",
+      type: "image/png",
+      width: 300,
+      margin: 2,
+    });
 
     // Store secret temporarily (not enabled yet)
     await prisma.user.update({
