@@ -109,7 +109,7 @@ function StartBeefForm() {
         <div className="flex items-center justify-between">
           <Link href="/">
             <div className="cursor-pointer">
-              <p className="section-label mb-2">DEBATE PLATFORM WITH STAKES</p>
+              <p className="section-label mb-2">TALK SHIT, MAKE MONEY</p>
               <h1 className="text-4xl font-bold tracking-tighter">BEEF</h1>
             </div>
           </Link>

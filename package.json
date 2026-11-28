@@ -2,7 +2,7 @@
   "name": "beef",
   "version": "0.1.0",
   "private": true,
-  "description": "Debate platform with stakes - Put money where your mouth is",
+  "description": "Talk shit, make money - Put money where your mouth is",
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build --webpack",

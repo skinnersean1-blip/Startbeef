@@ -1,4 +1,4 @@
-# Beef - Debate Platform with Stakes
+# Beef - Talk Shit, Make Money
 
 **"Put money where your mouth is."**
 
