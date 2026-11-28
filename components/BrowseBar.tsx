@@ -126,9 +126,9 @@ export function BrowseBar() {
           {HOT_TOPICS.map((topic) => (
             <button
               key={topic}
-              onClick={() => update("cat", topic)}
+              onClick={() => toggleCategory(topic)}
               className={`text-xs font-bold px-3 py-1 rounded-full border transition-all duration-150 shrink-0 ${
-                category === topic
+                selectedCategories.includes(topic)
                   ? "border-beef-orange bg-beef-orange/10 text-beef-orange"
                   : "border-beef-border/60 text-beef-text-muted hover:border-beef-orange/50 hover:text-beef-text"
               }`}
