@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { sendBeefAcceptedEmail } from "@/lib/email";
+import { sendBeefAcceptedEmail, sendBeefAcceptanceConfirmationEmail } from "@/lib/email";
 import { notifyBeefAccepted } from "@/lib/push";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +21,18 @@ export async function POST(
   const responderIsAnon = Boolean(body.responderIsAnon);
   const beef = await prisma.beef.findUnique({
     where: { id },
-    include: { challenger: { select: { email: true, handle: true, username: true, anonHandle: true } } },
+    include: {
+      challenger: {
+        select: {
+          id: true,
+          email: true,
+          handle: true,
+          username: true,
+          anonHandle: true,
+          isAnonymous: true
+        }
+      }
+    },
   });
 
   if (!beef) return NextResponse.json({ error: "Beef not found" }, { status: 404 });
@@ -77,19 +88,55 @@ export async function POST(
     },
   });
 
-  // Notify challenger their beef was accepted — fire and forget
-  if (beef.challenger.email) {
-    const responder = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { handle: true, username: true, anonHandle: true, isAnonymous: true },
-    });
-    const responderName = (responderIsAnon || responder?.isAnonymous)
-      ? (responder?.anonHandle ?? "GHOST")
-      : `@${responder?.handle || responder?.username}`;
-    sendBeefAcceptedEmail(beef.challenger.email, id, beef.claim, responderName).catch(() => {});
+  // Get responder details for notifications
+  const responder = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      id: true,
+      email: true,
+      handle: true,
+      username: true,
+      anonHandle: true,
+      isAnonymous: true
+    },
+  });
+
+  if (!responder) {
+    return NextResponse.json({ error: "Responder not found" }, { status: 404 });
   }
 
-  // Send push notification
+  // Prepare display names
+  const responderName = (responderIsAnon || responder.isAnonymous)
+    ? (responder.anonHandle ?? "GHOST")
+    : `@${responder.handle || responder.username}`;
+
+  const challengerName = (beef.challengerIsAnon || beef.challenger.isAnonymous)
+    ? (beef.challenger.anonHandle ?? "GHOST")
+    : `@${beef.challenger.handle || beef.challenger.username}`;
+
+  // Notify CHALLENGER their beef was accepted — fire and forget
+  if (beef.challenger.email) {
+    sendBeefAcceptedEmail(
+      beef.challenger.id,
+      beef.challenger.email,
+      id,
+      beef.claim,
+      responderName
+    ).catch(() => {});
+  }
+
+  // Notify RESPONDER they accepted the beef — fire and forget
+  if (responder.email) {
+    sendBeefAcceptanceConfirmationEmail(
+      responder.id,
+      responder.email,
+      id,
+      beef.claim,
+      challengerName
+    ).catch(() => {});
+  }
+
+  // Send push notifications
   notifyBeefAccepted(id, beef.challengerId).catch(() => {});
 
   return NextResponse.json({ beef: updated });

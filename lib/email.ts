@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { prisma } from "@/lib/prisma";
 
 let _resend: Resend | null = null;
 function getResend() {
@@ -9,6 +10,31 @@ function getResend() {
 
 const FROM = process.env.EMAIL_FROM || "Beef <onboarding@resend.dev>";
 const BASE_URL = process.env.NEXTAUTH_URL || "https://startbeef.com";
+
+// ── Notification Preference Checker ───────────────────────────────────────────
+
+async function shouldNotify(userId: string, notificationType: keyof NotificationPrefs): Promise<boolean> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { notificationPrefs: true }
+    });
+
+    if (!user) return false;
+
+    const prefs: NotificationPrefs = JSON.parse(user.notificationPrefs || "{}");
+    return prefs[notificationType] ?? true; // Default to true if preference not set
+  } catch {
+    return true; // Default to sending if we can't check
+  }
+}
+
+type NotificationPrefs = {
+  challengeAccepted?: boolean;
+  newMessage?: boolean;
+  judgmentComplete?: boolean;
+  beefEndingSoon?: boolean;
+};
 
 // ── Email Verification ────────────────────────────────────────────────────────
 
@@ -49,15 +75,21 @@ export async function sendPasswordResetEmail(to: string, token: string) {
 // ── User Transactional ────────────────────────────────────────────────────────
 
 export async function sendBeefAcceptedEmail(
-  to: string,
+  challengerUserId: string,
+  challengerEmail: string,
   beefId: string,
   claim: string,
   responderName: string
 ) {
+  // Check if challenger wants this notification
+  if (!(await shouldNotify(challengerUserId, "challengeAccepted"))) {
+    return;
+  }
+
   const url = `${BASE_URL}/beef/${beefId}`;
   await getResend().emails.send({
     from: FROM,
-    to,
+    to: challengerEmail,
     subject: "Your Beef was accepted — it's ON",
     html: emailShell(
       "YOUR BEEF WAS ACCEPTED",
@@ -69,18 +101,51 @@ export async function sendBeefAcceptedEmail(
   });
 }
 
+export async function sendBeefAcceptanceConfirmationEmail(
+  responderUserId: string,
+  responderEmail: string,
+  beefId: string,
+  claim: string,
+  challengerName: string
+) {
+  // Check if responder wants this notification
+  if (!(await shouldNotify(responderUserId, "challengeAccepted"))) {
+    return;
+  }
+
+  const url = `${BASE_URL}/beef/${beefId}`;
+  await getResend().emails.send({
+    from: FROM,
+    to: responderEmail,
+    subject: "You accepted the beef — it's ON",
+    html: emailShell(
+      "YOU ACCEPTED THE BEEF",
+      `<p>You've stepped into the arena against <strong>${challengerName}</strong>.</p>
+       <p style="border-left:3px solid #D4A574;padding-left:12px;color:#A89885;">"${truncate(claim, 160)}"</p>
+       <p>The clock is running. Make your case — the judge is watching.</p>
+       ${bigButton(url, "ENTER THE ARENA")}`
+    ),
+  });
+}
+
 export async function sendBeefJudgedEmail(
-  to: string,
+  userId: string,
+  userEmail: string,
   beefId: string,
   claim: string,
   won: boolean,
   payout: number
 ) {
+  // Check if user wants this notification
+  if (!(await shouldNotify(userId, "judgmentComplete"))) {
+    return;
+  }
+
   const url = `${BASE_URL}/beef/${beefId}`;
   const subject = won ? `You won $${payout.toFixed(2)} — the judge has spoken` : "The judge has ruled — better luck next time";
   await getResend().emails.send({
     from: FROM,
-    to,
+    to: userEmail,
     subject,
     html: emailShell(
       won ? "⚖ JUDGMENT: YOU WIN" : "⚖ JUDGMENT: YOU LOSE",

@@ -8,8 +8,8 @@ export async function executeJudgment(beefId: string): Promise<void> {
   const beef = await prisma.beef.findUnique({
     where: { id: beefId },
     include: {
-      challenger: { select: { handle: true, username: true, email: true } },
-      responder:  { select: { handle: true, username: true, email: true } },
+      challenger: { select: { id: true, handle: true, username: true, email: true } },
+      responder:  { select: { id: true, handle: true, username: true, email: true } },
       messages: {
         include: { user: { select: { handle: true, username: true } } },
         orderBy: { createdAt: "asc" },
@@ -133,11 +133,27 @@ export async function executeJudgment(beefId: string): Promise<void> {
   });
 
   const challengerWon = result.winner === "CHALLENGER";
+
+  // Send email notifications with preference checking
   if (beef.challenger.email) {
-    sendBeefJudgedEmail(beef.challenger.email, beefId, beef.claim, challengerWon, challengerWon ? winnerPayout : 0).catch(() => {});
+    sendBeefJudgedEmail(
+      beef.challenger.id,
+      beef.challenger.email,
+      beefId,
+      beef.claim,
+      challengerWon,
+      challengerWon ? winnerPayout : 0
+    ).catch(() => {});
   }
   if (beef.responder?.email) {
-    sendBeefJudgedEmail(beef.responder.email, beefId, beef.claim, !challengerWon, !challengerWon ? winnerPayout : 0).catch(() => {});
+    sendBeefJudgedEmail(
+      beef.responder.id,
+      beef.responder.email,
+      beefId,
+      beef.claim,
+      !challengerWon,
+      !challengerWon ? winnerPayout : 0
+    ).catch(() => {});
   }
 
   // Send push notifications
