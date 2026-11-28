@@ -1,4 +1,4 @@
-# Beef - Paid Dissent Platform
+# Beef - Debate Platform with Stakes
 
 **"Put money where your mouth is."**
 
