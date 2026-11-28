@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { sendBeefAcceptedEmail } from "@/lib/email";
+import { sendBeefAcceptedEmail, sendBeefAcceptanceConfirmationEmail } from "@/lib/email";
+import { notifyBeefAccepted } from "@/lib/push";
+import { stripe } from "@/lib/stripe";
+
+const MEMBERSHIP_FEE_RATE = 0.015; // 1.5%
 
 export const dynamic = "force-dynamic";
 
@@ -44,37 +48,104 @@ export async function POST(
   const now = new Date();
   const endsAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-  // TEST MODE: Accept without balance deduction
-  const updated = await prisma.beef.update({
-    where: { id },
-    data: {
-      responderId: session.user.id,
-      responderIsAnon,
-      status: "LIVE",
-      totalPot: beef.ante * 2,
-      startedAt: now,
-      endsAt,
-    },
-    select: { id: true, status: true, endsAt: true },
-  });
-  // Balance deduction disabled
-  // const [updated] = await prisma.$transaction([
-  //   prisma.beef.update({...}),
-  //   prisma.user.update({
-  //     where: { id: session.user.id },
-  //     data: { bankBalance: { decrement: beef.ante } },
-  //   }),
-  // ]);
+  // Calculate membership fee (1.5% from EACH user when beef goes live)
+  const membershipFee = parseFloat((beef.ante * MEMBERSHIP_FEE_RATE).toFixed(2));
+  const totalDeduction = beef.ante + membershipFee;
 
-  await prisma.transaction.create({
-    data: {
-      userId: session.user.id,
-      type: "ANTE",
-      amount: beef.ante,
-      status: "COMPLETED",
-      relatedBeefId: id,
-    },
-  });
+  // Update beef and deduct balance from BOTH users (ante + membership fee each)
+  const [updated] = await prisma.$transaction([
+    prisma.beef.update({
+      where: { id },
+      data: {
+        responderId: session.user.id,
+        responderIsAnon,
+        status: "LIVE",
+        totalPot: beef.ante * 2,
+        startedAt: now,
+        endsAt,
+      },
+      select: { id: true, status: true, endsAt: true },
+    }),
+    // Deduct from responder
+    prisma.user.update({
+      where: { id: session.user.id },
+      data: { bankBalance: { decrement: totalDeduction } },
+    }),
+    // Deduct from challenger too (beef just went LIVE)
+    prisma.user.update({
+      where: { id: beef.challengerId },
+      data: { bankBalance: { decrement: totalDeduction } },
+    }),
+  ]);
+
+  // Create transaction records for BOTH users
+  await prisma.$transaction([
+    // Responder ante
+    prisma.transaction.create({
+      data: {
+        userId: session.user.id,
+        type: "ANTE",
+        amount: beef.ante,
+        status: "COMPLETED",
+        relatedBeefId: id,
+      },
+    }),
+    // Responder membership fee
+    prisma.transaction.create({
+      data: {
+        userId: session.user.id,
+        type: "MEMBERSHIP_FEE",
+        amount: membershipFee,
+        status: "COMPLETED",
+        relatedBeefId: id,
+      },
+    }),
+    // Challenger ante (now that beef is LIVE)
+    prisma.transaction.create({
+      data: {
+        userId: beef.challengerId,
+        type: "ANTE",
+        amount: beef.ante,
+        status: "COMPLETED",
+        relatedBeefId: id,
+      },
+    }),
+    // Challenger membership fee
+    prisma.transaction.create({
+      data: {
+        userId: beef.challengerId,
+        type: "MEMBERSHIP_FEE",
+        amount: membershipFee,
+        status: "COMPLETED",
+        relatedBeefId: id,
+      },
+    }),
+  ]);
+
+  // Transfer BOTH membership fees to operations account (if configured)
+  const totalMembershipFees = membershipFee * 2; // Both users pay
+  if (process.env.BEEF_OPERATIONS_ACCOUNT_ID && totalMembershipFees > 0) {
+    try {
+      await stripe.transfers.create({
+        amount: Math.round(totalMembershipFees * 100), // Convert to cents
+        currency: "usd",
+        destination: process.env.BEEF_OPERATIONS_ACCOUNT_ID,
+        description: `Membership fees - Beef ${id} - $${beef.ante} ante (both users)`,
+        metadata: {
+          beefId: id,
+          challengerId: beef.challengerId,
+          responderId: session.user.id,
+          type: "membership_fee",
+          ante: beef.ante.toString(),
+          feePerUser: membershipFee.toString(),
+        },
+      });
+      console.log(`Transferred $${totalMembershipFees} total membership fees to operations account`);
+    } catch (err) {
+      console.error("Failed to transfer membership fees:", err);
+      // Don't fail the beef accept if transfer fails - fees are already deducted
+    }
+  }
 
   // Notify challenger their beef was accepted — fire and forget
   if (beef.challenger.email) {

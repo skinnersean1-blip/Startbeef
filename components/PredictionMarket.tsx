@@ -41,7 +41,7 @@ export function PredictionMarket({
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState("");
 
-  const COMMISSION_RATE = 0.01; // 1%
+  const MEMBERSHIP_FEE_RATE = 0.015; // 1.5% membership admin fee
 
   useEffect(() => {
     fetchStats();
@@ -113,15 +113,15 @@ export function PredictionMarket({
     );
   }
 
-  const commission = parseFloat(betAmount) * COMMISSION_RATE;
-  const netStake = parseFloat(betAmount) - commission;
+  const membershipFee = parseFloat(betAmount) * MEMBERSHIP_FEE_RATE;
+  const netStake = parseFloat(betAmount) - membershipFee;
 
   return (
     <div className="card-beef border-beef-gold/30 mb-8">
       <div className="flex items-center justify-between mb-6">
         <div>
           <p className="section-label mb-1">PREDICTION MARKET</p>
-          <p className="text-xs text-muted">1% fee • Winner side splits loser pool</p>
+          <p className="text-xs text-muted">1.5% membership fee • Winner side splits loser pool</p>
         </div>
         <div className="text-right">
           <p className="text-xs text-muted">TOTAL POOL</p>
@@ -203,8 +203,8 @@ export function PredictionMarket({
               <span className="font-bold">${betAmount}</span>
             </div>
             <div className="flex justify-between mb-2">
-              <span className="text-muted">Beef fee (1%):</span>
-              <span className="font-bold text-beef-orange">-${commission.toFixed(2)}</span>
+              <span className="text-muted">Membership fee (1.5%):</span>
+              <span className="font-bold text-beef-orange">-${membershipFee.toFixed(2)}</span>
             </div>
             <div className="flex justify-between pt-2 border-t border-beef-border">
               <span className="font-bold">To pool:</span>

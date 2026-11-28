@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { judgeBeef, type JudgeMessage } from "@/lib/judges";
-import { BEEF_FEE_RATE } from "@/lib/stripe";
 import { sendBeefJudgedEmail } from "@/lib/email";
 
 export async function executeJudgment(beefId: string): Promise<void> {
@@ -36,9 +35,8 @@ export async function executeJudgment(beefId: string): Promise<void> {
   const winnerId = result.winner === "CHALLENGER" ? beef.challengerId : beef.responderId;
   const loserId  = result.winner === "CHALLENGER" ? beef.responderId  : beef.challengerId;
 
-  const pot = beef.totalPot;
-  const beefFee     = parseFloat((pot * BEEF_FEE_RATE).toFixed(2));
-  const winnerPayout = parseFloat((pot - beefFee).toFixed(2));
+  // Winner gets full pot (membership fees already collected when beef went LIVE)
+  const winnerPayout = beef.totalPot;
 
   await prisma.$transaction(async (tx) => {
     await tx.beef.update({

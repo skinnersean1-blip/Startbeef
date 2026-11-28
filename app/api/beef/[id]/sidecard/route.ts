@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { stripe } from "@/lib/stripe";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +12,7 @@ const sidecardSchema = z.object({
   stake: z.number().min(1, "Minimum bet is $1"),
 });
 
-const BEEF_COMMISSION_RATE = 0.01; // 1% commission
+const MEMBERSHIP_FEE_RATE = 0.015; // 1.5% membership admin fee
 
 export async function POST(
   req: NextRequest,
@@ -83,19 +84,37 @@ export async function POST(
 
     // Allow multiple bets - users can shore up or hedge their positions
 
-    // Calculate commission (1%)
-    const commission = stake * BEEF_COMMISSION_RATE;
-    const netStake = stake - commission;
+    // SECURITY: Check user has sufficient balance
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { bankBalance: true },
+    });
 
-    // Create sidecard and transaction records
-    const [sidecard, transaction, commissionTx] = await prisma.$transaction([
+    if (!user || user.bankBalance < stake) {
+      return NextResponse.json(
+        { error: `Insufficient balance. You have $${user?.bankBalance.toFixed(2) || 0}, need $${stake}` },
+        { status: 400 }
+      );
+    }
+
+    // Calculate membership fee (1.5%)
+    const membershipFee = stake * MEMBERSHIP_FEE_RATE;
+    const netStake = stake - membershipFee;
+
+    // Create sidecard and transaction records, deduct balance
+    const [, sidecard, transaction, membershipFeeTx] = await prisma.$transaction([
+      // Deduct stake from user's balance
+      prisma.user.update({
+        where: { id: session.user.id },
+        data: { bankBalance: { decrement: stake } },
+      }),
       // Create the sidecard
       prisma.sidecard.create({
         data: {
           userId: session.user.id,
           beefId,
           predictedWinnerId,
-          stake: netStake, // Store net stake (after commission)
+          stake: netStake, // Store net stake (after membership fee)
         },
       }),
 
@@ -110,12 +129,12 @@ export async function POST(
         },
       }),
 
-      // Record Beef's commission
+      // Record membership fee
       prisma.transaction.create({
         data: {
-          userId: "PLATFORM", // Special ID for platform fees
-          type: "COMMISSION",
-          amount: commission,
+          userId: session.user.id,
+          type: "MEMBERSHIP_FEE",
+          amount: membershipFee,
           status: "COMPLETED",
           relatedBeefId: beefId,
         },
@@ -130,12 +149,34 @@ export async function POST(
       },
     });
 
+    // Transfer membership fee to operations account (if configured)
+    if (process.env.BEEF_OPERATIONS_ACCOUNT_ID && membershipFee > 0) {
+      try {
+        await stripe.transfers.create({
+          amount: Math.round(membershipFee * 100), // Convert to cents
+          currency: "usd",
+          destination: process.env.BEEF_OPERATIONS_ACCOUNT_ID,
+          description: `Membership fee - Sidecard bet $${stake} on Beef ${beefId}`,
+          metadata: {
+            userId: session.user.id,
+            beefId,
+            type: "membership_fee",
+            stake: stake.toString(),
+          },
+        });
+        console.log(`Transferred $${membershipFee} membership fee to operations account`);
+      } catch (err) {
+        console.error("Failed to transfer membership fee:", err);
+        // Don't fail the bet if transfer fails - fee is already deducted
+      }
+    }
+
     return NextResponse.json({
       success: true,
       sidecard: {
         id: sidecard.id,
         stake: netStake,
-        commission,
+        membershipFee,
         totalPaid: stake,
       },
     });
