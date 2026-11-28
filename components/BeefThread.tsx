@@ -117,8 +117,10 @@ export function BeefThread({
   const [offerLoading, setOfferLoading] = useState(false);
   const [offerError, setOfferError] = useState("");
   const [respondingTo, setRespondingTo] = useState<string | null>(null);
+  const [opponentTyping, setOpponentTyping] = useState<{ isTyping: boolean; opponentName?: string }>({ isTyping: false });
   const bottomRef = useRef<HTMLDivElement>(null);
   const remaining = useCountdown(endsAt);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const isLive = status === "LIVE";
   const isJudging = status === "JUDGING";
@@ -136,6 +138,61 @@ export function BeefThread({
     const id = setInterval(() => router.refresh(), 3000);
     return () => clearInterval(id);
   }, [isJudging, router]);
+
+  // Poll for opponent typing status
+  useEffect(() => {
+    if (!isLive || !isParticipant) return;
+
+    const checkTyping = async () => {
+      try {
+        const res = await fetch(`/api/beef/${beefId}/typing`);
+        if (res.ok) {
+          const data = await res.json();
+          setOpponentTyping(data);
+        }
+      } catch {
+        // Ignore errors
+      }
+    };
+
+    // Check immediately
+    checkTyping();
+
+    // Poll every 2 seconds
+    const id = setInterval(checkTyping, 2000);
+    return () => clearInterval(id);
+  }, [beefId, isLive, isParticipant]);
+
+  // Send typing indicator when user types
+  const sendTypingIndicator = async () => {
+    if (!isLive || !isParticipant) return;
+
+    try {
+      await fetch(`/api/beef/${beefId}/typing`, {
+        method: "POST",
+      });
+    } catch {
+      // Ignore errors
+    }
+  };
+
+  // Handle draft changes with typing indicator
+  const handleDraftChange = (value: string) => {
+    setDraft(value.slice(0, 2000));
+
+    // Send typing indicator
+    sendTypingIndicator();
+
+    // Debounce: clear existing timeout and set a new one
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Send typing indicator again after 1.5 seconds if still typing
+    typingTimeoutRef.current = setTimeout(() => {
+      sendTypingIndicator();
+    }, 1500);
+  };
 
   const handlePost = async () => {
     if (!draft.trim() || posting) return;
@@ -480,6 +537,22 @@ export function BeefThread({
         )}
       </div>
 
+      {/* Typing Indicator */}
+      {isParticipant && isLive && !expired && opponentTyping.isTyping && (
+        <div className="mb-3 px-4 py-2 bg-beef-bg-light/50 border border-beef-border/50 rounded-lg">
+          <div className="flex items-center gap-2">
+            <span className="text-beef-text-muted text-sm">
+              {opponentTyping.opponentName || "Opponent"} is typing
+            </span>
+            <div className="flex gap-1">
+              <span className="inline-block w-1.5 h-1.5 bg-beef-gold rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="inline-block w-1.5 h-1.5 bg-beef-gold rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="inline-block w-1.5 h-1.5 bg-beef-gold rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Post box */}
       {isParticipant && isLive && !expired && (
         <div className="card-beef border-beef-gold/30">
@@ -491,7 +564,7 @@ export function BeefThread({
           )}
           <textarea
             value={draft}
-            onChange={(e) => setDraft(e.target.value.slice(0, 2000))}
+            onChange={(e) => handleDraftChange(e.target.value)}
             onKeyDown={handleKey}
             rows={4}
             className="w-full px-4 py-3 bg-beef-bg-light border border-beef-border rounded-lg focus:outline-none focus:border-beef-gold transition-colors resize-none"
