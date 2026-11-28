@@ -294,17 +294,43 @@ model Notification {
 model Invitation {
   id          String    @id @default(cuid())
   code        String    @unique
-  
+
   inviterId   String
   inviter     User      @relation("InviterInvitations", fields: [inviterId], references: [id], onDelete: Cascade)
-  
+
   inviteeId   String?   @unique
   invitee     User?     @relation("InviteeInvitation", fields: [inviteeId], references: [id], onDelete: SetNull)
-  
+
   status      String    @default("PENDING") // PENDING, ACCEPTED, EXPIRED
   expiresAt   DateTime
   usedAt      DateTime?
-  
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+model Conversation {
+  id              String          @id @default(cuid())
+
+  // Store both participant IDs as JSON array for easy querying
+  participantIds  String          // JSON array: ["userId1", "userId2"]
+
+  lastMessageAt   DateTime        @default(now())
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  messages        DirectMessage[]
+}
+
+model DirectMessage {
+  id              String        @id @default(cuid())
+
+  conversationId  String
+  conversation    Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId        String
+  content         String
+  isRead          Boolean       @default(false)
+
+  createdAt       DateTime      @default(now())
 }
