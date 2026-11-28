@@ -122,6 +122,7 @@ model Beef {
 
   viewCount     Int       @default(0)
   sideVolume    Float     @default(0)
+  aiConfidence  Float?    // 0-100 score from AI detection, null if not checked
 
   messages      Message[]
   offers        BeefOffer[]

@@ -7,7 +7,7 @@ import Link from "next/link";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Tab = "overview" | "users" | "beefs" | "withdrawals" | "topics" | "interests";
+type Tab = "overview" | "users" | "beefs" | "withdrawals" | "topics" | "interests" | "flagged";
 
 type Stats = {
   totalUsers: number;
@@ -46,6 +46,7 @@ type Beef = {
   createdAt: string;
   challengerIsAnon: boolean;
   responderIsAnon: boolean;
+  aiConfidence?: number | null;
   challenger: { handle: string | null; username: string; anonHandle: string | null; isAnonymous: boolean };
   responder:  { handle: string | null; username: string; anonHandle: string | null; isAnonymous: boolean } | null;
 };
@@ -857,6 +858,93 @@ function InterestsTab() {
   );
 }
 
+function FlaggedTab() {
+  const [beefs, setBeefs] = useState<Beef[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchBeefs = useCallback(async () => {
+    setLoading(true);
+    const res = await fetch("/api/admin/beefs");
+    const data: Beef[] = await res.json();
+    // Filter and sort by AI confidence
+    const flagged = data
+      .filter(b => b.aiConfidence && b.aiConfidence > 70)
+      .sort((a, b) => (b.aiConfidence ?? 0) - (a.aiConfidence ?? 0));
+    setBeefs(flagged);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { fetchBeefs(); }, [fetchBeefs]);
+
+  if (loading) return <Spinner />;
+
+  if (beefs.length === 0) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-xl text-center py-12 shadow-sm">
+        <p className="text-gray-400 text-sm">No flagged content! All beefs look human-written. 🎉</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+        <p className="text-sm text-orange-900">
+          <strong>AI Detection:</strong> These beefs have been flagged as potentially AI-generated based on writing patterns.
+          Review each one and take appropriate action.
+        </p>
+      </div>
+
+      <div className="bg-white border border-gray-200 rounded-xl divide-y divide-gray-100 shadow-sm">
+        {beefs.map((b) => {
+          const confidenceColor =
+            (b.aiConfidence ?? 0) >= 85 ? "text-red-600 bg-red-50" :
+            (b.aiConfidence ?? 0) >= 70 ? "text-orange-600 bg-orange-50" :
+            "text-gray-600 bg-gray-50";
+
+          return (
+            <div key={b.id} className="p-4 hover:bg-gray-50 transition-colors">
+              <div className="flex items-start justify-between gap-4 mb-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`px-2 py-1 rounded text-xs font-bold ${confidenceColor}`}>
+                      {Math.round(b.aiConfidence ?? 0)}% AI
+                    </span>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${STATUS_COLOR[b.status] || STATUS_COLOR.OPEN}`}>
+                      {b.status}
+                    </span>
+                    <span className="text-xs text-gray-400">{timeAgo(b.createdAt)}</span>
+                  </div>
+                  <p className="text-sm font-medium text-gray-900 mb-1">{b.claim}</p>
+                  <div className="text-xs text-gray-500">
+                    <span className="font-medium">{displayName(b.challenger, b.challengerIsAnon)}</span>
+                    {b.responder && (
+                      <>
+                        {" vs "}
+                        <span className="font-medium">{displayName(b.responder, b.responderIsAnon)}</span>
+                      </>
+                    )}
+                    <span className="ml-2">· Pot: {fmt(b.totalPot)}</span>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Link
+                    href={`/beef/${b.id}`}
+                    target="_blank"
+                    className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                  >
+                    View Beef
+                  </Link>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function Spinner() {
   return <div className="py-12 text-center text-gray-400 text-sm animate-pulse">Loading...</div>;
 }
@@ -867,6 +955,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "overview",     label: "Overview"     },
   { id: "users",        label: "Users"        },
   { id: "beefs",        label: "Beefs"        },
+  { id: "flagged",      label: "Flagged Content" },
   { id: "withdrawals",  label: "Withdrawals"  },
   { id: "topics",       label: "Topics"       },
   { id: "interests",    label: "Interests"    },
@@ -937,6 +1026,7 @@ export default function AdminPage() {
         {tab === "overview"    && <OverviewTab stats={stats} />}
         {tab === "users"       && <UsersTab />}
         {tab === "beefs"       && <BeefsTab />}
+        {tab === "flagged"     && <FlaggedTab />}
         {tab === "withdrawals" && <WithdrawalsTab />}
         {tab === "topics"      && <TopicsTab />}
         {tab === "interests"   && <InterestsTab />}
